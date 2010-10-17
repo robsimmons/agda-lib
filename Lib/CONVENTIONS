@@ -1,0 +1,17 @@
+This is a redesign of Dan Licata (et al)'s Agda standard library that also
+borrows heavily and shamelessly from Agda's standard library where useful
+and appropriate.
+
+Design goals:
+
+* Look like standard-ish Haskell
+  - Constructors and types are capitalized (Nat, S, Z)
+  - 
+
+* Limit the use of Unicode - Unicode runs rampant in the standard library, and
+it means that its sometimes hard to even know how to write code. 
+  - Σ - \sigma
+  - ∀ - \forall
+  - ∃ - \exists
+  - × - \times
+  - λ - \lambda

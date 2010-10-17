@@ -1,8 +1,8 @@
 {-# OPTIONS --universe-polymorphism #-}
 
-module Lib.ProductM where 
+module Lib.Product where 
 
-open import Lib.LevelM
+open import Lib.Level
 
 module Product where
 

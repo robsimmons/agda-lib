@@ -65,7 +65,6 @@ module Nat where
   plus-succ {S a} = succ-cong (plus-succ {a})
 
   plus-comm : ∀{a b} → a +n b ≡ b +n a
-
   plus-comm {Z} = symm plus-zero
   plus-comm {S a}{b} = succ-cong (plus-comm {a}) ≡≡ plus-succ {b} {a}
 

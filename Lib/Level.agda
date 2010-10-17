@@ -1,6 +1,6 @@
 {-# OPTIONS --universe-polymorphism #-}
 
-module Lib.LevelM where
+module Lib.Level where
 
 module Level where
 
@@ -23,7 +23,7 @@ module Level where
     field lower : A
 
   open Lift public
-
+  
 open Level public 
   using (Z ; S ; lift ; lower) 
   renaming (Level to LevelT)

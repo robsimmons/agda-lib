@@ -1,9 +1,9 @@
 {-# OPTIONS --universe-polymorphism #-}
 
-module Lib.SumM where 
+module Lib.Sum where 
 
-open import Lib.LevelM
-open import Lib.ProductM
+open import Lib.Level
+open import Lib.Product
 
 module Sum where
 
@@ -25,4 +25,5 @@ module Sum where
   case (Inr x) f g = g x 
 
 open Sum public
-  using (Void ; Void0 ; Sum ; Sum0 ; _+_ ; case) 
+  using (Void ; Void0 ; abort ; Inl ; Inr ; Sum0 ; _+_ ; case) 
+  renaming (Sum to SumT)

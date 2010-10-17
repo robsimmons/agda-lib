@@ -1,11 +1,12 @@
 {-# OPTIONS --universe-polymorphism #-}
 
-module Lib.Level where
+module Lib.LevelM where
 
 module Level where
+
   data Level : Set where
-      Z : Level
-      S : Level -> Level
+    Z : Level
+    S : Level -> Level
 
   max : Level -> Level -> Level
   max  Z    m      = m
@@ -17,11 +18,13 @@ module Level where
   {-# BUILTIN LEVELSUC  S   #-}
   {-# BUILTIN LEVELMAX max #-}
 
-open Level public
+  record Lift {a b} (A : Set a) : Set (max a b) where
+    constructor lift
+    field lower : A
 
-data ⟰ {l : Level} (A : Set l) : Set (S l) where
-  up : A -> ⟰ A
+  open Lift public
 
-⟱ : {l : Level} {A : Set l} -> ⟰ A -> A
-⟱ (up x) = x
+open Level public 
+  using (Z ; S ; lift ; lower) 
+  renaming (Level to LevelT)
 

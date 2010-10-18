@@ -1,7 +1,7 @@
-open import Compat
-open import Accessibility.Inductive
+open import Prelude
+open import CPL.Accessibility.Inductive
 
-module Accessibility.SuccStar (UWF : UpwardsWellFounded) where
+module CPL.Accessibility.SuccStar (UWF : UpwardsWellFounded) where
   
   open UpwardsWellFounded UWF public
 
@@ -37,26 +37,26 @@ module Accessibility.SuccStar (UWF : UpwardsWellFounded) where
   ind+ P f w = f w (ind+₂ P f w) 
 
 
-  nrefl : (w w' : W) → w ≡ w' → w ≺ w' → Void
-  nrefl w .w refl = ind (λ w → w ≺ w → Void) (λ w ih ω → ih w ω ω) w
+  nrefl : (w w' : W) → w ≡ w' → w ≺ w' → ⊥
+  nrefl w .w Refl = ind (λ w → w ≺ w → ⊥) (λ w ih ω → ih w ω ω) w
 
-  nrefl' : ∀{w w'} → w ≺ w' → w' ≡ w → Void
-  nrefl' x y = nrefl _ _ (sym y) x
+  nrefl' : ∀{w w'} → w ≺ w' → w' ≡ w → ⊥
+  nrefl' x y = nrefl _ _ (symm y) x
 
-  nrefl+ : (w w' : W) → w ≡ w' → w ≺+ w' → Void
-  nrefl+ w .w refl = ind+ (λ w → w ≺+ w → Void) (λ w ih ω → ih w ω ω) w
+  nrefl+ : (w w' : W) → w ≡ w' → w ≺+ w' → ⊥
+  nrefl+ w .w Refl = ind+ (λ w → w ≺+ w → ⊥) (λ w ih ω → ih w ω ω) w
 
-  nsym+ : (w w' : W) → w ≺+ w' → w' ≺+ w → Void
+  nsym+ : (w w' : W) → w ≺+ w' → w' ≺+ w → ⊥
   nsym+ w w' ω ω' = nrefl+ w w refl (≺+trans ω ω')
 
   _⊀_ : W → W → Set
-  w ⊀ w' = (w ≺+ w' → Void) × (w ≡ w' → Void)
+  w ⊀ w' = (w ≺+ w' → ⊥) × (w ≡ w' → ⊥)
 
-  ⊀trans₂ : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ≡ w₃ → Void
-  ⊀trans₂ ω nω refl = proj₁ nω (≺+0 ω)
+  ⊀trans₂ : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ≡ w₃ → ⊥
+  ⊀trans₂ ω nω Refl = fst nω (≺+0 ω)
 
   ⊀trans : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ⊀ w₃
-  ⊀trans ω nω = (λ ω' → proj₁ nω (≺+S ω ω')) ^ ⊀trans₂ ω nω
+  ⊀trans ω nω = (λ ω' → fst nω (≺+S ω ω')) , ⊀trans₂ ω nω
 
   ≺⊀ : ∀{w w'} → w ≺ w' → w' ⊀ w
-  ≺⊀ ω = (λ ω' → nsym+ _ _ (≺+0 ω) ω') ^ (λ eq' → nrefl _ _ (sym eq') ω)
+  ≺⊀ ω = (λ ω' → nsym+ _ _ (≺+0 ω) ω') , (λ eq' → nrefl _ _ (symm eq') ω)

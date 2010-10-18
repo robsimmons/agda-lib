@@ -4,12 +4,27 @@ and appropriate.
 
 Design goals:
 
-* Look like standard-ish Haskell
-  - Constructors and types are capitalized (Nat, S, Z)
-  - 
+* HASKELL-LIKE SYNTAX
+  - Constructors and types are capitalized (NatT, S, Z)
+  - Type families are capitialized as well (even if they are functions, see
+    Geq, Lt, etc. in the standard library)
+  - Functions computing 
 
-* Limit the use of Unicode - Unicode runs rampant in the standard library, and
-it means that its sometimes hard to even know how to write code. 
+* MANAGEMENT OF TOP-LEVEL FILES
+  - Fundamental types, such as natural nubers, products, and sums, can be
+    written as Product.Product, Nat.Nat, Id.Id, Void.Void etc. and also as 
+    ProductT, NatT, IdT, VoidT, etc.
+  - Everything else exported to the top-level can be referred to as (for 
+    the constructor Level.Z and the constructor Nat.Z are an example).
+  - The files in Lib represent all the files that might be opened in Prelude
+
+* LIMITED AND UNIFORM USE OF UNICODE 
+Unicode runs rampant in the standard library, and it means that its sometimes 
+hard to even know how to write code. While some fundamental (like products, 
+sums, truth, falsehood, and identity) are defined in their unicodey versions,
+only things that are morally types use unicode, and 
+
+  - The follo
   - Σ - \sigma
   - ∀ - \forall
   - ∃ - \exists

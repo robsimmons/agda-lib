@@ -2,12 +2,12 @@
 -- Most of the theorems proved here (and many that were not) are listed here:
 -- www.cs.princeton.edu/~rsimmons/cheatsheet.pdf
 
-module Lib.NatM where
+module Lib.Nat where
 
-import Lib.LevelM
-open import Lib.ProdM
-open import Lib.SumM
-open import Lib.IdM
+import Lib.Level
+open import Lib.Product
+open import Lib.Sum
+open import Lib.Id
 
 module Nat where
 
@@ -19,12 +19,12 @@ module Nat where
   {-# BUILTIN SUC S #-}
   {-# BUILTIN ZERO Z #-}
 
-  natrec : {P : Nat → Set} → 
-            P Z → 
-            ((n : Nat) → P n → P (S n)) → 
-            (n : Nat) → P n
-  natrec zc sc Z = zc
-  natrec zc sc (S n) = sc n (natrec zc sc n)
+  fold : {P : Nat → Set} → 
+         P Z → 
+         ((n : Nat) → P n → P (S n)) → 
+         (n : Nat) → P n
+  fold zc sc Z = zc
+  fold zc sc (S n) = sc n (fold zc sc n)
      
   _+n_ : Nat → Nat → Nat
   Z +n b = b
@@ -162,8 +162,8 @@ module Nat where
   times-cong2 : ∀{a b₁ b₂} → b₁ ≡ b₂ → a ×n b₁ ≡ a ×n b₂
   times-cong2 Refl = refl
 
-  times-elim1 : ∀{a b c} → S a ×n b ≡ S a ×n c → b ≡ c
-  times-elim2 : ∀{a b c} → b ×n S a ≡ c ×n S a → b ≡ c
+  -- times-elim1 : ∀{a b c} → S a ×n b ≡ S a ×n c → b ≡ c
+  -- times-elim2 : ∀{a b c} → b ×n S a ≡ c ×n S a → b ≡ c
 
   {- Distributivity -}
 
@@ -188,23 +188,28 @@ module Nat where
   {- Order -}
 
   _<_ : Nat → Nat → Set
-  n < Z = Void
-  Z < (S m) = Unit
+  n < Z = VoidT
+  Z < (S m) = UnitT
   (S n) < (S m) = n < m
+  Lt = _<_
 
   _≤_ : Nat → Nat → Set
-  Z ≤ n = Unit
-  (S n) ≤ Z = Void
+  Z ≤ n = UnitT
+  (S n) ≤ Z = VoidT
   (S n) ≤ (S m) = n ≤ m
+  Leq = _≤_
 
   _>_ : Nat → Nat → Set
   n > m = m < n
+  Gt = _>_
 
   _≥_ : Nat → Nat → Set
   n ≥ m = m ≤ n
+  Geq = _≥_
 
   _!≡_ : Nat → Nat → Set
   n !≡ m = (n < m) + (n > m)
+  Neq = _!≡_
 
   {- Contradiction -}
 
@@ -257,3 +262,13 @@ module Nat where
   -- geq=>leq=>eq : ∀{a b} → a ≥ b → a ≤ b → a ≡ b
   -- leq=>geq=>eq : ∀{a b} → a ≤ b → a ≥ b → a ≡ b
 
+  {- Equivalency -}
+
+  {- Working on both sides of an inequality -}
+  
+  {- Transitivity for inequality -}
+
+
+open Nat public
+  using (Z ; S ; _+n_ ; _×n_ ; _<_ ; _>_ ; _≤_ ; _≥_)
+  renaming (Nat to NatT)

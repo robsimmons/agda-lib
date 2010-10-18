@@ -1,7 +1,7 @@
-open import Compat
-open import Accessibility.Inductive
+open import Prelude
+open import CPL.Accessibility.Inductive
 
-module Accessibility.IndexedList (UWF : UpwardsWellFounded) where
+module CPL.Accessibility.IndexedList (UWF : UpwardsWellFounded) where
 
   open SuccStar UWF
 

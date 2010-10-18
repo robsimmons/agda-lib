@@ -1,11 +1,11 @@
 -- Accessibility relations on 5-element sets
 -- Robert J. Simmons
 
-open import Compat
-open import Accessibility.Inductive
-import Accessibility.SuccStar
+open import Prelude
+open import CPL.Accessibility.Inductive
+import CPL.Accessibility.SuccStar
 
-module Accessibility.Five where
+module CPL.Accessibility.Five where
 
   data Five : Set where
     α : Five

@@ -1,6 +1,6 @@
-open import Compat
+open import Prelude
 
-module Accessibility.Inductive where
+module CPL.Accessibility.Inductive where
 
   record UpwardsWellFounded : Set1 where
     field
@@ -48,16 +48,16 @@ module Accessibility.Inductive where
     ind+ P f w = f w (ind+₂ P f w) 
 
     -- Antireflexivity, antisymmetry
-    nrefl : (w w' : W) → w ≡ w' → w ≺ w' → Void
-    nrefl w .w refl = ind (λ w → w ≺ w → Void) (λ w ih ω → ih w ω ω) w
+    nrefl : (w w' : W) → w ≡ w' → w ≺ w' → ⊥
+    nrefl w .w Refl = ind (λ w → w ≺ w → ⊥) (λ w ih ω → ih w ω ω) w
 
-    nrefl' : ∀{w w'} → w ≺ w' → w' ≡ w → Void
-    nrefl' x y = nrefl _ _ (sym y) x
+    nrefl' : ∀{w w'} → w ≺ w' → w' ≡ w → ⊥
+    nrefl' x y = nrefl _ _ (symm y) x
 
-    nrefl+ : (w w' : W) → w ≡ w' → w ≺+ w' → Void
-    nrefl+ w .w refl = ind+ (λ w → w ≺+ w → Void) (λ w ih ω → ih w ω ω) w
+    nrefl+ : (w w' : W) → w ≡ w' → w ≺+ w' → ⊥
+    nrefl+ w .w Refl = ind+ (λ w → w ≺+ w → ⊥) (λ w ih ω → ih w ω ω) w
 
-    nsym+ : (w w' : W) → w ≺+ w' → w' ≺+ w → Void
+    nsym+ : (w w' : W) → w ≺+ w' → w' ≺+ w → ⊥
     nsym+ w w' ω ω' = nrefl+ w w refl (≺+trans ω ω')
 
     -- Reflexive, transitive closure
@@ -67,10 +67,10 @@ module Accessibility.Inductive where
 
     -- Disconnectedness
     _⊀_ : W → W → Set
-    w ⊀ w' = w ≺* w' → Void
+    w ⊀ w' = w ≺* w' → ⊥
 
-    ⊀trans₂ : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ≡ w₃ → Void
-    ⊀trans₂ ω nω refl = nω (≺*+ (≺+0 ω))
+    ⊀trans₂ : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ≡ w₃ → ⊥
+    ⊀trans₂ ω nω Refl = nω (≺*+ (≺+0 ω))
 
     ⊀trans : ∀{w₁ w₂ w₃} → w₁ ≺ w₂ → w₁ ⊀ w₃ → w₂ ⊀ w₃
     ⊀trans ω nω ≺*≡ = nω (≺*+ (≺+0 ω))

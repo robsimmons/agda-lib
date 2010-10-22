@@ -17,16 +17,15 @@ module Product where
   Unit0 = UnitT {Z}
   
   {- This is not yet a record, because you can't pattern match records -}
-  data Σ {a b} (A : Set a) (B : A → Set b) : Set (Level.max a b) where
-    _,_ : (p1 : A) (p2 : B p1) → Σ A B
+  record Σ {a b} (A : Set a) (B : A → Set b) : Set (Level.max a b) where
+    constructor _,_
+    field
+      fst : A 
+      snd : B fst
+  open Σ public
+
   Product : ∀{a b} (A : Set a) (B : A → Set b) → Set (Level.max a b)
   Product A B = Σ A B
-
-  fst : ∀{a b} {A : Set a} {B : A → Set b} (p : Σ A B) → A
-  fst (p1 , p2) = p1
-
-  snd : ∀{a b} {A : Set a} {B : A → Set b} (p : Σ A B) → B (fst p)
-  snd (p1 , p2) = p2
 
   syntax Σ A (λ x → B) = Σ[ x ∶ A ] B
  
@@ -54,7 +53,6 @@ module Product where
      → y1 ≡ y2 
      → (x , y1) ≡ (x , y2)
   pair-cong2 Refl = Refl
-
 
 open Product public
   using (⊤ ; UnitT ; <> ; Unit0 ; 

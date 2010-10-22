@@ -3,6 +3,7 @@
 module Lib.Product where 
 
 open import Lib.Level
+open import Lib.Id
 
 module Product where
 
@@ -37,6 +38,23 @@ module Product where
 
   ,_ : ∀{a b} {A : Set a} {B : A → Set b} {x} → B x → ∃ B
   , snd = _ , snd
+
+  pair-cong : ∀{a b} {A : Set a} {B : Set b} {x1 x2 : A} {y1 y2 : B}
+     → x1 ≡ x2 
+     → y1 ≡ y2 
+     → (x1 , y1) ≡ (x2 , y2)
+  pair-cong Refl Refl = Refl
+
+  pair-cong1 : ∀{a b} {A : Set a} {B : Set b} {x1 x2 : A} {y : B}
+     → x1 ≡ x2 
+     → (x1 , y) ≡ (x2 , y)
+  pair-cong1 Refl = Refl
+
+  pair-cong2 : ∀{a b} {A : Set a} {B : Set b} {x : A} {y1 y2 : B}
+     → y1 ≡ y2 
+     → (x , y1) ≡ (x , y2)
+  pair-cong2 Refl = Refl
+
 
 open Product public
   using (⊤ ; UnitT ; <> ; Unit0 ; 

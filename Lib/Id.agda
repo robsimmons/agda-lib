@@ -28,5 +28,31 @@ module Id where
   _≡≡_ : ∀{l} {A : Set l} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
   Refl ≡≡ Refl = Refl
 
+  resp : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
+     → a1 ≡ a2 
+     → p a1 ≡ p a2
+  resp _ Refl = refl
+
+  resp1 : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
+     → a1 ≡ a2 
+     → p a1 ≡ p a2
+  resp1 _ Refl = refl
+
+  resp2 : ∀{a b c} {A : Set a} {B : Set b} {C : Set c} 
+     → (p : A → B → C) → {a1 a2 : A} {b1 b2 : B} 
+     → a1 ≡ a2 
+     → b1 ≡ b2 
+     → p a1 b1 ≡ p a2 b2
+  resp2 _ Refl Refl = refl
+
+  resp3 : ∀{a b c d} {A : Set a} {B : Set b} {C : Set c} {D : Set d}
+     → (p : A → B → C → D) → {a1 a2 : A} {b1 b2 : B} {c1 c2 : C} 
+     → a1 ≡ a2 
+     → b1 ≡ b2 
+     → c1 ≡ c2 
+     → p a1 b1 c1 ≡ p a2 b2 c2
+  resp3 _ Refl Refl Refl = refl
+
 open Id public 
-  using (IdT ; Refl ; _≡_ ; refl ; symm ; trans ; _≡≡_)
+  using (IdT ; Refl ; _≡_ ; refl ; symm ; trans ; _≡≡_ 
+         ; resp ; resp1 ; resp2 ; resp3)

@@ -4,6 +4,7 @@
 module Lib.List where 
 
 open import Lib.Id
+open import Lib.Product
 
 module List where
 
@@ -20,19 +21,35 @@ module List where
   [] ++ ys = ys
   (x :: xs) ++ ys = x :: (xs ++ ys)
 
-  append-cong2 : ∀{a} {A : Set a} {a : A} {as bs : List A} 
+  cons-cong : ∀{a} {A : Set a} {a b : A} {as bs : List A} 
+     → a ≡ b 
+     → as ≡ bs 
+     → (a :: as) ≡ (b :: bs)
+  cons-cong Refl Refl = refl
+
+  cons-cong1 : ∀{a} {A : Set a} {a b : A} {as : List A} 
+     → a ≡ b 
+     → (a :: as) ≡ (b :: as)
+  cons-cong1 Refl = refl
+
+  cons-cong2 : ∀{a} {A : Set a} {a : A} {as bs : List A} 
      → as ≡ bs 
      → (a :: as) ≡ (a :: bs)
-  append-cong2 Refl = refl
+  cons-cong2 Refl = refl
+
+  cons-elim : ∀{a} {A : Set a} {a b : A} {as bs : List A} 
+     → (a :: as) ≡ (b :: bs)
+     → (a ≡ b) × (as ≡ bs)
+  cons-elim Refl = refl , refl
 
   append-nil : ∀{a} {A : Set a} {as : List A} → as ++ [] ≡ as
   append-nil {as = []} = refl
-  append-nil {as = a :: as} = append-cong2 (append-nil {as = as})
+  append-nil {as = a :: as} = cons-cong2 (append-nil {as = as})
 
   assoc-append : ∀{a} {A : Set a} {as bs cs : List A}
      → (as ++ (bs ++ cs)) ≡ ((as ++ bs) ++ cs)
   assoc-append {as = []} = refl
-  assoc-append {as = a :: as} = append-cong2 (assoc-append {as = as})
+  assoc-append {as = a :: as} = cons-cong2 (assoc-append {as = as})
   
   map : ∀{a} {A B : Set a} → (A → B) → List A → List B
   map f [] = []

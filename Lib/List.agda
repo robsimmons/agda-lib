@@ -50,6 +50,11 @@ module List where
      → (as ++ (bs ++ cs)) ≡ ((as ++ bs) ++ cs)
   assoc-append {as = []} = refl
   assoc-append {as = a :: as} = cons-cong2 (assoc-append {as = as})
+
+  append-assoc : ∀{a} {A : Set a} {as bs cs : List A}
+     → ((as ++ bs) ++ cs) ≡ (as ++ (bs ++ cs)) 
+  append-assoc {as = []} = refl
+  append-assoc {as = a :: as} = cons-cong2 (append-assoc {as = as})
   
   map : ∀{a} {A B : Set a} → (A → B) → List A → List B
   map f [] = []

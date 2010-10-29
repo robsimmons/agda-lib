@@ -39,6 +39,6 @@ module List where
   map f (x :: xs) = f x :: map f xs
 
 open List public
-  using ([] ; _::_ ; _++_ )
+  using ([] ; [_] ; _::_ ; _++_ )
   renaming (List to ListT)
 

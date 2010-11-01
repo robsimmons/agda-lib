@@ -13,3 +13,24 @@ module PiList where
 open PiList public
   using ([] ; _::_)
   renaming (PiList to PiListT)
+
+
+data In {a} {A : Set a} {P : A → Set a} : {x : A} {xs : ListT A} → P x → PiListT P xs → Set a where
+  Z : ∀{x xs} {px : P x} {pxs : PiListT P xs} → In px (px :: pxs)
+  S : ∀{x y xs} {px : P x} {py : P y} {pxs : PiListT P xs}
+     (n : In px pxs)
+     → In px (py :: pxs)
+
+Sub : ∀{a} {A : Set a} {xs ys : ListT A} {P : A → Set a} 
+   → PiListT P xs 
+   → PiListT P ys 
+   → Set a
+Sub {P = P} pxs pys = {x : _} {px : P x} → In px pxs → In px pys
+
+{-
+_⊆_ : ∀{a} {A : Set a} → List A → List A → Set a
+xs ⊆ ys = ∀{x} → x ∈ xs → x ∈ ys
+
+Sub : ∀{a} {A : Set a} → List A → List A → Set a
+Sub xs ys = xs ⊆ ys
+-}

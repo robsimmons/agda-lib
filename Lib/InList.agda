@@ -11,7 +11,7 @@ module InList where
   infixr 4 _∈_
 
   data _∈_ {a} {A : Set a} : A → List A → Set a where
-    Z : ∀{x xs} → x ∈ xs 
+    Z : ∀{x xs} → x ∈ x :: xs 
     S : ∀{x y xs} (n : x ∈ xs) → x ∈ y :: xs
   In : ∀{a} {A : Set a} → A → List A → Set a
   In x xs = x ∈ xs

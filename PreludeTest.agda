@@ -37,3 +37,11 @@ module PreludeTest where
   i : {A B : Set} → A + B → B + A
   i (Inl x) = Inr x
   i (Inr x) = Inl x
+
+  append : List.List Nat.Nat → List.List Nat.Nat → List.List Nat.Nat
+  append [] ys = ys
+  append (x :: xs) ys = x :: append xs ys
+
+  inapp : ∀{x} (xs ys : ListT NatT) → x ∈ ys → x ∈ append xs ys
+  inapp [] ys n = n
+  inapp (x :: xs) ys n = S (inapp xs ys n)

@@ -8,7 +8,14 @@ module PiList where
 
   data PiList {a} {A : Set a} (P : A → Set a) : ListT A → Set a where
     [] : PiList P []
-    _::_ : ∀{x xs} → (P x) → PiList P xs → PiList P (x :: xs)
+    _::_ : ∀{x xs} (px : P x) (pxs : PiList P xs) → PiList P (x :: xs)
+ 
+  pull : ∀{a} {A : Set a} {x : A} {xs : ListT A} {P : A → Set a} 
+     → x ∈ xs 
+     → PiList P xs 
+     → P x
+  pull Z (px :: pxs) = px
+  pull (S n) (px :: pxs) = pull n pxs
     
 open PiList public
   using ([] ; _::_)

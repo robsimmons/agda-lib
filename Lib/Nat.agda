@@ -84,29 +84,29 @@ module NAT where
    plus-cong : ∀{a₁ a₂ b₁ b₂} → a₁ ≡ a₂ → b₁ ≡ b₂ → a₁ +n b₁ ≡ a₂ +n b₂
    plus-cong Refl Refl = refl 
 
-   plus-cong1 : ∀{a₁ a₂ b} → a₁ ≡ a₂ → a₁ +n b ≡ a₂ +n b
-   plus-cong1 Refl = refl
+   plus-congl : ∀{a₁ a₂ b} → a₁ ≡ a₂ → a₁ +n b ≡ a₂ +n b
+   plus-congl Refl = refl
 
-   plus-cong2 : ∀{a b₁ b₂} → b₁ ≡ b₂ → a +n b₁ ≡ a +n b₂
-   plus-cong2 Refl = refl
+   plus-congr : ∀{a b₁ b₂} → b₁ ≡ b₂ → a +n b₁ ≡ a +n b₂
+   plus-congr Refl = refl
 
-   plus-elim1 : ∀{a b c} → a +n b ≡ a +n c → b ≡ c
-   plus-elim1 {Z} Refl = refl
-   plus-elim1 {S a} eq with plus-elim1 {a} (succ-elim eq) 
+   plus-eliml : ∀{a b c} → a +n b ≡ a +n c → b ≡ c
+   plus-eliml {Z} Refl = refl
+   plus-eliml {S a} eq with plus-eliml {a} (succ-elim eq) 
    ... | Refl = refl
 
-   plus-elim2 : ∀{a b c} → a +n c ≡ b +n c → a ≡ b
-   plus-elim2 {a}{b}{c} eq =
-      plus-elim1 {c}{a}{b} (comm-plus {a}{c} ≡≡ eq ≡≡ comm-plus {c}{b})
+   plus-elimr : ∀{a b c} → a +n c ≡ b +n c → a ≡ b
+   plus-elimr {a}{b}{c} eq =
+      plus-eliml {c}{a}{b} (comm-plus {a}{c} ≡≡ eq ≡≡ comm-plus {c}{b})
 
    {- Distributivity (basic) -}
 
    distrib : ∀{a b c} → (a +n b) ×n c ≡ (a ×n c) +n (b ×n c)
    distrib {Z} = refl
    distrib {S a}{b}{c} = 
-      plus-cong1 {b = c} (distrib {a}{b}{c})
+      plus-congl {b = c} (distrib {a}{b}{c})
       ≡≡ plus-assoc {a ×n c}{b ×n c}{c}
-      ≡≡ plus-cong2 {a ×n c} (plus-comm {b ×n c} {c})
+      ≡≡ plus-congr {a ×n c} (plus-comm {b ×n c} {c})
       ≡≡ assoc-plus {a ×n c}{c}{b ×n c}
 
    {- Multiplication (simplification) -}
@@ -116,7 +116,7 @@ module NAT where
 
    times-zero : ∀{a} → a ×n 0 ≡ 0
    times-zero {Z} = refl
-   times-zero {S a} = plus-cong1 (times-zero {a})
+   times-zero {S a} = plus-congl (times-zero {a})
 
    succ-times : ∀{a b} → S a ×n b ≡ (a ×n b) +n b
    succ-times = refl
@@ -124,7 +124,7 @@ module NAT where
    times-succ : ∀{a b} → a ×n S b ≡ a +n (a ×n b)
    times-succ {Z} = refl
    times-succ {S a}{b} = 
-      plus-cong1 {b = S b} (times-succ {a}{b})
+      plus-congl {b = S b} (times-succ {a}{b})
       ≡≡ succ-plus {a +n (a ×n b)} {b}
       ≡≡ succ-cong (plus-assoc {a}{a ×n b}{b})
 
@@ -133,7 +133,7 @@ module NAT where
 
    times-one : ∀{a} → a ×n 1 ≡ a
    times-one {a} = 
-      times-succ {a} ≡≡ plus-cong2 {a} (times-zero {a}) ≡≡ plus-zero
+      times-succ {a} ≡≡ plus-congr {a} (times-zero {a}) ≡≡ plus-zero
 
    {- Multimplication (rearrangement) -}
 
@@ -141,7 +141,7 @@ module NAT where
    times-comm {Z}{b} = symm (times-zero {b})
    times-comm {S a}{b} = 
       plus-comm {a ×n b}{b} 
-      ≡≡ plus-cong2 {b} (times-comm {a}{b}) 
+      ≡≡ plus-congr {b} (times-comm {a}{b}) 
       ≡≡ symm (times-succ {b}{a})
 
    comm-times : ∀{a b} → b ×n a ≡ a ×n b
@@ -151,7 +151,7 @@ module NAT where
    times-assoc {Z} = refl
    times-assoc {S a}{b}{c} = 
       distrib {a ×n b}{b}{c}
-      ≡≡ plus-cong1 {b = b ×n c} (times-assoc {a}{b}{c})
+      ≡≡ plus-congl {b = b ×n c} (times-assoc {a}{b}{c})
 
    assoc-times : ∀{a b c} → a ×n (b ×n c) ≡ (a ×n b) ×n c
    assoc-times {a}{b}{c} = symm (times-assoc {a}{b}{c})
@@ -161,11 +161,11 @@ module NAT where
    times-cong : ∀{a₁ a₂ b₁ b₂} → a₁ ≡ a₂ → b₁ ≡ b₂ → a₁ ×n b₁ ≡ a₂ ×n b₂
    times-cong Refl Refl = refl
 
-   times-cong1 : ∀{a₁ a₂ b} → a₁ ≡ a₂ → a₁ ×n b ≡ a₂ ×n b
-   times-cong1 Refl = refl
+   times-congl : ∀{a₁ a₂ b} → a₁ ≡ a₂ → a₁ ×n b ≡ a₂ ×n b
+   times-congl Refl = refl
 
-   times-cong2 : ∀{a b₁ b₂} → b₁ ≡ b₂ → a ×n b₁ ≡ a ×n b₂
-   times-cong2 Refl = refl
+   times-congr : ∀{a b₁ b₂} → b₁ ≡ b₂ → a ×n b₁ ≡ a ×n b₂
+   times-congr Refl = refl
 
    -- times-elim1 : ∀{a b c} → S a ×n b ≡ S a ×n c → b ≡ c
    -- times-elim2 : ∀{a b c} → b ×n S a ≡ c ×n S a → b ≡ c

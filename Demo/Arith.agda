@@ -11,7 +11,7 @@ seven gt = gt
 +comm n m = NAT.plus-comm {n}{m}
 
 eq1 : (n m p : Nat) → (n +n (m +n p)) ≡ ((m +n n) +n p)
-eq1 n m p = NAT.assoc-plus {n}{m}{p} ≡≡ NAT.plus-cong1 (+comm n m)
+eq1 n m p = NAT.assoc-plus {n}{m}{p} ≡≡ NAT.plus-congl (+comm n m)
   
 append : List Nat → List Nat → List Nat
 append [] ys = ys

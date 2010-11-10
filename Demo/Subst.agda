@@ -1,4 +1,4 @@
-{- Creating a substitution as a LIST.ALL list -}
+{- Creating a simultaneous substitution as a LIST.ALL list -}
 
 module Demo.Subst where
 
@@ -31,7 +31,7 @@ wken θ z = z
 wken θ (s e) = s (wken θ e)
 wken θ (if e ez es) = if (wken θ e) (wken θ ez) (wken θ es)
 wken θ (fix e) = fix (wken θ e)
-wken θ (lam e) = lam (wken (λ n → LIST.case-cons (λ x → x ∈ _) n Z (S o θ)) e)
+wken θ (lam e) = lam (wken (LIST.SET.sub-cons-congr θ) e)
 wken θ (app e1 e2) = app (wken θ e1) (wken θ e2)
 
 subst : ∀{Γ Δ t} → Subst Γ Δ → Term Γ t → Term Δ t
@@ -41,5 +41,5 @@ subst θ (s e) = s (subst θ e)
 subst θ (if e ez es) = if (subst θ e) (subst θ ez) (subst θ es)
 subst θ (fix e) = fix (subst θ e)
 subst θ (lam e) = lam (subst 
-   (λ n → LIST.case-cons (Term _) n (var Z) (wken LIST.set-sub-in o θ)) e)
+   (λ n → LIST.case-cons (Term _) n (var Z) (wken LIST.SET.sub-cons o θ)) e)
 subst θ (app e1 e2) = app (subst θ e1) (subst θ e2)

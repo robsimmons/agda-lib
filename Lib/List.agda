@@ -1,9 +1,9 @@
 
 module Lib.List where
 
-module List where
+module LIST where
   open import Lib.List.Core public
   open import Lib.List.In public
   
-open List public
+open LIST public
   using (List ; [] ; [_] ; _::_ ; _++_ ; _∈_ ; Z ; S)

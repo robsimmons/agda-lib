@@ -1,10 +1,9 @@
 {-# OPTIONS --universe-polymorphism #-}
 
-module Lib.ListCore where 
+module Lib.List.Core where 
 
 open import Lib.Id
 open import Lib.Product
-
 
 infixr 5 _::_
 infixr 5 _++_

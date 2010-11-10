@@ -12,8 +12,13 @@ module Prelude where
 
   {- Equality -}
   open import Lib.Id public
+
+  {- Non-value-carrying datatypes -}
+  open import Lib.Bool public
   open import Lib.Nat public
 
-  {- Data structures -}
-  open import Lib.List public
-  open import Lib.PiList public 
+  {- Value-carrying datatypes -}
+  open import Lib.Maybe public
+  -- open import Lib.List public
+  -- open import Lib.PiList public 
+

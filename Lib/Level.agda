@@ -2,14 +2,14 @@
 
 module Lib.Level where
 
-module Level where
+module LEVEL where
 
   data Level : Set where
     Z : Level
     S : Level -> Level
 
   max : Level -> Level -> Level
-  max  Z    m      = m
+  max  Z     m     = m
   max (S n)  Z     = S n
   max (S n) (S m)  = S (max n m)
 
@@ -24,7 +24,6 @@ module Level where
 
   open Lift public
   
-open Level public 
-  using (Z ; S ; lift ; lower) 
-  renaming (Level to LevelT)
+open LEVEL public 
+  using (Z ; S ; lift ; lower ; Level) 
 

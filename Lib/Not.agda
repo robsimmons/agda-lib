@@ -4,11 +4,15 @@ module Lib.Not where
 
 open import Lib.Sum
 
-Not : ∀ {a} → Set a → Set a
-Not A = A → ⊥
+module NOT where
 
-¬ : ∀ {a} → Set a → Set a
-¬ A = A → ⊥ 
+   Not : ∀ {a} → Set a → Set a
+   Not A = A → ⊥
 
-Decidable : ∀ {a} → Set a → Set a
-Decidable A = A + ¬ A
+   ¬ : ∀ {a} → Set a → Set a
+   ¬ = Not
+
+   Decidable : ∀ {a} → Set a → Set a
+   Decidable A = A + ¬ A
+
+open NOT public

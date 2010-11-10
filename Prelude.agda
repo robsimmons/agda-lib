@@ -1,5 +1,3 @@
-
-
 module Prelude where
 
   open import Lib.Level public
@@ -17,8 +15,11 @@ module Prelude where
   open import Lib.Bool public
   open import Lib.Nat public
 
+  {- Functors -}
+  open import Lib.Membership public
+
   {- Value-carrying datatypes -}
   open import Lib.Maybe public
-  -- open import Lib.List public
+  open import Lib.List public
   -- open import Lib.PiList public 
 

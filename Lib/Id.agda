@@ -28,6 +28,9 @@ module ID where
    _≡≡_ : ∀{a} {A : Set a} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
    Refl ≡≡ Refl = Refl
 
+   coe : ∀{a} {A : Set a} {B : Set a} -> A ≡ B -> A -> B
+   coe Refl x = x
+
    resp : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
       → a1 ≡ a2 
       → p a1 ≡ p a2
@@ -56,4 +59,4 @@ module ID where
 open ID public 
    using 
      (Id ; Refl ; _≡_ ; refl ; symm ; trans ; _≡≡_ ; 
-      resp ; resp1 ; resp2 ; resp3)
+      coe ; resp ; resp1 ; resp2 ; resp3)

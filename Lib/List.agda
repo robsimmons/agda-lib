@@ -2,10 +2,8 @@
 module Lib.List where
 
 module List where
-  open import Lib.ListCore public
-  open import Lib.InList public
+  open import Lib.List.Core public
+  open import Lib.List.In public
   
 open List public
-  using ([] ; [_] ; _::_ ; _++_ ; _∈_ ; _⊆_ ; Z ; S)
-  renaming (List to ListT)
-
+  using (List ; [] ; [_] ; _::_ ; _++_ ; _∈_ ; Z ; S)

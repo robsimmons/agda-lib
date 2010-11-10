@@ -39,12 +39,12 @@ split-cons (S n) = Inr n
 
 case-cons : ∀{a b} {A : Set a} {x y : A} {ys : List A} 
    → (P : A → Set b)
-   → x ∈ y :: ys
    → P y
    → (∀{y} → y ∈ ys → P y)
+   → x ∈ y :: ys
    → P x
-case-cons P Z ez es = ez
-case-cons P (S n) ez es = es n
+case-cons P ez es Z = ez
+case-cons P ez es (S n) = es n
 
 split-append : ∀{a} {A : Set a} {x : A} {xs ys : List A} 
    → x ∈ (xs ++ ys)

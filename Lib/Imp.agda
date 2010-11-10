@@ -22,7 +22,10 @@ module IMP where
    id : ∀{a} (A : Set a) → A → A
    id A x = x
 
-   _o_ : ∀{a} {A B C : Set a} → Imp B C → Imp A B → Imp A C
+   _o_ : ∀{a b c} {A : Set a} {B : Set b} {C : Set c}
+      → Imp B C 
+      → Imp A B
+      → Imp A C
    f o g = λ x → f (g x)
 
    neg-or : ∀{a} {A B : Set a} → ¬ (A + B) → ¬ A × ¬ B

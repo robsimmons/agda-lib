@@ -41,5 +41,5 @@ subst θ (s e) = s (subst θ e)
 subst θ (if e ez es) = if (subst θ e) (subst θ ez) (subst θ es)
 subst θ (fix e) = fix (subst θ e)
 subst θ (lam e) = lam (subst 
-   (λ n → LIST.case-cons (Term _) n (var Z) (wken LIST.SET.sub-cons o θ)) e)
+   (LIST.case-cons (Term _) (var Z) (wken LIST.SET.sub-cons o θ)) e)
 subst θ (app e1 e2) = app (subst θ e1) (subst θ e2)

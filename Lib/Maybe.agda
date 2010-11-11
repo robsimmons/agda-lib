@@ -50,4 +50,4 @@ module MAYBE where
    check-bind {x = Inr <>} () _ _
 
 open MAYBE public
-   using (Maybe ; valOf)
+   using (Maybe ; valOf ; isSome)

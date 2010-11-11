@@ -5,6 +5,7 @@ module Lib.Bool where
 open import Lib.Level
 open import Lib.Product
 open import Lib.Sum
+open import Lib.Id
 open import Lib.Imp
 
 module BOOL where
@@ -30,6 +31,10 @@ module BOOL where
    Check : Bool → Set
    Check True = Unit
    Check False = Void
+
+   options : (b : Bool) → (b ≡ True) + (b ≡ False)
+   options True = Inl refl
+   options False = Inr refl
 
 open BOOL public 
    using (Bool ; True ; False ; if_/_then_else ; _×b_ ; _+b_ ; Check)

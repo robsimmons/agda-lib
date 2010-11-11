@@ -59,6 +59,20 @@ module SET where
    sub-cons : ∀{a} {A : Set a} {x : A} {xs : List A} → Sub xs (x :: xs)
    sub-cons = S
 
+   sub-wken : ∀{a} {A : Set a} {x : A} {xs : List A} → Sub xs (x :: xs)
+   sub-wken = S
+
+   sub-exch : ∀{a} {A : Set a} {x y : A} {xs : List A} 
+       → Sub (x :: y :: xs) (y :: x :: xs)
+   sub-exch Z = S Z
+   sub-exch (S Z) = Z
+   sub-exch (S (S n)) = S (S n)
+
+   sub-wkex : ∀{a} {A : Set a} {x y : A} {xs : List A} 
+       → Sub (x :: xs) (x :: y :: xs)
+   sub-wkex Z = Z
+   sub-wkex (S n) = S (S n)
+
    sub-appendr : ∀{a} {A : Set a} 
       → (xs : List A)
       → (ys : List A)

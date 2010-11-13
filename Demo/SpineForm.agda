@@ -1,12 +1,8 @@
-{- The canonical forms of the simply typed lambda calculus -}
+{- The canonical forms of the simply typed lambda calculus in spine form -}
 
 module Demo.SpineForm where
 
 open import Prelude
-
-postulate String : Set
-{-# BUILTIN STRING String #-}
-{-# COMPILED_TYPE String String #-}
 
 infixr 5 _⊃_
 data Type : Set where
@@ -86,66 +82,89 @@ module SPINEFORM (sig : String → Maybe Type) where
       →sp (n · sp) = , snd (→tm n) · snd (→sp sp)
     
    {- Weakening in and out of the metric -}
-   mutual
-      wkN : ∀{Γ Δ A} → Γ ⊆ Δ → Term Γ A → Term Δ A
+   wkM : ∀{Γ Δ A m} → Γ ⊆ Δ → MTerm Γ A m → MTerm Δ A m
+   wkM = wkN 
+    where
+     mutual 
+      wkN : ∀{Γ Δ A m} → Γ ⊆ Δ → MTerm Γ A m → MTerm Δ A m
       wkN θ (var n · sp) = var (θ n) · wkS θ sp
       wkN θ (con c · sp) = con c · wkS θ sp
       wkN θ (Λ n) = Λ (wkN (LIST.SET.sub-cons-congr θ) n)
 
-      wkS : ∀{Γ Δ A C} → Γ ⊆ Δ → Spine Γ A C → Spine Δ A C
+      wkS : ∀{Γ Δ A C m} → Γ ⊆ Δ → MSpine Γ A C m → MSpine Δ A C m
       wkS θ ⟨⟩ = ⟨⟩
       wkS θ (n · sp) = wkN θ n · wkS θ sp
 
-   mutual
-      wkMN : ∀{Γ Δ A m} → Γ ⊆ Δ → MTerm Γ A m → MTerm Δ A m
-      wkMN θ (var n · sp) = var (θ n) · wkMS θ sp
-      wkMN θ (con c · sp) = con c · wkMS θ sp
-      wkMN θ (Λ n) = Λ (wkMN (LIST.SET.sub-cons-congr θ) n)
+   wk : ∀{Γ Δ A} → Γ ⊆ Δ → Term Γ A → Term Δ A 
+   wk θ n = tm→ (wkM θ (snd (→tm n)))
 
-      wkMS : ∀{Γ Δ A C m} → Γ ⊆ Δ → MSpine Γ A C m → MSpine Δ A C m
-      wkMS θ ⟨⟩ = ⟨⟩
-      wkMS θ (n · sp) = wkMN θ n · wkMS θ sp
-  
    {- Specific instances of weakening -} 
    wken : ∀{Γ A C} → Term Γ C → Term (A :: Γ) C
-   wken = wkN LIST.SET.sub-wken
+   wken = wk LIST.SET.sub-wken
 
    exch : ∀{Γ A B C} → Term (A :: B :: Γ) C → Term (B :: A :: Γ) C
-   exch = wkN LIST.SET.sub-exch
+   exch = wk LIST.SET.sub-exch
 
    wkex : ∀{Γ A B C} → Term (A :: Γ) C → Term (A :: B :: Γ) C
-   wkex = wkN LIST.SET.sub-wkex
+   wkex = wk LIST.SET.sub-wkex
 
    wkenM : ∀{Γ A C m} → MTerm Γ C m → MTerm (A :: Γ) C m
-   wkenM = wkMN LIST.SET.sub-wken
+   wkenM = wkM LIST.SET.sub-wken
 
    exchM : ∀{Γ A B C m} → MTerm (A :: B :: Γ) C m → MTerm (B :: A :: Γ) C m
-   exchM = wkMN LIST.SET.sub-exch
+   exchM = wkM LIST.SET.sub-exch
 
    wkexM : ∀{Γ A B C m} → MTerm (A :: Γ) C m → MTerm (A :: B :: Γ) C m
-   wkexM = wkMN LIST.SET.sub-wkex
+   wkexM = wkM LIST.SET.sub-wkex
    
    {- Substitution -}
-   mutual 
-      substM : ∀{Γ A C m} → Term Γ A → MTerm (A :: Γ) C m → Term Γ C
-      substM n1 (var Z · sp) = hred n1 (substSP n1 sp)
-      substM n1 (var (S n) · sp) = var n · substSP n1 sp
-      substM n1 (con c · sp) = con c · substSP n1 sp
-      substM n1 (Λ n) = Λ (substM (wken n1) (exchM n)) 
+   substM : ∀{Γ A C m} → Term Γ A → MTerm (A :: Γ) C m → Term Γ C
+   substM = substN 
+    where
+     mutual 
+      substN : ∀{Γ A C m} → Term Γ A → MTerm (A :: Γ) C m → Term Γ C
+      substN n1 (var Z · sp) = hred n1 (substS n1 sp)
+      substN n1 (var (S n) · sp) = var n · substS n1 sp
+      substN n1 (con c · sp) = con c · substS n1 sp
+      substN n1 (Λ n) = Λ (substN (wken n1) (exchM n)) 
 
-      substSP : ∀{Γ A B C m} → Term Γ A → MSpine (A :: Γ) B C m → Spine Γ B C
-      substSP n1 ⟨⟩ = ⟨⟩
-      substSP n1 (n · sp) = substM n1 n · substSP n1 sp
+      substS : ∀{Γ A B C m} → Term Γ A → MSpine (A :: Γ) B C m → Spine Γ B C
+      substS n1 ⟨⟩ = ⟨⟩
+      substS n1 (n · sp) = substN n1 n · substS n1 sp
 
       hred :  ∀{Γ A Q} 
          → Term Γ A 
          → Spine Γ A (con Q) 
          → Term Γ (con Q)
       hred (x · sp) ⟨⟩ = x · sp
-      hred (Λ n) (n' · sp) = hred (substM n' (snd (→tm n))) sp
+      hred (Λ n) (n' · sp) = hred (substN n' (snd (→tm n))) sp
 
    subst : ∀{Γ A C} → Term Γ A → Term (A :: Γ) C → Term Γ C
    subst n1 n2 = substM n1 (snd (→tm n2))
+
+   {- Strengthening -}
+   stM : ∀{Γ A C m} → MTerm (A :: Γ) C m → Maybe (MTerm Γ C m)
+   stM = stN 
+    where 
+     mutual
+      _>>=_ : {A C : Set} → Maybe A → (A → Maybe C) → Maybe C
+      _>>=_ = MAYBE.bind
+
+      stN : ∀{Γ A C m} → MTerm (A :: Γ) C m → Maybe (MTerm Γ C m)
+      stN (var Z · sp) = nothing
+      stN (var (S n) · sp) = stS sp >>= λ sp → just (var n · sp)
+      stN (con c · sp) = stS sp >>= λ sp' → just (con c · sp')
+      stN (Λ n) = stN (exchM n) >>= λ n' → just (Λ n')
+
+      stS : ∀{Γ A B C m} → MSpine (A :: Γ) B C m → Maybe (MSpine Γ B C m)
+      stS ⟨⟩ = just ⟨⟩
+      stS (n · sp) = 
+         stN n >>= λ n' → 
+         stS sp >>= λ sp' → 
+         just (n' · sp')
+  
+   st : ∀{Γ A C} → Term (A :: Γ) C → Maybe (Term Γ C)
+   st n = MAYBE.bind (stM (snd (→tm n))) (λ n' → just (tm→ n'))
 
 module TEST where
    sig : String → Maybe Type

@@ -10,10 +10,6 @@ module Demo.STLC where
 
 open import Prelude
 
-postulate String : Set
-{-# BUILTIN STRING String #-}
-{-# COMPILED_TYPE String String #-}
-
 infixr 5 _⊃_
 data Type : Set where
    con : String → Type

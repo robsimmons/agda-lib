@@ -14,6 +14,12 @@ module MAYBE where
    Maybe : ∀{a} → Set a → Set a
    Maybe A = A + Unit
 
+   nothing : ∀{a} {A : Set a} → Maybe A
+   nothing = Inr <>
+
+   just : ∀{a} {A : Set a} → A → Maybe A
+   just = Inl
+
    map : ∀{a b} {A : Set a} {B : Set b} → (A → B) → Maybe A → Maybe B
    map f = [ f , const <> ]
 
@@ -50,4 +56,4 @@ module MAYBE where
    check-bind {x = Inr <>} () _ _
 
 open MAYBE public
-   using (Maybe ; valOf ; isSome)
+   using (Maybe ; valOf ; isSome ; nothing ; just)

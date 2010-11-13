@@ -22,6 +22,7 @@ module IMP where
    id : ∀{a} (A : Set a) → A → A
    id A x = x
 
+   infixr 5 _o_
    _o_ : ∀{a b c} {A : Set a} {B : Set b} {C : Set c}
       → Imp B C 
       → Imp A B

@@ -14,6 +14,7 @@ module Prelude where
   {- Non-value-carrying datatypes -}
   open import Lib.Bool public
   open import Lib.Nat public
+  open import Lib.String public
 
   {- Functors -}
   open import Lib.Membership public

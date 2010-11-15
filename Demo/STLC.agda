@@ -1,4 +1,6 @@
 -- The simply-typed lambda calculus
+-- Mentioned here: 
+-- requestforlogic.blogspot.com/2010/11/totally-nameless-representation.html
 
 module Demo.STLC where
 

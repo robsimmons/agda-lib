@@ -2,25 +2,43 @@ This is a redesign of Dan Licata (et al)'s Agda standard library that also
 borrows heavily and shamelessly from Agda's standard library where useful
 and appropriate.
 
-Design goals:
+The goal of this library is to be small and simple for people who primarily
+use Agda to reason about things using pattern-matching and reflexive equality.
 
-* HASKELL-LIKE SYNTAX
-  - Constructors and types are capitalized (NatT, S, Z)
-  - Type families are capitialized as well (even if they are functions, see
-    Geq, Lt, etc. in the standard library)
-  - Functions computing 
+* HASKELL-ISH SYNTAX
+  - Constructors and types are capitalized (Nat, S, Z)
+  - Type families are capitialized as well (even if they are functions that
+    compute Sets, such as "Leq", "Lt", or "Maybe")
+  - Functions are entirely lowercase; the minus sign "-" is used as a separator
+    ("s-cong"). 
+  - Modules are UPPERCASE ("NAT", "LIST", "MAYBE"). 
 
-* MANAGEMENT OF TOP-LEVEL FILES
-  - Fundamental types, such as natural nubers, products, and sums, can be
-    written as Product.Product, Nat.Nat, Id.Id, Void.Void etc. and also as 
-    ProductT, NatT, IdT, VoidT, etc.
-  - Everything else exported to the top-level can be referred to as (for 
-    the constructor Level.Z and the constructor Nat.Z are an example).
-  - The files in Lib represent all the files that might be opened in Prelude
+* SINGLE IMPORT; MANAGEMENT OF NAMESPACE
+  - The whole library is accessible with "open import Prelude".
+  - Every file Lib/Something.agda exports a module SOMETHING. Some of the
+    stuff from the SOMETHING module will be exported to the toplevel; for 
+    instance the constructor for reflexivity, defined in Lib/Id.agda, can be 
+    referenced as either "Refl" or "ID.Refl", and the natural numbers can
+    be accessed with "Nat" "Z" and "S" or with "NAT.Nat", "NAT.Z", "NAT.S".
+  - Overloaded functions should be present but not exported. Both natural 
+    numbers and levels have a notion of maximum, we have "NAT.max" and 
+    "LEVEL.max". Note that Agda disambiguates constructors pretty agressively,
+    so it's not a problem to have "NAT.Z" and "LEVEL.Z" both exported into the
+    top level. 
+
+* LIMITED USE OF LONG DEPENDENCY CHAINS
+One of the beautiful but aggrivating parts of the Agda Standard Library, from 
+one outsider's perspective at least, is that it's very difficult to get a handle
+on where definitions "bottom out" - definitions are very rich and very deep and
+basically all over the place. While it may 
 
 * LIMITED AND UNIFORM USE OF UNICODE 
 Unicode runs rampant in the standard library, and it means that its sometimes 
-hard to even know how to write code. While some fundamental (like products, 
+hard to even know how to write code without using "CTRL-u CTRL-x =," which is
+a keybinding I personally can never remember. The standard library 
+
+
+While some fundamental (like products, 
 sums, truth, falsehood, and identity) are defined in their unicodey versions,
 only things that are morally types use unicode, and 
 

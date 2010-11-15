@@ -73,6 +73,12 @@ module SET where
    sub-wkex Z = Z
    sub-wkex (S n) = S (S n)
 
+   sub-cntr : ∀{a} {A : Set a} {x : A} {xs : List A} 
+       → Sub (x :: x :: xs) (x :: xs)
+   sub-cntr Z = Z
+   sub-cntr (S Z) = Z
+   sub-cntr (S (S n)) = S n
+
    sub-appendr : ∀{a} {A : Set a} 
       → (xs : List A)
       → (ys : List A)

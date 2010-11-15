@@ -4,8 +4,8 @@ module Demo.Arith where
  
 open import Prelude
 
-seven : 7 > 10 → ⊥
-seven gt = gt
+seven : 10 < 7 → ⊥
+seven lt = lt
 
 +comm : (n m : Nat) → (n +n m) ≡ (m +n n)
 +comm n m = NAT.plus-comm {n}{m}

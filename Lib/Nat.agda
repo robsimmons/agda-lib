@@ -30,20 +30,26 @@ module NAT where
    Z +n b = b
    S a +n b = S (a +n b)
 
+   plus : Nat → Nat → Nat
+   plus n m = n +n m
+
    _×n_ : Nat → Nat → Nat
    Z ×n b = Z
    (S a) ×n b = (a ×n b) +n b
+
+   times : Nat → Nat → Nat
+   times n m = n ×n m
 
    max : Nat → Nat → Nat
    max  Z    b     = b
    max (S a) Z     = S a
    max (S a) (S b) = S (max a b)
 
-   succ-cong : ∀{a b} → a ≡ b → S a ≡ S b
-   succ-cong Refl = refl 
+   s-cong : ∀{a b} → a ≡ b → S a ≡ S b
+   s-cong Refl = refl 
 
-   succ-elim : ∀{a b} → S a ≡ S b → a ≡ b
-   succ-elim Refl = refl
+   s-elim : ∀{a b} → S a ≡ S b → a ≡ b
+   s-elim Refl = refl
 
    {- Addition (simplification) -}
 
@@ -52,32 +58,32 @@ module NAT where
 
    plus-zero : ∀{a} → a +n 0 ≡ a
    plus-zero {Z} = refl
-   plus-zero {S a} = succ-cong (plus-zero {a})
+   plus-zero {S a} = s-cong (plus-zero {a})
 
    {- Addition (rearrangement) -}
 
-   succ-plus : ∀{a b} → a +n S b ≡ S a +n b
-   succ-plus {Z} = refl
-   succ-plus {S a} = succ-cong (succ-plus {a})
+   s-plus : ∀{a b} → a +n S b ≡ S a +n b
+   s-plus {Z} = refl
+   s-plus {S a} = s-cong (s-plus {a})
 
-   plus-succ : ∀{a b} → S a +n b ≡ a +n S b
-   plus-succ {Z} = refl
-   plus-succ {S a} = succ-cong (plus-succ {a})
+   plus-s : ∀{a b} → S a +n b ≡ a +n S b
+   plus-s {Z} = refl
+   plus-s {S a} = s-cong (plus-s {a})
 
    plus-comm : ∀{a b} → a +n b ≡ b +n a
    plus-comm {Z} = symm plus-zero
-   plus-comm {S a}{b} = succ-cong (plus-comm {a}) ≡≡ plus-succ {b} {a}
+   plus-comm {S a}{b} = s-cong (plus-comm {a}) ≡≡ plus-s {b} {a}
 
    comm-plus : ∀{a b} → b +n a ≡ a +n b
    comm-plus {_}{a} = plus-comm {a}
 
    plus-assoc : ∀{a b c} → (a +n b) +n c ≡ a +n (b +n c)
    plus-assoc {Z} = refl
-   plus-assoc {S a} = succ-cong (plus-assoc {a})
+   plus-assoc {S a} = s-cong (plus-assoc {a})
 
    assoc-plus : ∀{a b c} → a +n (b +n c) ≡ (a +n b) +n c
    assoc-plus {Z} = refl
-   assoc-plus {S a} = succ-cong (assoc-plus {a})
+   assoc-plus {S a} = s-cong (assoc-plus {a})
 
    {- Addition (equality) -} 
 
@@ -92,7 +98,7 @@ module NAT where
 
    plus-eliml : ∀{a b c} → a +n b ≡ a +n c → b ≡ c
    plus-eliml {Z} Refl = refl
-   plus-eliml {S a} eq with plus-eliml {a} (succ-elim eq) 
+   plus-eliml {S a} eq with plus-eliml {a} (s-elim eq) 
    ... | Refl = refl
 
    plus-elimr : ∀{a b c} → a +n c ≡ b +n c → a ≡ b
@@ -118,22 +124,22 @@ module NAT where
    times-zero {Z} = refl
    times-zero {S a} = plus-congl (times-zero {a})
 
-   succ-times : ∀{a b} → S a ×n b ≡ (a ×n b) +n b
-   succ-times = refl
+   s-times : ∀{a b} → S a ×n b ≡ (a ×n b) +n b
+   s-times = refl
 
-   times-succ : ∀{a b} → a ×n S b ≡ a +n (a ×n b)
-   times-succ {Z} = refl
-   times-succ {S a}{b} = 
-      plus-congl {b = S b} (times-succ {a}{b})
-      ≡≡ succ-plus {a +n (a ×n b)} {b}
-      ≡≡ succ-cong (plus-assoc {a}{a ×n b}{b})
+   times-s : ∀{a b} → a ×n S b ≡ a +n (a ×n b)
+   times-s {Z} = refl
+   times-s {S a}{b} = 
+      plus-congl {b = S b} (times-s {a}{b})
+      ≡≡ s-plus {a +n (a ×n b)} {b}
+      ≡≡ s-cong (plus-assoc {a}{a ×n b}{b})
 
    one-times : ∀{a} → 1 ×n a ≡ a
    one-times {a} = refl
 
    times-one : ∀{a} → a ×n 1 ≡ a
    times-one {a} = 
-      times-succ {a} ≡≡ plus-congr {a} (times-zero {a}) ≡≡ plus-zero
+      times-s {a} ≡≡ plus-congr {a} (times-zero {a}) ≡≡ plus-zero
 
    {- Multimplication (rearrangement) -}
 
@@ -142,7 +148,7 @@ module NAT where
    times-comm {S a}{b} = 
       plus-comm {a ×n b}{b} 
       ≡≡ plus-congr {b} (times-comm {a}{b}) 
-      ≡≡ symm (times-succ {b}{a})
+      ≡≡ symm (times-s {b}{a})
 
    comm-times : ∀{a b} → b ×n a ≡ a ×n b
    comm-times {_}{a} = times-comm {a}
@@ -205,24 +211,16 @@ module NAT where
    (S n) ≤ (S m) = n ≤ m
    Leq = _≤_
 
-   _>_ : Nat → Nat → Set
-   n > m = m < n
-   Gt = _>_
-
-   _≥_ : Nat → Nat → Set
-   n ≥ m = m ≤ n
-   Geq = _≥_
-
    _!≡_ : Nat → Nat → Set
-   n !≡ m = (n < m) + (n > m)
+   n !≡ m = (n < m) + (m < n)
    Neq = _!≡_
 
    {- Contradiction -}
 
-   leq=>gt=>false : ∀{a b l} {A : Set l} → a ≤ b → a > b → A
-   leq=>gt=>false {Z} leq () 
-   leq=>gt=>false {S a}{Z} () gt
-   leq=>gt=>false {S a}{S b} leq gt = leq=>gt=>false {a} {b} leq gt
+   leq=>lt=>false : ∀{a b l} {A : Set l} → a ≤ b → b < a → A
+   leq=>lt=>false {Z} leq () 
+   leq=>lt=>false {S a}{Z} () lt
+   leq=>lt=>false {S a}{S b} leq lt = leq=>lt=>false {a} {b} leq lt
 
    -- gt=>leq=>false : ∀{a b l} {A : Set l} → a > b → a ≤ b → A
    -- geq=>lt=>false : ∀{a b l} {A : Set l} → a ≥ b → a < b → A
@@ -276,4 +274,4 @@ module NAT where
 
 
 open NAT public
-   using (Z ; S ; _+n_ ; _×n_ ; _<_ ; _>_ ; _≤_ ; _≥_ ; Nat)
+   using (Z ; S ; _+n_ ; _×n_ ; _<_ ; _≤_ ; Nat)

@@ -17,6 +17,7 @@ data Type : Set where
 
 Ctx = List Type
 
+_⊆_ : Ctx → Ctx → Set
 _⊆_ = LIST.SET.Sub
 
 module TERMS (sig : String → Maybe Type) where
@@ -45,89 +46,88 @@ module TERMS (sig : String → Maybe Type) where
       > : Metric → Metric
 
    mutual
-      data mNeut (Γ : Ctx) : Metric → Type → Set where
+      data MNeut (Γ : Ctx) : Type → Metric → Set where
          var : ∀{A} → A ∈ Γ 
-            → mNeut Γ ○ A
+            → MNeut Γ A ○
          con : (c : String) {ch : Check (isSome (sig c))}
-            → mNeut Γ ○ (valOf (sig c) {ch})
+            → MNeut Γ (valOf (sig c) {ch}) ○
          _·_ : ∀{A B mA mB} 
-            → mNeut Γ mA (A ⊃ B)
-            → mNorm Γ mB A
-            → mNeut Γ (mA ● mB) B         
+            → MNeut Γ (A ⊃ B) mA
+            → MNorm Γ A mB
+            → MNeut Γ B (mA ● mB)     
 
-      data mNorm (Γ : Ctx) : Metric → Type → Set where
+      data MNorm (Γ : Ctx) : Type → Metric → Set where
          ⟨_⟩ : ∀{Q m}
-            → mNeut Γ m (con Q)
-            → mNorm Γ (> m) (con Q)
+            → MNeut Γ (con Q) m
+            → MNorm Γ (con Q) (> m)
          Λ : ∀{A B m}
-            → mNorm (A :: Γ) m B 
-            → mNorm Γ (> m) (A ⊃ B)
+            → MNorm (A :: Γ) B m 
+            → MNorm Γ (A ⊃ B) (> m) 
 
    mutual
-      neut→ : ∀{Γ A} → Neut Γ A → ∃ λ N → mNeut Γ N A
-      neut→ (var n) = , var n
-      neut→ (con c) = , con c
-      neut→ (r · n) = , snd (neut→ r) · snd (norm→ n)
+      →R : ∀{Γ A} → Neut Γ A → ∃ λ m → MNeut Γ A m
+      →R (var n) = , var n
+      →R (con c) = , con c
+      →R (r · n) = , snd (→R r) · snd (→N n)
 
-      norm→ : ∀{Γ A} → Norm Γ A → ∃ λ N → mNorm Γ N A
-      norm→ ⟨ r ⟩ = , ⟨ snd (neut→ r) ⟩
-      norm→ (Λ n) = , Λ (snd (norm→ n))
-
-   mutual
-      →neut : ∀{Γ N A} → mNeut Γ N A → Neut Γ A
-      →neut (var n) = var n
-      →neut (con c) = con c
-      →neut (r · n) = →neut r · →norm n
-
-      →norm : ∀{Γ N A} → mNorm Γ N A → Norm Γ A
-      →norm ⟨ r ⟩ = ⟨ →neut r ⟩
-      →norm (Λ n) = Λ (→norm n)
+      →N : ∀{Γ A} → Norm Γ A → ∃ λ m → MNorm Γ A m
+      →N ⟨ r ⟩ = , ⟨ snd (→R r) ⟩
+      →N (Λ n) = , Λ (snd (→N n))
 
    mutual
-      wkenR : ∀{Γ Δ A} → Γ ⊆ Δ → Neut Γ A → Neut Δ A
-      wkenR θ (var n) = var (θ n)
-      wkenR θ (con c) = con c
-      wkenR θ (r · n) = wkenR θ r · wkenN θ n
+      R→ : ∀{Γ A m} → MNeut Γ A m → Neut Γ A
+      R→ (var n) = var n
+      R→ (con c) = con c
+      R→ (r · n) = R→ r · N→ n
 
-      wkenN : ∀{Γ Δ A} → Γ ⊆ Δ → Norm Γ A → Norm Δ A
-      wkenN θ ⟨ r ⟩ = ⟨ wkenR θ r ⟩
-      wkenN θ (Λ n) = Λ (wkenN (LIST.SET.sub-cons-congr θ) n)
+      N→ : ∀{Γ A m} → MNorm Γ A m → Norm Γ A
+      N→ ⟨ r ⟩ = ⟨ R→ r ⟩
+      N→ (Λ n) = Λ (N→ n)
 
-   mutual
-      wkenmNeut : ∀{Γ Δ N A} → Γ ⊆ Δ → mNeut Γ N A → mNeut Δ N A
-      wkenmNeut θ (var n) = var (θ n)
-      wkenmNeut θ (con c) = con c
-      wkenmNeut θ (r · n) = wkenmNeut θ r · wkenmNorm θ n
+   wkM : ∀{Γ Δ A m} → Γ ⊆ Δ → MNorm Γ A m → MNorm Δ A m
+   wkM = wkN
+    where
+     mutual
+      wkR : ∀{Γ Δ A m} → Γ ⊆ Δ → MNeut Γ A m → MNeut Δ A m
+      wkR θ (var n) = var (θ n)
+      wkR θ (con c) = con c
+      wkR θ (r · n) = wkR θ r · wkN θ n
 
-      wkenmNorm : ∀{Γ Δ N A} → Γ ⊆ Δ → mNorm Γ N A → mNorm Δ N A
-      wkenmNorm θ ⟨ r ⟩ = ⟨ wkenmNeut θ r ⟩
-      wkenmNorm θ (Λ n) = Λ (wkenmNorm (LIST.SET.sub-cons-congr θ) n)
-   
+      wkN : ∀{Γ Δ A m} → Γ ⊆ Δ → MNorm Γ A m → MNorm Δ A m
+      wkN θ ⟨ r ⟩ = ⟨ wkR θ r ⟩
+      wkN θ (Λ n) = Λ (wkN (LIST.SET.sub-cons-congr θ) n)
+
+   wk : ∀{Γ Δ A} → Γ ⊆ Δ → Norm Γ A → Norm Δ A
+   wk θ n = N→ (wkM θ (snd (→N n)))
+
    wken : ∀{Γ A C} → Norm Γ C → Norm (A :: Γ) C  
-   wken = wkenN LIST.SET.sub-wken
+   wken = wk LIST.SET.sub-wken
 
-   exchm : ∀{Γ A B C N} → mNorm (A :: B :: Γ) N C → mNorm (B :: A :: Γ) N C  
-   exchm = wkenmNorm LIST.SET.sub-exch
+   exchM : ∀{Γ A B C N} → MNorm (A :: B :: Γ) N C → MNorm (B :: A :: Γ) N C  
+   exchM = wkM LIST.SET.sub-exch
 
-   head : ∀{Γ N A C} → mNeut (A :: Γ) N C → Bool
+   head : ∀{Γ N A C} → MNeut (A :: Γ) N C → Bool
    head (var Z) = True
    head (var (S n)) = False 
    head (con c) = False
    head (r · _) = head r
 
-   mutual 
-      substNN : ∀{Γ A N C} 
+   subst : ∀{Γ A C} → Norm Γ A → Norm (A :: Γ) C → Norm Γ C
+   subst n1 n2 = substNN n1 (snd (→N n2))
+    where
+     mutual
+      substNN : ∀{Γ A C m} 
          → Norm Γ A 
-         → mNorm (A :: Γ) N C 
+         → MNorm (A :: Γ) C m 
          → Norm Γ C
       substNN n1 ⟨ r ⟩ with BOOL.options (head r)
       ... | Inl eq = substRN n1 r eq
       ... | Inr eq = ⟨ substRR n1 r eq ⟩
-      substNN n1 (Λ n2) = Λ (substNN (wken n1) (exchm n2))
+      substNN n1 (Λ n2) = Λ (substNN (wken n1) (exchM n2))
 
-      substRR : ∀{Γ A N C} 
+      substRR : ∀{Γ A C m} 
          → Norm Γ A 
-         → (r : mNeut (A :: Γ) N C)
+         → (r : MNeut (A :: Γ) C m)
          → head r ≡ False
          → Neut Γ C
       substRR n1 (var Z) ()
@@ -135,16 +135,17 @@ module TERMS (sig : String → Maybe Type) where
       substRR n1 (con c) eq = con c
       substRR n1 (r · n) eq = substRR n1 r eq · substNN n1 n
 
-      substRN : ∀{Γ A N C} 
+      substRN : ∀{Γ A C m} 
          → Norm Γ A 
-         → (r : mNeut (A :: Γ) N C)
+         → (r : MNeut (A :: Γ) C m)
          → head r ≡ True
          → Norm Γ C
       substRN n1 (var Z) _ = n1
       substRN n1 (var (S n)) ()
       substRN n1 (con c) ()
       substRN n1 (r · n) eq with substRN n1 r eq
-      ... | Λ n' = substNN (substNN n1 n) (snd (norm→ n'))
+      ... | Λ n' = substNN (substNN n1 n) (snd (→N n'))
+
 
 module TEST where
    sig : String → Maybe Type

@@ -5,6 +5,9 @@ module Demo.All where
 module ARITH where
    open import Demo.Arith
 
+module CANONICAL-FORMS where
+   open import Demo.CanonicalForms
+
 module LOGIC where
    open import Demo.Logic
 

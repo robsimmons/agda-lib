@@ -151,26 +151,26 @@ module SPINEFORM (sig : String → Maybe Type) where
       _>>=_ = MAYBE.bind
 
       stN : ∀{Γ A C m} → MTerm (A :: Γ) C m → Maybe (MTerm Γ C m)
-      stN (var Z · sp) = nothing
-      stN (var (S n) · sp) = stS sp >>= λ sp → just (var n · sp)
-      stN (con c · sp) = stS sp >>= λ sp' → just (con c · sp')
-      stN (Λ n) = stN (exchM n) >>= λ n' → just (Λ n')
+      stN (var Z · sp) = MAYBE.fail
+      stN (var (S n) · sp) = stS sp >>= λ sp → MAYBE.return (var n · sp)
+      stN (con c · sp) = stS sp >>= λ sp' → MAYBE.return (con c · sp')
+      stN (Λ n) = stN (exchM n) >>= λ n' → MAYBE.return (Λ n')
 
       stS : ∀{Γ A B C m} → MSpine (A :: Γ) B C m → Maybe (MSpine Γ B C m)
-      stS ⟨⟩ = just ⟨⟩
+      stS ⟨⟩ = MAYBE.return ⟨⟩
       stS (n · sp) = 
          stN n >>= λ n' → 
          stS sp >>= λ sp' → 
-         just (n' · sp')
+         MAYBE.return (n' · sp')
   
    st : ∀{Γ A C} → Term (A :: Γ) C → Maybe (Term Γ C)
-   st n = MAYBE.bind (stM (snd (→tm n))) (λ n' → just (tm→ n'))
+   st n = MAYBE.bind (stM (snd (→tm n))) (λ n' → MAYBE.return (tm→ n'))
 
 module TEST where
    sig : String → Maybe Type
-   sig "lam" = Inl ((con "exp" ⊃ con "exp") ⊃ con "exp")
-   sig "app" = Inl (con "exp" ⊃ con "exp" ⊃ con "exp")
-   sig _ = Inr <>
+   sig "lam" = Just ((con "exp" ⊃ con "exp") ⊃ con "exp")
+   sig "app" = Just (con "exp" ⊃ con "exp" ⊃ con "exp")
+   sig _ = Nothing
 
    open SPINEFORM sig public
    

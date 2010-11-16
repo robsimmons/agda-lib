@@ -149,9 +149,9 @@ module TERMS (sig : String → Maybe Type) where
 
 module TEST where
    sig : String → Maybe Type
-   sig "lam" = Inl ((con "exp" ⊃ con "exp") ⊃ con "exp")
-   sig "app" = Inl (con "exp" ⊃ con "exp" ⊃ con "exp")
-   sig _ = Inr <>
+   sig "lam" = Just ((con "exp" ⊃ con "exp") ⊃ con "exp")
+   sig "app" = Just (con "exp" ⊃ con "exp" ⊃ con "exp")
+   sig _ = Nothing
 
    open TERMS sig public
    

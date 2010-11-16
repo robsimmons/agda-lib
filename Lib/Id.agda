@@ -13,7 +13,7 @@ module ID where
    Id : ∀ {l} {A : Set l} → A → A → Set l
    Id x y = x ≡ y
 
-   {-# BUILTIN EQUALITY Id #-}
+   {-# BUILTIN EQUALITY _≡_ #-}
    {-# BUILTIN REFL Refl #-}
 
    refl : ∀{a} {A : Set a} {a : A} → a ≡ a

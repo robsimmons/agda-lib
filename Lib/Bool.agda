@@ -23,14 +23,14 @@ module BOOL where
    if _ / False then b1 else b2 = b2
 
    _×b_ : Bool → Bool → Bool
-   False ×b False = False
-   b ×b True = b
+   False ×b b = False
+   b ×b False = b
    True ×b b = b
 
    _+b_ : Bool → Bool → Bool 
-   True +b True = True
-   False +b b = b
+   True +b b = True
    b +b False = b
+   False +b b = b
 
    Check : Bool → Set
    Check True = Unit

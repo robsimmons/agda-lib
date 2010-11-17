@@ -119,6 +119,8 @@ module Demo.STLC where
       combS : ∀{t s r} → Term [] ((r ⊃ s ⊃ t) ⊃ (r ⊃ s) ⊃ r ⊃ t)
       combS = Λ (Λ (Λ (var (S (S Z)) · var Z · (var (S Z) · var Z))))
 
+   -- Simultaneous substitutions, inspired by a note by commenter "thecod" 
+   -- on the aforementioned blog post.
    module SIMULTANEOUS where
 
       -- Substitutions give a list 

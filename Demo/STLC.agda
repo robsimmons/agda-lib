@@ -119,3 +119,14 @@ module Demo.STLC where
       combS : ∀{t s r} → Term [] ((r ⊃ s ⊃ t) ⊃ (r ⊃ s) ⊃ r ⊃ t)
       combS = Λ (Λ (Λ (var (S (S Z)) · var Z · (var (S Z) · var Z))))
 
+   module SIMULTANEOUS where
+
+      -- Substitutions give a list 
+      Subst : Ctx → Ctx → Set
+      Subst Γ Δ = LIST.All (Term Δ) Γ
+
+      subst-all : ∀{Γ Δ A} → Subst Γ Δ → Term Γ A → Term Δ A
+      subst-all θ (var n) = LIST.ALL.pull n θ
+      subst-all θ (n · n') = subst-all θ n · subst-all θ n'
+      subst-all θ (Λ n) = 
+         Λ (subst-all (LIST.ALL.cons (var Z) (LIST.ALL.map wken θ)) n)

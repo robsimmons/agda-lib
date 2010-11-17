@@ -7,7 +7,7 @@ open import Lib.Product
 open import Lib.Sum
 open import Lib.Imp
 open import Lib.Membership
-open import Lib.List.Core 
+open import Lib.List.Core hiding (nil ; cons) 
 
 infixr 4 _∈_
 
@@ -129,5 +129,17 @@ module ANY where
 
 module ALL where
    open MEMBERSHIP.ALL List In public
+
+   nil : ∀{a} {A : Set a} {P : A → Set a}
+      → All P []
+   nil ()    
+
+   cons : ∀{a} {A : Set a} {x : A} {xs : List A} {P : A → Set a}
+      → P x
+      → All P xs
+      → All P (x :: xs)
+   cons px pxs Z = px
+   cons px pxs (S n) = pxs n    
+
 
 open MEMBERSHIP List In public using (Any ; All)

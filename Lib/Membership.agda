@@ -111,10 +111,16 @@ module MEMBERSHIP
          → Set (LEVEL.max a b)
       All P xs = ∀{x} → Member x xs → P x
 
-      pull :  ∀{a} {A : Set a} {x : A} {xs : Collection A} {P : A → Set a} 
+      pull : ∀{a} {A : Set a} {x : A} {xs : Collection A} {P : A → Set a} 
          → Member x xs 
          → All P xs 
          → P x
       pull n c = c n
+
+      map : ∀{a} {A : Set a} {xs : Collection A} {P Q : A → Set a} 
+         → (∀{x} → P x → Q x)
+         → All P xs
+         → All Q xs
+      map f pxs n = f (pxs n)
 
    open ALL public using (All)

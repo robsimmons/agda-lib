@@ -123,7 +123,7 @@ module Demo.STLC where
    -- on the aforementioned blog post.
    module SIMULTANEOUS where
 
-      -- Substitutions give a list 
+      -- Substitutions are term in the new context for every type in the old one
       Subst : Ctx → Ctx → Set
       Subst Γ Δ = LIST.All (Term Δ) Γ
 

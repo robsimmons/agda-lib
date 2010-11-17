@@ -132,3 +132,9 @@ module Demo.STLC where
       subst-all θ (n · n') = subst-all θ n · subst-all θ n'
       subst-all θ (Λ n) = 
          Λ (subst-all (LIST.ALL.cons (var Z) (LIST.ALL.map wken θ)) n)
+
+      subst-one : ∀{Γ A C} → Term Γ A → Term (A :: Γ) C → Term Γ C
+      subst-one n m = subst-all (LIST.ALL.cons n idsubst) m
+       where  
+         idsubst : ∀{Γ} → Subst Γ Γ
+         idsubst = var 

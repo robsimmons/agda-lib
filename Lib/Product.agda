@@ -11,10 +11,9 @@ module PRODUCT where
    infix 0 ,_
    infixr 10 _×_
 
-   record Unit {l : Level} : Set l where
+   record Unit : Set where
       constructor <> 
-   ⊤ = Unit {Z}
-   Unit0 = Unit {Z}
+   ⊤ = Unit
   
    {- This is not yet a record, because you can't pattern match records -}
    record Σ {a b} (A : Set a) (B : A → Set b) : Set (LEVEL.max a b) where
@@ -26,6 +25,7 @@ module PRODUCT where
 
    Product : ∀{a b} (A : Set a) (B : A → Set b) → Set (LEVEL.max a b)
    Product A B = Σ A B
+   Product0 = Product {Z} {Z}
 
    syntax Σ A (λ x → B) = Σ[ x :: A ] B
  
@@ -56,4 +56,4 @@ module PRODUCT where
 
 open PRODUCT public
    using 
-     (⊤ ; Unit ; <> ; Unit0 ; Σ ; _,_ ; fst ; snd ; ∃ ; _×_ ; ,_ ; Product)
+     (⊤ ; Unit ; <> ; Σ ; _,_ ; fst ; snd ; ∃ ; _×_ ; ,_ ; Product)

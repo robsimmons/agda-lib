@@ -7,19 +7,18 @@ open import Lib.Product
 
 module SUM where
 
-   data Void {l : Level} : Set l where
-   ⊥ = Void {Z}
-   Void0 = Void {Z}
+   data Void : Set where
+   ⊥ = Void
 
-   abort : ∀{a b} {A : Set a} → Void {b} → A
+   abort : ∀{a} {A : Set a} → Void → A
    abort ()
 
-   data _+_ {l : Level} (A : Set l) (B : Set l) : Set l where
+   data _+_ {a b} (A : Set a) (B : Set b) : Set (LEVEL.max a b) where
       Inl : (inl : A) → A + B
       Inr : (inr : B) → A + B
-   Sum : ∀ {l} (A : Set l) (B : Set l) → Set l
+   Sum : ∀{a b} (A : Set a) (B : Set b) → Set (LEVEL.max a b)
    Sum A B = A + B
-   Sum0 = Sum {Z}
+   Sum0 = Sum {Z} {Z}
 
    case : ∀{a b} {A B : Set a} {C : Set b} → A + B → (A → C) → (B → C) → C
    case (Inl x) f g = f x
@@ -37,4 +36,4 @@ module SUM where
 
 open SUM public
    using
-     (⊥ ; Void ; Void0 ; abort ; Inl ; Inr ; Sum ; Sum0 ; _+_ ; case ; [_,_]) 
+     (⊥ ; Void ; abort ; Inl ; Inr ; Sum ; Sum0 ; _+_ ; case ; [_,_]) 

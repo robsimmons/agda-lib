@@ -12,7 +12,7 @@ open import Lib.Id
 module MAYBE where
 
    data Maybe {a} (A : Set a) : Set a where
-     Just : A → Maybe A
+     Just : (x : A) → Maybe A
      Nothing : Maybe A
 
    return : ∀{a} {A : Set a} → A → Maybe A
@@ -30,7 +30,8 @@ module MAYBE where
    from-poly (Inr <>) = Nothing
 
    map : ∀{a b} {A : Set a} {B : Set b} → (A → B) → Maybe A → Maybe B
-   map f = from-poly o [ f , const <> ] o to-poly
+   map f (Just x) = Just (f x)
+   map f Nothing = Nothing 
 
    isSome : ∀{a} {A : Set a} → Maybe A → Bool
    isSome (Just _) = True

@@ -46,6 +46,12 @@ case-cons : ∀{a b} {A : Set a} {x y : A} {ys : List A}
 case-cons P ez es Z = ez
 case-cons P ez es (S n) = es n
 
+abort-nil : ∀{a b} {A : Set a} {x y : A} {ys : List A} 
+   → {P : Set b}
+   → x ∈ []
+   → P
+abort-nil ()
+
 split-append : ∀{a} {A : Set a} {x : A} {xs ys : List A} 
    → x ∈ (xs ++ ys)
    → (x ∈ xs) + (x ∈ ys)

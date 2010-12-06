@@ -8,8 +8,8 @@ open import Lib.Product
 infixr 5 _::_
 infixr 5 _++_
 data List {a} (A : Set a) : Set a where
-  [] : List A
-  _::_ : (x : A) (xs : List A) → List A
+   [] : List A
+   _::_ : (x : A) (xs : List A) → List A
 
 nil : ∀{a} {A : Set a} → List A
 nil = []

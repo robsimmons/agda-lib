@@ -16,6 +16,9 @@ module IMP where
    Imp : ∀{a b} (A : Set a) (B : Set b) → Set (LEVEL.max a b)
    Imp A B = A → B
 
+   Equiv : ∀{a b} (A : Set a) (B : Set b) → Set (LEVEL.max a b)
+   Equiv A B = (A → B) × (B → A)
+
    const : ∀{a b} {A : Set a} {B : Set b} → A → B → A
    const x y = x
 

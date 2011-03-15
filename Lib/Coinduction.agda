@@ -9,19 +9,17 @@ module Lib.Coinduction where
 open import Lib.Level
 
 module COINDUCTION where
-
-   infix 1000 susp_
  
    postulate
-      Inf : ∀{a} (A : Set a) → Set a
-      susp_ : ∀{a} {A : Set a} → A → Inf A
-      force : ∀{a} {A : Set a} → Inf A → A
+      Lazy : ∀{a} (A : Set a) → Set a
+      thunk : ∀{a} {A : Set a} → A → Lazy A
+      force : ∀{a} {A : Set a} → Lazy A → A
 
-   {-# BUILTIN INFINITY Inf  #-}
-   {-# BUILTIN SHARP    susp_ #-}
+   {-# BUILTIN INFINITY Lazy  #-}
+   {-# BUILTIN SHARP    thunk #-}
    {-# BUILTIN FLAT     force #-}
 
 open COINDUCTION public
-   using (Inf ; susp_ ; force)
+   using (Lazy ; thunk ; force)
 
 

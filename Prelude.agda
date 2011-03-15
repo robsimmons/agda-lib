@@ -24,3 +24,5 @@ module Prelude where
   open import Lib.List public
   -- open import Lib.PiList public 
 
+  {- Coinduction -}
+  open import Lib.Coinduction public

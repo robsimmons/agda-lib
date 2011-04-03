@@ -13,7 +13,7 @@ module NAT where
 
    data Nat : Set where
       Z : Nat
-      S : Nat → Nat
+      S : (n : Nat) → Nat
 
    {-# BUILTIN NATURAL Nat #-}
    {-# BUILTIN SUC S #-}
@@ -271,6 +271,11 @@ module NAT where
    {- Working on both sides of an inequality -}
   
    {- Transitivity for inequality -}
+   trans-lt : ∀{a b c} → a < b → b < c → a < c
+   trans-lt {_} {Z} () g
+   trans-lt {_} {_} {Z} f ()
+   trans-lt {Z} {S b} {S c} f g = <>
+   trans-lt {S a} {S b} {S c} f g = trans-lt {a} {b} {c} f g
 
 
 open NAT public

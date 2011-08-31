@@ -7,6 +7,8 @@ open import Lib.Product
 
 module SUM where
 
+   infixr 10 _+_
+
    data Void : Set where
    ⊥ = Void
 

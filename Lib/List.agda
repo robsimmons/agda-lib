@@ -49,5 +49,25 @@ module LIST where
    map f [] = []
    map f (x :: xs) = f x :: map f xs
 
+   in-map : ∀{a} {A B : Set a} {a : A} {as : List A} 
+      → (f : A → B)
+      → a ∈ as 
+      → f a ∈ map f as
+   in-map f Z = Z
+   in-map f (S n) = S (in-map f n)
+
+   cross : ∀{a} {A B C : Set a} → (A → B → C) → List A → List B → List C
+   cross f [] bs = []
+   cross f (a :: as) bs = map (f a) bs ++ cross f as bs
+  
+   concat : ∀{a} {A B : Set a} → (A → List B) → List A → List B
+   concat f [] = []
+   concat f (a :: as) = f a ++ concat f as
+
+   in-concat : ∀{a} {A B : Set a} {a : A} {b : B} {as : List A}
+      (f : A → List B) → a ∈ as → b ∈ f a → b ∈ concat f as
+   in-concat f Z y = in-append y _
+   in-concat f (S n) y = append-in (f _) (in-concat f n y)
+
 open LIST public
   using (List ; [] ; [_] ; _::_ ; _++_ ; _∈_ ; Z ; S)

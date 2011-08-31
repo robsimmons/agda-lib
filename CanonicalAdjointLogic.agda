@@ -34,7 +34,7 @@ module TYPES (Atom : Set) where
       _⊃_ : (A : TType ⁺) (B : TType ⁻) → TType ⁻
       ↓ : (A : TType ⁻) → TType ⁺
       ↑ : (A : TType ⁺) → TType ⁻
- 
+  
 module TERMS (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) where
 
   open TYPES Atom

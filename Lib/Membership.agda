@@ -8,7 +8,7 @@ open import Lib.Product
 open import Lib.Imp
 open import Lib.Maybe
 open import Lib.Bool
-open import Lib.Id using (_≡_ ; _≡≡_ ; resp)
+open import Lib.Id using (Refl ; _≡_ ; _≡≡_ ; resp)
 
 module Lib.Membership where
 
@@ -23,6 +23,11 @@ module MEMBERSHIP
 
       refl-sub : ∀{a} {A : Set a} {xs : Collection A} → Sub xs xs
       refl-sub n = n
+ 
+      sub-eq : ∀{a} {A : Set a} {xs ys : Collection A} 
+         → xs ≡ ys
+         → Sub xs ys
+      sub-eq Refl n = n
 
       trans-sub : ∀{a} {A : Set a} {xs ys zs : Collection A}
          → Sub xs ys 

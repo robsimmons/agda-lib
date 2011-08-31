@@ -1,9 +1,8 @@
--- The canonical forms of the simply typed calculus
--- Plus some nonsense, thrown in for later. 
+-- Canonical adjoint logic
 
 {-# OPTIONS --no-termination-check #-}
 
-module Lambda where
+module CanonicalAdjointLogic where
 
 open import Prelude
 
@@ -16,26 +15,33 @@ xs ⊆ ys = LIST.SET.Sub xs ys
 
 module TYPES (Atom : Set) where
 
-  infixr 5 _⊃_
   infixr 5 _⇒_
+  infixr 5 _⊃_
 
   mutual 
-    data CType : Set where
-      F : (A : VType ⁻) → CType
-      _⇒_ : (A B : CType) → CType
-
     data VType : Pol → Set where
-      con : (Q : Atom) → VType ⁻
-      _⊃_ : (A : VType ⁺) (B : VType ⁻) → VType ⁻
-      U : (A : CType) → VType ⁺
-      ⟨_⟩ : (A : VType ⁻) → VType ⁺
+      con⁺ : (Q : Atom) → VType ⁺
+      con⁻ : (Q : Atom) → VType ⁻
+      U : (A : TType ⁻) → VType ⁻
+      _⇒_ : (A : VType ⁺) (B : VType ⁻) → VType ⁻
+      ↓ : (A : TType ⁻) → VType ⁺
+      ↑ : (A : VType ⁺) → VType ⁻
 
+    data TType : Pol → Set where
+      con⁺ : (Q : Atom) → TType ⁺
+      con⁻ : (Q : Atom) → TType ⁻
+      F : (A : TType ⁺) → TType ⁺
+      _⊃_ : (A : TType ⁺) (B : TType ⁻) → TType ⁻
+      ↓ : (A : TType ⁻) → TType ⁺
+      ↑ : (A : TType ⁺) → TType ⁻
+ 
 module TERMS (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) where
 
   open TYPES Atom
-  VCtx = List CType
-  Ctx = List (VType ⁻)
+  VCtx = List (VType ⁻)
+  TCtx = List (TType ⁻)
 
+{-
   mutual
     infixl 5 _·_
 
@@ -318,4 +324,5 @@ module TEST where
       ... | Λ n' = substNN (substNN n1 n) (snd (→N n'))
 
 
+-}
 -}

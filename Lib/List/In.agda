@@ -127,8 +127,8 @@ module SET where
    sub-append-congr : ∀{a} {A : Set a} {xs2 ys2 : List A}
       (xs : List A)
       → Sub xs2 ys2
-      → Sub (xs ++ xs2) (xs ++ xs2)
-   sub-append-congr [] f n = n
+      → Sub (xs ++ xs2) (xs ++ ys2)
+   sub-append-congr [] f n = (f n)
    sub-append-congr (x :: xs) f n = sub-cons-congr (sub-append-congr xs f) n
 
    cons-cong : ∀{a} {A : Set a} {x y : A} {xs ys : List A} 

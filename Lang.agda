@@ -35,55 +35,96 @@ module LANG (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) wh
   sub-revappend-congr (x :: xs) f = 
       sub-revappend-congr xs (LIST.SET.sub-cons-congr f)
 
-  data Exp (Δ : VCtx) : CType → Set where
-    var : ∀{A} (x : A ∈ Δ) → Exp Δ A
-    Λ_ : ∀{A B} (e : Exp (A :: Δ) B) → Exp Δ (A ⇒ B)
-    _·_ : ∀{A B} (e₁ : Exp Δ (A ⇒ B)) (e₂ : Exp Δ A) → Exp Δ B
-    _[_] : ∀{A Δ'} 
-      (p : Norm Δ' [] A)
-      (σ : ∀{B} → B ∈ Δ' → Exp Δ B)
-      → Exp Δ (F A) 
-    elim : ∀{A C}
-      (e : Exp Δ (F A))
-      (φ : (Δp : VCtx) → Norm Δp [] A → Exp (Δp +>> Δ) C)
-      → Exp Δ C
+  mutual
+    data Exp (Γ : VCtx) : CType → Set where
+      var : ∀{A} (x : A ∈ Γ) → Exp Γ A
+      Λ_ : ∀{A B} (e : Exp (A :: Γ) B) → Exp Γ (A ⇒ B)
+      _·_ : ∀{A B} (e₁ : Exp Γ (A ⇒ B)) (e₂ : Exp Γ A) → Exp Γ B
+      _[_] : ∀{A Δ} 
+        (p : Norm Δ [] A)
+        (σ : Subst Γ Δ)
+        → Exp Γ (F A) 
+      elim : ∀{A C}
+        (e : Exp Γ (F A))
+        (φ : ∀{Δp} (N : Norm Δp [] A) → Exp (Δp +>> Γ) C)
+        → Exp Γ C
 
-  wk : ∀{Δ Δ' A} → Δ ⊆ Δ' → Exp Δ A → Exp Δ' A
-  wk θ (var x) = var (θ x)
-  wk θ (Λ e) = Λ wk (LIST.SET.sub-cons-congr θ) e
-  wk θ (e₁ · e₂) = wk θ e₁ · wk θ e₂
-  wk θ (p [ σ ]) = p [ (λ x → wk θ (σ x)) ]
-  wk θ (elim e φ) = elim (wk θ e) 
-    λ Δp N → wk (sub-revappend-congr Δp θ) (φ Δp N)
+    data Subst (Γ : VCtx) : VCtx → Set where
+      ⟨⟩ : Subst Γ []
+      _,_ : ∀{A Δ}
+        (e : Exp Γ A)
+        (σ : Subst Γ Δ)
+        → Subst Γ (A :: Δ)
 
-  subst : ∀{Δ A C} (Δ' : VCtx)
-    → Exp Δ A
-    → Exp (Δ' ++ A :: Δ) C 
-    → Exp (Δ' ++ Δ) C  
-  subst [] e' (var Z) = e'
-  subst [] e' (var (S n)) = var n
-  subst (B :: Δ') e' (var Z) = var Z
-  subst (B :: Δ') e' (var (S n)) = wk LIST.SET.sub-cons (subst Δ' e' (var n))
-  subst Δ' e' (Λ e) = Λ subst (_ :: Δ') e' e
-  subst Δ' e' (e₁ · e₂) = subst Δ' e' e₁ · subst Δ' e' e₂
-  subst Δ' e' (p [ σ ]) = p [ (λ x → subst Δ' e' (σ x)) ]
-  subst Δ' e' (elim e φ) = elim (subst Δ' e' e) 
-    λ Δp x → loop Δp Δ' e' (φ Δp x)
-   where 
-    loop : ∀{Δ A C} (Δp Δ' : VCtx)
-      → Exp Δ A
-      → Exp (Δp +>> (Δ' ++ A :: Δ)) C
-      → Exp (Δp +>> (Δ' ++ Δ)) C
-    loop [] Δ' e' e = subst Δ' e' e
-    loop (_ :: Δp) Δ' e' e = loop Δp (_ :: Δ') e' e
+  mutual 
+    wk : ∀{Γ Γ' A} → Γ ⊆ Γ' → Exp Γ A → Exp Γ' A
+    wk θ (var x) = var (θ x)
+    wk θ (Λ e) = Λ wk (LIST.SET.sub-cons-congr θ) e  
+    wk θ (e₁ · e₂) = wk θ e₁ · wk θ e₂
+    wk θ (p [ σ ]) = p [ wkσ θ σ ]
+    wk θ (elim e φ) = elim (wk θ e) 
+      (λ {Δp} N → wk (sub-revappend-congr Δp θ) (φ N))
+
+    wkσ : ∀{Γ Γ' Δ} → Γ ⊆ Γ' → Subst Γ Δ → Subst Γ' Δ
+    wkσ θ ⟨⟩ = ⟨⟩
+    wkσ θ (e , σ) = wk θ e , wkσ θ σ 
+
+  -- Pull a term out of a substitution
+  σ→ : ∀{Γ Δ A} → A ∈ Δ → Subst Γ Δ → Exp Γ A
+  σ→ () ⟨⟩
+  σ→ Z (N , σ) = N
+  σ→ (S x) (N , σ) = σ→ x σ
+
+  -- Check to see where a variable lives in the context
+  Γ? : ∀{Γ Δ B} (Γ' : VCtx)
+    → Subst Γ Δ 
+    → B ∈ Γ' ++ Δ +>> Γ
+    → (B ∈ Δ) + (B ∈ Γ' ++ Γ)
+  Γ? [] ⟨⟩ x = Inr x
+  Γ? [] (M , σ) x with Γ? [] (wkσ LIST.SET.sub-wken σ) x
+  ... | Inl y = Inl (S y) 
+  ... | Inr Z = Inl Z
+  ... | Inr (S y) = Inr y
+  Γ? (B :: Γ') σ Z = Inr Z
+  Γ? (_ :: Γ') σ (S x) with Γ? Γ' σ x 
+  ... | Inl y = Inl y
+  ... | Inr y = Inr (S y) 
+
+  mutual
+    subst : ∀{Γ Δ C} (Γ' : VCtx) 
+      → Subst Γ Δ
+      → Exp (Γ' ++ Δ +>> Γ) C 
+      → Exp (Γ' ++ Γ) C  
+    subst Γ' τ (var x) with Γ? Γ' τ x 
+    ... | Inl y = wk (LIST.SET.sub-appendl _ Γ') (σ→ y τ)
+    ... | Inr y = var y
+    subst Γ' τ (Λ e) = Λ subst (_ :: Γ') τ e 
+    subst Γ' τ (e₁ · e₂) = subst Γ' τ e₁ · subst Γ' τ e₂ 
+    subst Γ' τ (p [ σ ]) = p [ substσ Γ' τ σ ]
+    subst Γ' τ (elim e φ) = elim (subst Γ' τ e) 
+      (λ {Δp} N → loop Δp Γ' τ (φ N)) 
+     where
+      loop : ∀{Γ Δ C} (Δp Γ' : VCtx)
+        → Subst Γ Δ
+        → Exp (Δp +>> (Γ' ++ Δ +>> Γ)) C
+        → Exp (Δp +>> (Γ' ++ Γ)) C
+      loop [] Δ' e' e = subst Δ' e' e
+      loop (_ :: Δp) Δ' e' e = loop Δp (_ :: Δ') e' e
+      
+    substσ : ∀{Γ Δ Δ'} (Γ' : VCtx) 
+      → Subst Γ Δ
+      → Subst (Γ' ++ Δ +>> Γ) Δ'
+      → Subst (Γ' ++ Γ) Δ'
+    substσ Γ' τ ⟨⟩ = ⟨⟩
+    substσ Γ' τ (e , σ) = subst Γ' τ e , substσ Γ' τ σ
 
   data Val : CType → Set where
     VLam : ∀{A B}
       (e : Exp (A :: []) B)
       → Val (A ⇒ B)
-    VDat : ∀{A Δ'} →
-      (p : Norm Δ' [] A)
-      (σ : ∀{B} → B ∈ Δ' → Exp [] B)
+    VDat : ∀{A Δ} →
+      (p : Norm Δ [] A)
+      (σ : Subst [] Δ)
       → Val (F A) 
 
   data Res : CType → Set where
@@ -95,6 +136,8 @@ module LANG (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) wh
   step (Λ e) = Value (VLam e)
   step (e₁ · e₂) with step e₁
   ... | Step e₁' = Step (e₁' · e₂)
-  ... | Value (VLam e₀) = Step (subst [] e₂ e₀)
+  ... | Value (VLam e₀) = Step (subst [] (e₂ , ⟨⟩) e₀)
   step (p [ σ ]) = Value (VDat p σ)
-  step (elim e φ) = {!!}
+  step (elim e φ) with step e
+  ... | Step e' = Step (elim e' φ)
+  ... | Value (VDat p σ) = Step (subst [] σ (φ p)) 

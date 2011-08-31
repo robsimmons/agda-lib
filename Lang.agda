@@ -28,4 +28,4 @@ module LANG (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) wh
   wk θ (Λ e) = Λ wk (LIST.SET.sub-cons-congr θ) e
   wk θ (e₁ · e₂) = wk θ e₁ · wk θ e₂
   wk θ (p [ σ ]) = p [ (λ x → wk θ (σ x)) ]
-  wk θ (elim e φ) = elim (wk θ e) (λ Δ' N → wk {!LIST.SET.sub-appendl _ Δ'!} (φ Δ' N))
+  wk θ (elim e φ) = elim (wk θ e) (λ Δ' N → wk {!LIST.SET.sub-append-congr Δ'!} (φ Δ' N))

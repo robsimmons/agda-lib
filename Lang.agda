@@ -13,7 +13,7 @@ module LANG (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) wh
   _+>>_ : {A : Set} → List A → List A → List A
   [] +>> Δ = Δ
   (A :: Δ') +>> Δ = Δ' +>> (A :: Δ)
-
+ 
   sub-revappendl : {A : Set} 
       → (xs : List A)
       → (ys : List A)
@@ -141,3 +141,92 @@ module LANG (Atom : Set ; Const : Set ; sig : Const → TYPES.VType Atom ⁻) wh
   step (elim e φ) with step e
   ... | Step e' = Step (elim e' φ)
   ... | Value (VDat p σ) = Step (subst [] σ (φ p)) 
+
+module TEST-T where  
+
+  data Atom : Set where
+    nat : Atom
+    bool : Atom
+
+  open TYPES Atom
+
+  data Const : Set where
+    true : Const
+    false : Const
+    z : Const
+    s : Const
+
+  sig : Const → VType ⁻
+  sig true = con bool
+  sig false = con bool
+  sig z = con nat
+  sig s = ⟨ con nat ⟩ ⊃ con nat
+
+  open TERMS Atom Const sig
+  open LANG Atom Const sig
+
+  abort₁ : ∀{Δ A B C} {Any : Set} → Neut Δ [] (A ⊃ B ⊃ C) → Any
+  abort₁ (var ()) 
+  abort₁ (R ·' x) = abort₁ R
+  abort₁ (con true ())
+  abort₁ (con false ())
+  abort₁ (con z ())
+  abort₁ (con s ()) 
+  abort₁ (R · N) = abort₁ R
+
+  abort₂ : ∀{Δ A B} {Any : Set} → Neut Δ [] (U A ⊃ B) → Any
+  abort₂ (var ())
+  abort₂ (R ·' x) = abort₂ R
+  abort₂ (con true ())
+  abort₂ (con false ())
+  abort₂ (con z ())
+  abort₂ (con s ())
+  abort₂ (R · N) = abort₁ R
+
+  encodeN : Nat → Norm [] [] (con nat)
+  encodeN Z = ⟨ con z refl ⟩
+  encodeN (S n) = ⟨ con s refl · encodeN n ⟩
+
+  decodeN : ∀{Γ} → Norm Γ [] (con nat) → Nat
+  decodeN ⟨ var () ⟩ 
+  decodeN ⟨ R ·' u ⟩ = abort₂ R
+  decodeN ⟨ con true () ⟩ 
+  decodeN ⟨ con false () ⟩
+  decodeN ⟨ con z Refl ⟩ = Z
+  decodeN ⟨ con s () ⟩
+  decodeN ⟨ var () · N ⟩
+  decodeN ⟨ R ·' u · N' ⟩ = abort₂ R
+  decodeN ⟨ con true () · N ⟩ 
+  decodeN ⟨ con false () · N ⟩
+  decodeN ⟨ con z () · N ⟩
+  decodeN ⟨ con s Refl · N ⟩ = S (decodeN N)
+  decodeN ⟨ R · N · N' ⟩ = abort₁ R
+
+  data TTp : Set where
+    nat : TTp
+    bool : TTp
+    _⇒_ : (A B : TTp) → TTp
+
+  encode : TTp → CType
+  encode nat = F (con nat)
+  encode bool = F (con bool)
+  encode (A ⇒ B) = encode A ⇒ encode B
+
+  data TExp (Γ : List TTp) : TTp → Set where
+    var : ∀{A} (x : A ∈ Γ) → TExp Γ A
+    Λ_ : ∀{A B} (e : TExp (A :: Γ) B) → TExp Γ (A ⇒ B)
+    _·_ : ∀{A B} (e₁ : TExp Γ (A ⇒ B)) (e₂ : TExp Γ A) → TExp Γ B
+    true : TExp Γ bool
+    false : TExp Γ bool
+    ite : ∀{C} 
+      (e : TExp Γ bool)
+      (et : TExp Γ C)
+      (ef : TExp Γ C)
+      → TExp Γ C
+    z : TExp Γ nat
+    s : (e : TExp Γ nat) → TExp Γ nat
+    rec : ∀{C} 
+      (e : TExp Γ nat) 
+      (eb : TExp Γ C)
+      (ei : TExp (C :: nat :: Γ) C)
+      → TExp Γ C

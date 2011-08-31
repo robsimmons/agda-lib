@@ -31,6 +31,12 @@ module ID where
    coe : ∀{a} {A : Set a} {B : Set a} -> A ≡ B -> A -> B
    coe Refl x = x
 
+   coe1 : ∀{a} {A : Set a} (P : A → Set a) {a1 a2 : A} 
+      → a1 ≡ a2
+      → P a1
+      → P a2
+   coe1 _ Refl x = x
+
    resp : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
       → a1 ≡ a2 
       → p a1 ≡ p a2

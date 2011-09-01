@@ -236,25 +236,42 @@ module TEST-T where
 
   
 
-  embed : ∀{Γ A} → TExp Γ A → Exp (LIST.map encode Γ) (encode A)
-  embed (var x) = var (LIST.in-map encode x)
-  embed (Λ e) = Λ embed e
-  embed (e₁ · e₂) = embed e₁ · embed e₂
-  embed true = ⟨ con true refl ⟩ [ ⟨⟩ ]
-  embed false = ⟨ con false refl ⟩ [ ⟨⟩ ]
+  embed : ∀{Γ A} → TExp Γ A → Lazy (Exp (LIST.map encode Γ) (encode A))
+  embed (var x) = thunk (var (LIST.in-map encode x))
+  embed (Λ e) = thunk (Λ force (embed e))
+  embed (e₁ · e₂) = thunk (force (embed e₁) · force (embed e₂))
+  embed true = thunk (⟨ con true refl ⟩ [ ⟨⟩ ])
+  embed false = thunk (⟨ con false refl ⟩ [ ⟨⟩ ])
   embed {Γ} {A} (ite e et ef) = 
-    elim (embed e) 
-      (λ {Δp} N → 
-        if (λ _ → Exp (Δp +>> LIST.map encode Γ) (encode A)) 
-        / True 
-        then wk (sub-revappendl _ Δp) (embed et) 
-        else (wk (sub-revappendl _ Δp) (embed ef))) 
-  embed z = ⟨ con z refl ⟩ [ ⟨⟩ ]
-  embed (s n) = ⟨ con s refl ·' Z ⟩ [ (embed n , ⟨⟩) ]
+    thunk 
+      (elim (force (embed e))
+        (λ {Δp} N → 
+          case {A = ⊤} {B = ⊤} (Exp (Δp +>> LIST.map encode Γ) (encode A)) 
+            (Inl <>)
+            (λ _ → wk (sub-revappendl _ Δp) (force (embed et)))
+            (λ _ → wk (sub-revappendl _ Δp) (force (embed ef)))))
+  embed z = thunk (⟨ con z refl ⟩ [ ⟨⟩ ])
+  embed (s n) = thunk (⟨ con s refl ·' Z ⟩ [ (force (embed n) , ⟨⟩) ])
   embed {Γ} {A} (rec e eb ei) = 
-    elim (embed e) 
+    thunk 
+      (elim (force (embed e))
+        (λ {Δp} N → 
+          case {A = ⊤} {B = Exp (LIST.map encode Γ) (encode nat)} 
+            (Exp (Δp +>> LIST.map encode Γ) (encode A)) 
+            (Inl <>)
+            (λ _ → wk (sub-revappendl _ Δp) (force (embed eb)))
+            (λ e → wk (sub-revappendl _ Δp) 
+                     (subst [] (e , ({!!} , ⟨⟩)) (force (embed ei))))))
+
+{- 
       (λ {Δp} N → 
+        case {A = ⊤} {B = Exp (LIST.map encode Γ) (encode nat)} 
+          (Exp (Δp +>> LIST.map encode Γ) (encode A)) 
+          (Inl <>)
+          (λ <> → wk (sub-revappendl _ Δp) (embed eb))
+          (λ e → {! wk (sub-revappendl _ Δp) (embed ef) !})) -}
+{-
         if (λ _ → Exp (Δp +>> LIST.map encode Γ) (encode A)) 
         / True 
         then {!!} 
-        else {!!})
+        else {!!}) -}

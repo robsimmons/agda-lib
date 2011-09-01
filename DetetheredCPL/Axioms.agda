@@ -1,4 +1,4 @@
--- Constructive Provability Logic 
+-- Constructive Provability Logic  
 -- De-tethered intuitionstic variant
 -- Robert J. Simmons, Bernardo Toninho
 

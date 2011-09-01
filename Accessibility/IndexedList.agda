@@ -179,8 +179,8 @@ module ILIST (UWF : UpwardsWellFounded) where
       → Δ ⊆ Ψ to w 
       → Γ ⊆ Ψ to w 
    ⊆to/trans (st sub1 sub1≺) (st sub2 sub2≺) = st 
-      (λ x → case (sub1 x) sub2 Inr) 
-      (λ ω x → case (sub2≺ ω x) (sub1≺ ω) Inr)    
+      (λ x → case _ (sub1 x) sub2 Inr) 
+      (λ ω x → case _ (sub2≺ ω x) (sub1≺ ω) Inr)    
 
    -- Adding indices at a given world
    _atΓ_ : ∀{A} → List A → W → IList A

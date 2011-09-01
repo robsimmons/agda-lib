@@ -7,8 +7,6 @@ open import Lib.Product
 
 module SUM where
 
-   infixr 10 _+_
-
    data Void : Set where
    ⊥ = Void
 
@@ -22,9 +20,9 @@ module SUM where
    Sum A B = A + B
    Sum0 = Sum {Z} {Z}
 
-   case : ∀{a b} {A B : Set a} {C : Set b} → A + B → (A → C) → (B → C) → C
-   case (Inl x) f g = f x
-   case (Inr x) f g = g x 
+   case : ∀{a b} {A B : Set a} (C : Set b) → A + B → (A → C) → (B → C) → C
+   case _ (Inl x) f g = f x
+   case _ (Inr x) f g = g x 
 
    map : ∀{a b} {A B : Set a} {C D : Set b} → (A → C) → (B → D) → A + B → C + D
    map f g (Inl x) = Inl (f x)

@@ -56,7 +56,7 @@ module Demo.STLC where
    exchM = wkM LIST.SET.sub-exch
 
    cntrM : ∀{Γ A C m} → MTerm (A :: A :: Γ) C m → MTerm (A :: Γ) C m
-   cntrM = wkM LIST.SET.sub-cntr 
+   cntrM = wkM (LIST.SET.sub-cntr Z)
 
    -- Weakening outside the metric
    wk : ∀{Γ Δ A} → Γ ⊆ Δ → Term Γ A → Term Δ A 
@@ -75,7 +75,7 @@ module Demo.STLC where
    exch = wk LIST.SET.sub-exch
 
    cntr : ∀{Γ A C} → Term (A :: A :: Γ) C → Term (A :: Γ) C 
-   cntr = wk LIST.SET.sub-cntr 
+   cntr = wk (LIST.SET.sub-cntr Z)
 
    -- Substitution
    subst : ∀{Γ A C} → Term Γ A → Term (A :: Γ) C → Term Γ C

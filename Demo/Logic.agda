@@ -10,7 +10,7 @@ open import Prelude
 
 {- Unit or void using the elimination forms -}
 ⊥-is-a-unit-of-+ : ∀{A} → A + ⊥ → A
-⊥-is-a-unit-of-+ x = case x (λ x → x) (λ x → abort x)
+⊥-is-a-unit-of-+ x = case _ x (λ x → x) (λ x → abort x)
 
 {- Unit or void using pattern matching -}
 ⊥-is-impossible : {A : Set} → A + ⊥ → A

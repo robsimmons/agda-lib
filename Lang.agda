@@ -230,3 +230,14 @@ module TEST-T where
       (eb : TExp Γ C)
       (ei : TExp (C :: nat :: Γ) C)
       → TExp Γ C
+
+  embed : ∀{Γ} (A : TTp) → TExp Γ A → Exp (LIST.map encode Γ) (encode A)
+  embed nat z = ⟨ con z refl ⟩ [ ⟨⟩ ]
+  embed nat (s n) = ⟨ con s refl · {!!} ⟩ [ ⟨⟩ ]
+  embed bool true = {!!}
+  embed bool false = {!!}
+  embed (A ⇒ B) (Λ e) = {!!}
+  embed A (var x) = {!!}
+  embed A (e₁ · e₂) = {!!}
+  embed A (ite e et ef) = {!!}
+  embed A (rec e eb ei) = {!!}

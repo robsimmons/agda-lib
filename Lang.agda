@@ -204,6 +204,7 @@ module TEST-T where
   decodeN ⟨ R · N · N' ⟩ = abort₁ R
 -}
 
+
   data TTp : Set where
     nat : TTp
     bool : TTp

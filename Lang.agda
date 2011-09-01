@@ -160,11 +160,12 @@ module TEST-T where
   sig true = con bool
   sig false = con bool
   sig z = con nat
-  sig s = ⟨ con nat ⟩ ⊃ con nat
+  sig s = U (F (con nat)) ⊃ con nat
 
-  open TERMS Atom Const sig
+  open TERMS Atom Const sig renaming (wk to wkN ; subst to substN)
   open LANG Atom Const sig
 
+{-
   abort₁ : ∀{Δ A B C} {Any : Set} → Neut Δ [] (A ⊃ B ⊃ C) → Any
   abort₁ (var ()) 
   abort₁ (R ·' x) = abort₁ R
@@ -201,6 +202,7 @@ module TEST-T where
   decodeN ⟨ con z () · N ⟩
   decodeN ⟨ con s Refl · N ⟩ = S (decodeN N)
   decodeN ⟨ R · N · N' ⟩ = abort₁ R
+-}
 
   data TTp : Set where
     nat : TTp
@@ -231,13 +233,27 @@ module TEST-T where
       (ei : TExp (C :: nat :: Γ) C)
       → TExp Γ C
 
-  embed : ∀{Γ} (A : TTp) → TExp Γ A → Exp (LIST.map encode Γ) (encode A)
-  embed nat z = ⟨ con z refl ⟩ [ ⟨⟩ ]
-  embed nat (s n) = ⟨ con s refl · {!!} ⟩ [ ⟨⟩ ]
-  embed bool true = {!!}
-  embed bool false = {!!}
-  embed (A ⇒ B) (Λ e) = {!!}
-  embed A (var x) = {!!}
-  embed A (e₁ · e₂) = {!!}
-  embed A (ite e et ef) = {!!}
-  embed A (rec e eb ei) = {!!}
+  
+
+  embed : ∀{Γ A} → TExp Γ A → Exp (LIST.map encode Γ) (encode A)
+  embed (var x) = var (LIST.in-map encode x)
+  embed (Λ e) = Λ embed e
+  embed (e₁ · e₂) = embed e₁ · embed e₂
+  embed true = ⟨ con true refl ⟩ [ ⟨⟩ ]
+  embed false = ⟨ con false refl ⟩ [ ⟨⟩ ]
+  embed {Γ} {A} (ite e et ef) = 
+    elim (embed e) 
+      (λ {Δp} N → 
+        if (λ _ → Exp (Δp +>> LIST.map encode Γ) (encode A)) 
+        / True 
+        then wk (sub-revappendl _ Δp) (embed et) 
+        else (wk (sub-revappendl _ Δp) (embed ef))) 
+  embed z = ⟨ con z refl ⟩ [ ⟨⟩ ]
+  embed (s n) = ⟨ con s refl ·' Z ⟩ [ (embed n , ⟨⟩) ]
+  embed {Γ} {A} (rec e eb ei) = 
+    elim (embed e) 
+      (λ {Δp} N → 
+        if (λ _ → Exp (Δp +>> LIST.map encode Γ) (encode A)) 
+        / True 
+        then {!!} 
+        else {!!})

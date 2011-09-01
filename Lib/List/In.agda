@@ -57,7 +57,7 @@ split-append : ∀{a} {A : Set a} {x : A} {xs ys : List A}
    → (x ∈ xs) + (x ∈ ys)
 split-append {xs = []} n = Inr n
 split-append {xs = x :: xs} Z = Inl Z
-split-append {xs = x :: xs} (S n) = case (split-append n) (Inl o S) Inr
+split-append {xs = x :: xs} (S n) = case _ (split-append n) (Inl o S) Inr
 
 module SET where
    open MEMBERSHIP.SET List In public

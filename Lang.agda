@@ -235,7 +235,7 @@ module TEST-T where
       → TExp Γ C
 
   
-
+{-
   embed : ∀{Γ A} → TExp Γ A → Lazy (Exp (LIST.map encode Γ) (encode A))
   embed (var x) = thunk (var (LIST.in-map encode x))
   embed (Λ e) = thunk (Λ force (embed e))
@@ -263,6 +263,7 @@ module TEST-T where
             (λ e → wk (sub-revappendl _ Δp) 
                      (subst [] (e , ({!!} , ⟨⟩)) (force (embed ei))))))
 
+-}
 {- 
       (λ {Δp} N → 
         case {A = ⊤} {B = Exp (LIST.map encode Γ) (encode nat)} 

@@ -3,9 +3,7 @@ module LangT where
 open import Prelude hiding ([_])
 open import Lambda
 open import Lang
-
-
-
+open import GoedelT
 
 module LANG-T where
 
@@ -114,8 +112,7 @@ module EQUIV-T where
         else (wk (sub-revappendl _ Δp) (embed ef)))
   embed z = ⟨ con z refl ⟩ [ ⟨⟩ ]
   embed (s e) = 
-    (Λ elim (var Z) (λ {Δp} N → ⟨ con s refl · N ⟩ [ idsub Δp ])) 
-    · embed e
+    elim (embed e) (λ {Δp} N → ⟨ con s refl · N ⟩ [ idsub Δp ])
   embed {Γ} {A} (rec e eb ei) = 
     elim (embed e) 
       (λ {Δp} N → 

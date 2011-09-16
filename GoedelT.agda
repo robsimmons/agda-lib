@@ -150,6 +150,7 @@ module GÖDEL-T where
 
   -- Steps preserve meaning
 
+{-
   meansres : ∀{A} → TRes A → meanstp A
   meansres (Step e) = meansexp e <>
   meansres (Value v) = meansval v
@@ -195,3 +196,4 @@ module GÖDEL-T where
 --   where
 --    loop
 --     ∀{n m} → n ≡ m → Nat.fo
+-}

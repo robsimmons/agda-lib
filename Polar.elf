@@ -353,3 +353,33 @@ left⁺:  met⁺ A⁺ -> linv _Δ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable 
   (left⁺  Mt8 MiL NiL⁺ _ _).
 
 
+%{ == Expansion == }%
+
+eta⁻: met⁻ A⁻ -> ({C⁻: typ ⁻} lfoc A⁻ C⁻ -> conc C⁻) -> conc C⁻ -> type.
+eta⁺: metΔ _Δ -> {H} (rfoc _Δ -> linv (H ·) C⁻) -> linv (H _Δ) C⁻ -> type. 
+
+%mode eta⁻ +Mt +A -B.
+%mode eta⁺ +Mt +H +A -B.
+
+-: eta⁻ mc⁻ ([γ][sp: lfoc (c Q⁻) γ] N γ sp) (N (c Q⁻) init). 
+
+-: eta⁻ (m↑ (mΔ Mt)) ([γ][sp: lfoc (↑ A⁺) γ] N γ sp) (N (↑ A⁺) (↑L N2))
+  <- eta⁺ Mt ([δ] δ) ([v: rfoc (A⁺ , ·)] ·L (↑R v)) N2.
+
+-: eta⁻ m⊤ ([γ][sp: lfoc ⊤ γ] N γ sp) ⊤R.
+
+-: eta⁻ (m& Mt₁ Mt₂) ([γ][sp: lfoc (A⁻ & B⁻) γ] N γ sp) (&R N₁ N₂)
+  <- eta⁻ Mt₁ ([γ][sp: lfoc A⁻ γ] N γ (&L₁ sp)) N₁
+  <- eta⁻ Mt₂ ([γ][sp: lfoc B⁻ γ] N γ (&L₂ sp)) N₂.  
+
+-: eta⁻ (m⊸ (mΔ Mt₁) Mt₂) ([γ][sp: lfoc (A⁺ ⊸ B⁻) γ] N γ sp) (⊸R Ni2)
+  <- ({σ: rfoc (A⁺ , ·)}
+       eta⁻ Mt₂ ([γ][sp: lfoc B⁻ γ] N γ (⊸L σ sp)) (N2 σ))
+  <- eta⁺ Mt₁ ([δ] δ) ([σ: rfoc (A⁺ , ·)] ·L (N2 σ)) Ni2.
+
+-: eta⁺ m· ([γ] H γ) ([σ: rfoc ·] N σ) (N ·R).
+
+-: eta⁺ (mc⁺ Mt) ([γ] H γ) ([v: rfoc (c Q⁺ , _Δ)] N v) Ni2
+  <- eta⁺ Mt ([γ] H (c Q⁺ , γ)) ([σ: rfoc _Δ] _) Ni2.
+
+-: eta⁻ (m↓ )

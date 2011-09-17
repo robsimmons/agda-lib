@@ -1,4 +1,4 @@
-{-# OPTIONS --no-termination-check #-}
+-- {-# OPTIONS --no-termination-check #-}
 
 open import Prelude hiding (⊤)
 
@@ -129,156 +129,163 @@ mutual
   wkσ : ∀{Γ Γ' Δ} → Γ ⊆ Γ' → Γ ⊢[ Δ ] → Γ' ⊢[ Δ ] 
   wkσ θ σ = {!!} 
 
+mutual 
+  data mA : Type ⁻ → Set where
+    c : ∀{Q} → mA (c Q)
+    ↑ : ∀{Δ} (m : mX Δ) → mA (↑ Δ)
+    ⊤ : mA ⊤
+    & : ∀{A⁻ B⁻} (m₁ : mA A⁻) (m₂ : mA B⁻) → mA (A⁻ & B⁻) 
+    ⊸ : ∀{Δ B⁻} (m₁ : mΔ Δ) (m₂ : mA B⁻) → mA (Δ ⊸ B⁻)
+
+  data mX : List (Type ⁺) → Set where
+    X : ∀{Δ} (m : mΔ Δ) → mX Δ
+
+  data mΔ : List (Type ⁺) → Set where
+    nil : mΔ []
+    c : ∀{Q Δ} (m : mΔ Δ) → mΔ (c Q :: Δ)
+    ↓ : ∀{A⁻ Δ} (m₁ : mA A⁻) (m₂ : mΔ Δ) → mΔ (↓ A⁻ :: Δ)
+    ⊗ : ∀{A⁺ B⁺ Δ} (m : mΔ (A⁺ :: B⁺ :: Δ)) → mΔ (A⁺ ⊗ B⁺ :: Δ)
+    ⊕ : ∀{A⁺ B⁺ Δ} (m₁ : mΔ (A⁺ :: Δ)) (m₂ : mΔ (B⁺ :: Δ)) → mΔ (A⁺ ⊕ B⁺ :: Δ)
+    true : ∀{Δ} (m : mΔ Δ) → mΔ (true :: Δ) 
+    false : ∀{Δ} → mΔ (false :: Δ)
+
+Γ? : ∀{α α' Γ} (Γ' : Ctx) 
+  → (α' ∈ Γ' ++ α :: Γ) 
+  → (α ≡ α') + (α' ∈ Γ' ++ Γ)
+Γ? [] Z = Inl refl
+Γ? [] (S x) = Inr x
+Γ? (_ :: Γ') Z = Inr Z
+Γ? (_ :: Γ') (S x) with Γ? Γ' x
+... | Inl Refl = Inl refl
+... | Inr y = Inr (S y)
+
 mutual
-  cut : ∀{Γ A⁻ C⁻} (Γ' : Ctx)
+  -- Right commutive cases
+  -- Negative connectives, right rules
+  cutN : ∀{Γ A⁻ C⁻} (Γ' : Ctx)
+    → (m : mA A⁻)
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ⊢ C⁻
     → (Γ' ++ Γ) ⊢ C⁻
-  cut [] M (foc Z atm Sp) = subst⁻ _ [] M (cutSp [] M Sp) atm
-  cut [] M (foc (S x) atm Sp) = foc x atm (cutSp [] M Sp)
-  cut (._ :: Γ') M (foc Z atm Sp) = foc Z atm (cutSp (_ :: Γ') M Sp)
-  cut (_ :: Γ') M (foc (S x) atm Sp) = {!cut Γ' M (foc !}
-  cut Γ' M (↑R σ) = ↑R (cutσ Γ' M σ)
-  cut Γ' M ⊤R = ⊤R
-  cut Γ' M (&R N₁ N₂) = &R (cut Γ' M N₁) (cut Γ' M N₂)
-  cut Γ' M (⊸R N) = ⊸R (cutNI Γ' M N)
+  cutN Γ' m M (foc x atm Sp) with Γ? Γ' x
+  ... | Inl Refl = subst⁻ Γ' m atm M (cutSp Γ' m M Sp) -- PRINCIPAL
+  ... | Inr y = foc y atm (cutSp Γ' m M Sp)
+  cutN Γ' m M (↑R σ) = ↑R (cutσ Γ' m M σ)
+  cutN Γ' m M ⊤R = ⊤R
+  cutN Γ' m M (&R N₁ N₂) = &R (cutN Γ' m M N₁) (cutN Γ' m M N₂)
+  cutN Γ' m M (⊸R N) = ⊸R (cutNI Γ' m M N)
 
-  -- Right commutative cases
+  -- Negative connectives, left rules
   cutNI : ∀{Γ A⁻ Δ C⁻} (Γ' : Ctx)
+    → (m : mA A⁻)
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻
     → (Γ' ++ Γ) ∣ Δ ⊢ C⁻
-  cutNI Γ' M (nil N) = nil (cut Γ' M N)
-  cutNI Γ' M (cL N) = cL (cutNI (_ :: Γ') M N)
-  cutNI Γ' M (↓L N) = ↓L (cutNI (_ :: Γ') M N)
-  cutNI Γ' M falseE = falseE
-  cutNI Γ' M (⊕L N₁ N₂) = ⊕L (cutNI Γ' M N₁) (cutNI Γ' M N₂)
-  cutNI Γ' M (trueE N) = trueE (cutNI Γ' M N)
-  cutNI Γ' M (⊗L N) = ⊗L (cutNI Γ' M N) 
+  cutNI Γ' m M (nil N) = nil (cutN Γ' m M N)
+  cutNI Γ' m M (cL N) = cL (cutNI (_ :: Γ') m M N)
+  cutNI Γ' m M (↓L N) = ↓L (cutNI (_ :: Γ') m M N)
+  cutNI Γ' m M falseE = falseE
+  cutNI Γ' m M (⊕L N₁ N₂) = ⊕L (cutNI Γ' m M N₁) (cutNI Γ' m M N₂)
+  cutNI Γ' m M (trueE N) = trueE (cutNI Γ' m M N)
+  cutNI Γ' m M (⊗L N) = ⊗L (cutNI Γ' m M N) 
 
-  cutSp : ∀{Γ A⁻ B⁻ C⁻} (Γ' : Ctx)
-    → Γ ⊢ A⁻
-    → (Γ' ++ Inl A⁻ :: Γ) [ B⁻ ]⊢ C⁻
-    → (Γ' ++ Γ) [ B⁻ ]⊢ C⁻
-  cutSp Γ' M nil = nil
-  cutSp Γ' M (cont N) = cont (cutNI Γ' M N)
-  cutSp Γ' M (&L₁ Sp) = &L₁ (cutSp Γ' M Sp)
-  cutSp Γ' M (&L₂ Sp) = &L₂ (cutSp Γ' M Sp)
-  cutSp Γ' M (⊸L σ Sp) = ⊸L (cutσ Γ' M σ) (cutSp Γ' M Sp)
-
+  -- Positive connectives, right rules
   cutσ : ∀{Γ A⁻ Δ} (Γ' : Ctx)
+    → (m : mA A⁻)
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ⊢[ Δ ]
     → (Γ' ++ Γ) ⊢[ Δ ]
-  cutσ Γ' M nil = nil
-  cutσ Γ' M (cR x σ) = cR {!x!} (cutσ Γ' M σ)
-  cutσ Γ' M (↓R N σ) = ↓R (cut Γ' M N) (cutσ Γ' M σ)
-  cutσ Γ' M (⊕R₁ σ) = ⊕R₁ (cutσ Γ' M σ)
-  cutσ Γ' M (⊕R₂ σ) = ⊕R₂ (cutσ Γ' M σ)
-  cutσ Γ' M (trueR σ) = trueR (cutσ Γ' M σ)
-  cutσ Γ' M (⊗R σ) = ⊗R (cutσ Γ' M σ)
+  cutσ Γ' m M nil = nil
+  cutσ Γ' m M (cR x σ) with Γ? Γ' x
+  ... | Inl () 
+  ... | Inr y = cR y (cutσ Γ' m M σ)
+  cutσ Γ' m M (↓R N σ) = ↓R (cutN Γ' m M N) (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊕R₁ σ) = ⊕R₁ (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊕R₂ σ) = ⊕R₂ (cutσ Γ' m M σ)
+  cutσ Γ' m M (trueR σ) = trueR (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊗R σ) = ⊗R (cutσ Γ' m M σ)
 
-  -- Left commutative cases
-  cuto : ∀{Γ Δ Δ' C}
-    → Γ ∣ Δ' ⊢ ↑ Δ
-    → Γ ∣ Δ ⊢ C
-    → Γ ∣ Δ' ⊢ C
-  cuto (nil M) N = nil (cutl M N)
-  cuto (cL M) N = cL ? -- (cuto M {!!})
-  cuto (↓L M) N = ↓L ? -- (cuto M {!!})
-  cuto falseE N = falseE
-  cuto (⊕L N₁ N₂) N = ⊕L (cuto N₁ N) (cuto N₂ N)
-  cuto (trueE M) N = trueE (cuto M N)
-  cuto (⊗L M) N = ⊗L (cuto M N)
+  -- Positive connectives, left rules
+  cutSp : ∀{Γ A⁻ B⁻ C⁻} (Γ' : Ctx)
+    → (m : mA A⁻)
+    → Γ ⊢ A⁻
+    → (Γ' ++ Inl A⁻ :: Γ) [ B⁻ ]⊢ C⁻
+    → (Γ' ++ Γ) [ B⁻ ]⊢ C⁻
+  cutSp Γ' m M nil = nil
+  cutSp Γ' m M (cont N) = cont (cutNI Γ' m M N)
+  cutSp Γ' m M (&L₁ Sp) = &L₁ (cutSp Γ' m M Sp)
+  cutSp Γ' m M (&L₂ Sp) = &L₂ (cutSp Γ' m M Sp)
+  cutSp Γ' m M (⊸L σ Sp) = ⊸L (cutσ Γ' m M σ) (cutSp Γ' m M Sp)
 
-  cutl : ∀{Γ Δ C}
-    → Γ ⊢ ↑ Δ
-    → Γ ∣ Δ ⊢ C
-    → Γ ⊢ C
-  cutl = {!!}
 
-  cutL : ∀{Γ B⁻ Δ C⁻}
-    → Γ [ B⁻ ]⊢ ↑ Δ
+  -- Left commutative cases ("Leftist substitution")
+  -- Negative connectives
+  left⁻ : ∀{Γ B⁻ Δ C⁻} (Γ' : Ctx)
+    → mX Δ
+    → Atomic C⁻
+    → Γ' ++ Γ [ B⁻ ]⊢ ↑ Δ
     → Γ ∣ Δ ⊢ C⁻
-    → Γ [ B⁻ ]⊢ C⁻
-  cutL (cont M) N = cont (cuto M N)
-  cutL (&L₁ Sp) N = &L₁ (cutL Sp N)
-  cutL (&L₂ Sp) N = &L₂ (cutL Sp N)
-  cutL (⊸L σ Sp) N = ⊸L {!!} (cutL Sp N)
+    → Γ' ++ Γ [ B⁻ ]⊢ C⁻
+  left⁻ Γ' m a (cont M) N = cont (left⁺ Γ' m a M N)
+  left⁻ Γ' m a (&L₁ Sp) N = &L₁ (left⁻ Γ' m a Sp N)
+  left⁻ Γ' m a (&L₂ Sp) N = &L₂ (left⁻ Γ' m a Sp N)
+  left⁻ Γ' m a (⊸L σ Sp) N = ⊸L σ (left⁻ Γ' m a Sp N)
 
-  subst⁻ : ∀{ Γ C⁻} (A⁻ : _) (Γ' : Ctx)
+  -- Positive connectives
+  left⁺ : ∀{Γ Δ Δ' C⁻} (Γ' : Ctx)
+    → mX Δ
+    → Atomic C⁻
+    → Γ' ++ Γ ∣ Δ' ⊢ ↑ Δ
+    → Γ ∣ Δ ⊢ C⁻
+    → Γ' ++ Γ ∣ Δ' ⊢ C⁻
+  left⁺ Γ' m a (nil (foc x atm Sp)) N = 
+    nil (foc x a (left⁻ Γ' m a Sp N))
+  left⁺ Γ' (X m) a (nil (↑R σ)) N = 
+    nil (subst⁺ [] m σ (wkNI (LIST.SET.sub-appendl _ Γ') N))
+  left⁺ Γ' m a (cL M) N = cL (left⁺ (_ :: Γ') m a M N)
+  left⁺ Γ' m a (↓L M) N = ↓L (left⁺ (_ :: Γ') m a M N)
+  left⁺ Γ' m a falseE N = falseE
+  left⁺ Γ' m a (⊕L N₁ N₂) N = ⊕L (left⁺ Γ' m a N₁ N) (left⁺ Γ' m a N₂ N)
+  left⁺ Γ' m a (trueE M) N = trueE (left⁺ Γ' m a M N)
+  left⁺ Γ' m a (⊗L M) N = ⊗L (left⁺ Γ' m a M N)
+
+
+  -- Principal cuts ("Hereditary reduction")
+  -- Negative connectives
+  subst⁻ : ∀{A⁻ Γ C⁻}  (Γ' : Ctx)
+    → mA A⁻
+    → Atomic C⁻
     → Γ ⊢ A⁻
     → (Γ' ++ Γ) [ A⁻ ]⊢ C⁻
-    → Atomic C⁻
     → (Γ' ++ Γ) ⊢ C⁻
-  subst⁻ (c Q) Γ' (foc x atm Sp) nil a = wkN {!!} (foc x atm Sp)
-  subst⁻ (↑ Δ) Γ' (foc x atm Sp) (cont N) a = 
-    {!!} -- foc (LIST.SET.sub-appendl _ Γ' x) a (cutL (wkSp {!!} Sp) N)
-  subst⁻ (↑ Δ) Γ' (↑R σ) (cont N) a = {!!} -- subst⁺ (wkσ {!!} σ) N 
-  subst⁻ ⊤ Γ' M () a
-  subst⁻ (A⁻ & B⁻) Γ' (foc x () Sp) M a
-  subst⁻ (A⁻ & B⁻) Γ' (&R N₁ N₂) (&L₁ Sp) a = subst⁻ A⁻ Γ' N₁ Sp a
-  subst⁻ (A⁻ & B⁻) Γ' (&R N₁ N₂) (&L₂ Sp) a = subst⁻ B⁻ Γ' N₂ Sp a
-  subst⁻ (Δ ⊸ B⁻) Γ' (foc x () Sp) Sp' a
-  subst⁻ (Δ ⊸ B⁻) Γ' (⊸R N) (⊸L σ Sp) a = 
-    subst⁻ B⁻ Γ' (subst⁺ [] (wkσ {!!} σ) N) Sp a
+  subst⁻ Γ' c a (foc x atm Sp) nil = 
+    wkN (LIST.SET.sub-appendl _ Γ') (foc x atm Sp)
+  subst⁻ Γ' (↑ m) a (foc x atm Sp) (cont N) = 
+    foc (LIST.SET.sub-appendl _ Γ' x) a
+      (left⁻ [] m a (wkSp (LIST.SET.sub-appendl _ Γ') Sp) N)
+  subst⁻ Γ' (↑ (X m)) a (↑R σ) (cont N) = subst⁺ Γ' m σ N
+  subst⁻ Γ' ⊤ a M ()
+  subst⁻ Γ' (& m₁ m₂) a (foc x () Sp) M
+  subst⁻ Γ' (& m₁ m₂) a (&R N₁ N₂) (&L₁ Sp) = subst⁻ Γ' m₁ a N₁ Sp
+  subst⁻ Γ' (& m₁ m₂) a (&R N₁ N₂) (&L₂ Sp) = subst⁻ Γ' m₂ a N₂ Sp
+  subst⁻ Γ' (⊸ m₁ m₂) a (foc x () Sp) Sp'
+  subst⁻ Γ' (⊸ m₁ m₂) a (⊸R N) (⊸L σ Sp) = 
+    subst⁻ [] m₂ a (subst⁺ [] m₁ σ (wkNI (LIST.SET.sub-appendl _ Γ') N)) Sp
  
+  -- Positive connectives
   subst⁺ : ∀{Γ Δ C⁻} (Γ' : Ctx)
+    → mΔ Δ
     → Γ ⊢[ Δ ]
     → (Γ' ++ Γ) ∣ Δ ⊢ C⁻
     → (Γ' ++ Γ) ⊢ C⁻
-  subst⁺ Γ' nil (nil N) = N
-  subst⁺ Γ' (cR x σ) (cL N) = subst⁺ Γ' σ (wkNI {!!} N)
-  subst⁺ Γ' (↓R M σ) (↓L N) = subst⁺ Γ' σ (cutNI [] (wkN {!!} M) N) 
-  subst⁺ Γ' (⊕R₁ σ) (⊕L N₁ N₂) = subst⁺ Γ' σ N₁
-  subst⁺ Γ' (⊕R₂ σ) (⊕L N₁ N₂) = subst⁺ Γ' σ N₂
-  subst⁺ Γ' (trueR σ) (trueE N) = subst⁺ Γ' σ N
-  subst⁺ Γ' (⊗R σ) (⊗L N) = subst⁺ Γ' σ N
+  subst⁺ Γ' nil nil (nil N) = N
+  subst⁺ Γ' (c m) (cR x σ) (cL N) = 
+    subst⁺ Γ' m σ (wkNI (LIST.SET.sub-cntr (LIST.SET.sub-appendl _ Γ' x)) N)
+  subst⁺ Γ' (↓ m₁ m₂) (↓R M σ) (↓L N) = 
+    subst⁺ Γ' m₂ σ (cutNI [] m₁ (wkN (LIST.SET.sub-appendl _ Γ') M) N) 
+  subst⁺ Γ' (⊕ m₁ m₂) (⊕R₁ σ) (⊕L N₁ N₂) = subst⁺ Γ' m₁ σ N₁
+  subst⁺ Γ' (⊕ m₁ m₂) (⊕R₂ σ) (⊕L N₁ N₂) = subst⁺ Γ' m₂ σ N₂
+  subst⁺ Γ' false () falseL 
+  subst⁺ Γ' (true m) (trueR σ) (trueE N) = subst⁺ Γ' m σ N
+  subst⁺ Γ' (⊗ m) (⊗R σ) (⊗L N) = subst⁺ Γ' m σ N
 
-{-
-  subst⁻ Γ' M (⇑⇓ R) = {!!}
-  subst⁻ Γ' M (↑I σ) = ↑I (subst⁺ Γ' M σ)
-  subst⁻ Γ' M (↑E atm R N) = ↑E atm {!!} (substinv Γ' M N)
-  subst⁻ Γ' M ⊤I = ⊤I
-  subst⁻ Γ' M (&I N₁ N₂) = &I (subst⁻ Γ' M N₁) (subst⁻ Γ' M N₂)
-  subst⁻ Γ' M (⊸I N) = ⊸I (substinv Γ' M N)
-
-  substinv : ∀{Γ A⁻ Δ C⁻} (Γ' : Ctx)
-    → Γ ⊢ A⁻ verif
-    → (Γ' ++ Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻ verif
-    → (Γ' ++ Γ) ∣ Δ ⊢ C⁻ verif
-  substinv Γ' M (nil N) = nil (subst⁻ Γ' M N)
-  substinv Γ' M (cE N) = cE (substinv (_ :: Γ') M N)
-  substinv Γ' M (↓E N) = ↓E (substinv (_ :: Γ') M N)
-  substinv Γ' M falseE = falseE
-  substinv Γ' M (⊕E N₁ N₂) = ⊕E (substinv Γ' M N₁) (substinv Γ' M N₂)
-  substinv Γ' M (trueE N) = trueE (substinv Γ' M N)
-  substinv Γ' M (⊗E N) = ⊗E (substinv Γ' M N)
-
-  subst⁺ : ∀{Γ A⁻ Δ} (Γ' : Ctx)
-    → Γ ⊢ A⁻ verif
-    → (Γ' ++ Inl A⁻ :: Γ) ⊢ Δ subst
-    → (Γ' ++ Γ) ⊢ Δ subst
-  subst⁺ Γ' M nil = nil
-  subst⁺ Γ' M (cI x σ) = cI {!x!} (subst⁺ Γ' M σ)
-  subst⁺ Γ' M (↓I N σ) = ↓I (subst⁻ Γ' M N) (subst⁺ Γ' M σ)
-  subst⁺ Γ' M (⊕I₁ σ) = ⊕I₁ (subst⁺ Γ' M σ)
-  subst⁺ Γ' M (⊕I₂ σ) = ⊕I₂ (subst⁺ Γ' M σ)
-  subst⁺ Γ' M (trueI σ) = trueI (subst⁺ Γ' M σ)
-  subst⁺ Γ' M (⊗I σ) = ⊗I (subst⁺ Γ' M σ)
-
---  substR : ∀{Γ A⁻ C⁻}
---    → Γ ⊢ A⁻ verif
---    → Γ' ++ Inl  
-  
-
-
-  substσ : ∀{Γ Δ C⁻} → Γ ⊢ Δ subst → Γ ∣ Δ ⊢ C⁻ verif → Γ ⊢ C⁻ verif
-  substσ nil (nil N) = N
-  substσ (cI x τ) (cE N) = substσ τ (wkNI (LIST.SET.sub-cntr x) N)
-  substσ (↓I M τ) (↓E N) = substσ τ (substinv [] M N)
-  substσ (⊕I₁ τ) (⊕E N₁ N₂) = substσ τ N₁
-  substσ (⊕I₂ τ) (⊕E N₁ N₂) = substσ τ N₂
-  substσ (trueI τ) (trueE N) = substσ τ N
-  substσ (⊗I τ) (⊗E N) = substσ τ N
--}

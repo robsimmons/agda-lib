@@ -9,14 +9,14 @@ data Pol : Set where
 data Type : Pol → Set where
   c : {⁼ : Pol} (Q : String) → Type ⁼
   ↓ : (A⁻ : Type ⁻) → Type ⁺
-  ↑ : (Δ : List (Type ⁺)) → Type ⁻
+  ↑ : (A⁺ : Type ⁺) → Type ⁻
   false : Type ⁺ 
   _⊕_ : (A⁺ B⁺ : Type ⁺) → Type ⁺ 
   true : Type ⁺
   _⊗_ : (A⁺ B⁺ : Type ⁺) → Type ⁺
   ⊤ : Type ⁻
   _&_ : (A⁻ B⁻ : Type ⁻) → Type ⁻
-  _⊸_ : (Δ : List (Type ⁺)) (B⁻ : Type ⁻) → Type ⁻
+  _⊸_ : (A⁺ : Type ⁺) (B⁻ : Type ⁻) → Type ⁻
 
 data Atomic : Type ⁻ → Set where
   c : ∀{Q} → Atomic (c Q)
@@ -39,34 +39,34 @@ mutual
       (atm : Atomic γ)
       (Sp : Γ [ A⁻ ]⊢ γ)
       → Γ ⊢ γ
-    ↑R : ∀{Δ}
-      (σ : Γ ⊢[ Δ ])
-      → Γ ⊢ ↑ Δ 
+    ↑R : ∀{A⁺}
+      (σ : Γ ⊢[ [ A⁺ ] ])
+      → Γ ⊢ ↑ A⁺ 
     ⊤R : Γ ⊢ ⊤ 
     &R : ∀{A⁻ B⁻}
       (N₁ : Γ ⊢ A⁻)
       (N₂ : Γ ⊢ B⁻)
       → Γ ⊢ A⁻ & B⁻
-    ⊸R : ∀{Δ B⁻}
-      (N : Γ ∣ Δ ⊢ B⁻)
-      → Γ ⊢ Δ ⊸ B⁻
+    ⊸R : ∀{A⁺ B⁻}
+      (N : Γ ∣ [ A⁺ ] ⊢ B⁻)
+      → Γ ⊢ A⁺ ⊸ B⁻
   
   data _[_]⊢_ (Γ : Ctx) : Type ⁻ → Type ⁻ → Set where
     nil : ∀{Q}
       → Γ [ c Q ]⊢ c Q
-    cont : ∀{Δ C⁻}
-      (N : Γ ∣ Δ ⊢ C⁻)
-      → Γ [ ↑ Δ ]⊢ C⁻
+    cont : ∀{A⁺ C⁻}
+      (N : Γ ∣ [ A⁺ ] ⊢ C⁻)
+      → Γ [ ↑ A⁺ ]⊢ C⁻
     &L₁ : ∀{A⁻ B⁻ C⁻}
       (Sp : Γ [ A⁻ ]⊢ C⁻)
       → Γ [ A⁻ & B⁻ ]⊢ C⁻
     &L₂ : ∀{A⁻ B⁻ C⁻}
       (Sp : Γ [ B⁻ ]⊢ C⁻)
       → Γ [ A⁻ & B⁻ ]⊢ C⁻
-    ⊸L : ∀{Δ B⁻ C⁻}
-      (σ : Γ ⊢[ Δ ])
+    ⊸L : ∀{A⁺ B⁻ C⁻}
+      (σ : Γ ⊢[ [ A⁺ ] ])
       (Sp : Γ [ B⁻ ]⊢ C⁻)
-      → Γ [ Δ ⊸ B⁻ ]⊢ C⁻ 
+      → Γ [ A⁺ ⊸ B⁻ ]⊢ C⁻ 
 
   data _⊢[_] (Γ : Ctx) : List (Type ⁺) → Set where
     nil : Γ ⊢[ [] ]
@@ -127,26 +127,30 @@ mutual
   wkσ : ∀{Γ Γ' Δ} → Γ ⊆ Γ' → Γ ⊢[ Δ ] → Γ' ⊢[ Δ ] 
   wkσ θ σ = {!!} 
 
-mutual 
-  data mA : Type ⁻ → Set where
-    c : ∀{Q} → mA (c Q)
-    ↑ : ∀{Δ} (m : mX Δ) → mA (↑ Δ)
-    ⊤ : mA ⊤
-    & : ∀{A⁻ B⁻} (m₁ : mA A⁻) (m₂ : mA B⁻) → mA (A⁻ & B⁻) 
-    ⊸ : ∀{Δ B⁻} (m₁ : mΔ Δ) (m₂ : mA B⁻) → mA (Δ ⊸ B⁻)
 
-  data mX : List (Type ⁺) → Set where
-    X : ∀{Δ} (m : mΔ Δ) → mX Δ
+-- Termination metric on terms
+mutual 
+  data mA⁻ : Type ⁻ → Set where
+    c : ∀{Q} → mA⁻ (c Q)
+    ↑ : ∀{A⁺} (m : mA⁺ A⁺) → mA⁻ (↑ A⁺)
+    ⊤ : mA⁻ ⊤
+    & : ∀{A⁻ B⁻} (m₁ : mA⁻ A⁻) (m₂ : mA⁻ B⁻) → mA⁻ (A⁻ & B⁻) 
+    ⊸ : ∀{A⁺ B⁻} (m₁ : mA⁺ A⁺) (m₂ : mA⁻ B⁻) → mA⁻ (A⁺ ⊸ B⁻)
+
+  data mA⁺ : Type ⁺ → Set where
+    Δ : ∀{A⁺} (m : mΔ [ A⁺ ]) → mA⁺ A⁺
 
   data mΔ : List (Type ⁺) → Set where
     nil : mΔ []
     c : ∀{Q Δ} (m : mΔ Δ) → mΔ (c Q :: Δ)
-    ↓ : ∀{A⁻ Δ} (m₁ : mA A⁻) (m₂ : mΔ Δ) → mΔ (↓ A⁻ :: Δ)
+    ↓ : ∀{A⁻ Δ} (m₁ : mA⁻ A⁻) (m₂ : mΔ Δ) → mΔ (↓ A⁻ :: Δ)
     ⊗ : ∀{A⁺ B⁺ Δ} (m : mΔ (A⁺ :: B⁺ :: Δ)) → mΔ (A⁺ ⊗ B⁺ :: Δ)
     ⊕ : ∀{A⁺ B⁺ Δ} (m₁ : mΔ (A⁺ :: Δ)) (m₂ : mΔ (B⁺ :: Δ)) → mΔ (A⁺ ⊕ B⁺ :: Δ)
     true : ∀{Δ} (m : mΔ Δ) → mΔ (true :: Δ) 
     false : ∀{Δ} → mΔ (false :: Δ)
 
+
+-- Selects whether a variable in the context is critical or not
 Γ? : ∀{α α' Γ} (Γ' : Ctx) 
   → (α' ∈ Γ' ++ α :: Γ) 
   → (α ≡ α') + (α' ∈ Γ' ++ Γ)
@@ -157,11 +161,13 @@ mutual
 ... | Inl Refl = Inl refl
 ... | Inr y = Inr (S y)
 
+
+-- Cut admissibility
 mutual
   -- Right commutive cases
   -- Negative connectives, right rules
   cutN : ∀{Γ A⁻ C⁻} (Γ' : Ctx)
-    → (m : mA A⁻)
+    → mA⁻ A⁻
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ⊢ C⁻
     → (Γ' ++ Γ) ⊢ C⁻
@@ -175,7 +181,7 @@ mutual
 
   -- Negative connectives, left rules
   cutNI : ∀{Γ A⁻ Δ C⁻} (Γ' : Ctx)
-    → (m : mA A⁻)
+    → mA⁻ A⁻
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻
     → (Γ' ++ Γ) ∣ Δ ⊢ C⁻
@@ -189,7 +195,7 @@ mutual
 
   -- Positive connectives, right rules
   cutσ : ∀{Γ A⁻ Δ} (Γ' : Ctx)
-    → (m : mA A⁻)
+    → mA⁻ A⁻
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) ⊢[ Δ ]
     → (Γ' ++ Γ) ⊢[ Δ ]
@@ -205,7 +211,7 @@ mutual
 
   -- Positive connectives, left rules
   cutSp : ∀{Γ A⁻ B⁻ C⁻} (Γ' : Ctx)
-    → (m : mA A⁻)
+    → mA⁻ A⁻
     → Γ ⊢ A⁻
     → (Γ' ++ Inl A⁻ :: Γ) [ B⁻ ]⊢ C⁻
     → (Γ' ++ Γ) [ B⁻ ]⊢ C⁻
@@ -218,27 +224,27 @@ mutual
 
   -- Left commutative cases ("Leftist substitution")
   -- Negative connectives
-  left⁻ : ∀{Γ B⁻ Δ C⁻} (Γ' : Ctx)
-    → mX Δ
-    → Atomic C⁻
-    → Γ' ++ Γ [ B⁻ ]⊢ ↑ Δ
-    → Γ ∣ Δ ⊢ C⁻
-    → Γ' ++ Γ [ B⁻ ]⊢ C⁻
+  left⁻ : ∀{Γ B⁻ A⁺ γ} (Γ' : Ctx)
+    → mA⁺ A⁺
+    → Atomic γ
+    → Γ' ++ Γ [ B⁻ ]⊢ ↑ A⁺
+    → Γ ∣ [ A⁺ ] ⊢ γ
+    → Γ' ++ Γ [ B⁻ ]⊢ γ
   left⁻ Γ' m a (cont M) N = cont (left⁺ Γ' m a M N)
   left⁻ Γ' m a (&L₁ Sp) N = &L₁ (left⁻ Γ' m a Sp N)
   left⁻ Γ' m a (&L₂ Sp) N = &L₂ (left⁻ Γ' m a Sp N)
   left⁻ Γ' m a (⊸L σ Sp) N = ⊸L σ (left⁻ Γ' m a Sp N)
 
   -- Positive connectives
-  left⁺ : ∀{Γ Δ Δ' C⁻} (Γ' : Ctx)
-    → mX Δ
-    → Atomic C⁻
-    → Γ' ++ Γ ∣ Δ' ⊢ ↑ Δ
-    → Γ ∣ Δ ⊢ C⁻
-    → Γ' ++ Γ ∣ Δ' ⊢ C⁻
+  left⁺ : ∀{Γ A⁺ Δ γ} (Γ' : Ctx)
+    → mA⁺ A⁺
+    → Atomic γ
+    → Γ' ++ Γ ∣ Δ ⊢ ↑ A⁺
+    → Γ ∣ [ A⁺ ] ⊢ γ
+    → Γ' ++ Γ ∣ Δ ⊢ γ
   left⁺ Γ' m a (nil (foc x atm Sp)) N = 
     nil (foc x a (left⁻ Γ' m a Sp N))
-  left⁺ Γ' (X m) a (nil (↑R σ)) N = 
+  left⁺ Γ' (Δ m) a (nil (↑R σ)) N = 
     nil (subst⁺ [] m σ (wkNI (LIST.SET.sub-appendl _ Γ') N))
   left⁺ Γ' m a (cL M) N = cL (left⁺ (_ :: Γ') m a M N)
   left⁺ Γ' m a (↓L M) N = ↓L (left⁺ (_ :: Γ') m a M N)
@@ -250,24 +256,24 @@ mutual
 
   -- Principal cuts ("Hereditary reduction")
   -- Negative connectives
-  subst⁻ : ∀{A⁻ Γ C⁻}  (Γ' : Ctx)
-    → mA A⁻
-    → Atomic C⁻
+  subst⁻ : ∀{A⁻ Γ γ}  (Γ' : Ctx)
+    → mA⁻ A⁻
+    → Atomic γ
     → Γ ⊢ A⁻
-    → (Γ' ++ Γ) [ A⁻ ]⊢ C⁻
-    → (Γ' ++ Γ) ⊢ C⁻
+    → (Γ' ++ Γ) [ A⁻ ]⊢ γ
+    → (Γ' ++ Γ) ⊢ γ
   subst⁻ Γ' c a (foc x atm Sp) nil = 
     wkN (LIST.SET.sub-appendl _ Γ') (foc x atm Sp)
   subst⁻ Γ' (↑ m) a (foc x atm Sp) (cont N) = 
     foc (LIST.SET.sub-appendl _ Γ' x) a
       (left⁻ [] m a (wkSp (LIST.SET.sub-appendl _ Γ') Sp) N)
-  subst⁻ Γ' (↑ (X m)) a (↑R σ) (cont N) = subst⁺ Γ' m σ N
+  subst⁻ Γ' (↑ (Δ m)) a (↑R σ) (cont N) = subst⁺ Γ' m σ N
   subst⁻ Γ' ⊤ a M ()
   subst⁻ Γ' (& m₁ m₂) a (foc x () Sp) M
   subst⁻ Γ' (& m₁ m₂) a (&R N₁ N₂) (&L₁ Sp) = subst⁻ Γ' m₁ a N₁ Sp
   subst⁻ Γ' (& m₁ m₂) a (&R N₁ N₂) (&L₂ Sp) = subst⁻ Γ' m₂ a N₂ Sp
   subst⁻ Γ' (⊸ m₁ m₂) a (foc x () Sp) Sp'
-  subst⁻ Γ' (⊸ m₁ m₂) a (⊸R N) (⊸L σ Sp) = 
+  subst⁻ Γ' (⊸ (Δ m₁) m₂) a (⊸R N) (⊸L σ Sp) = 
     subst⁻ [] m₂ a (subst⁺ [] m₁ σ (wkNI (LIST.SET.sub-appendl _ Γ') N)) Sp
  
   -- Positive connectives

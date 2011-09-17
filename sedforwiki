@@ -1,6 +1,7 @@
 # Invoke with sed -f <unicode>.elf <wiki>.elf
 s/`/<tt>/g
 s/'/<\/tt>/g
+s/2/'/g
 s/·/#/g
 s/⊕/\\\//g
 s/⊗/*/g
@@ -8,7 +9,8 @@ s/⊸/-o/g
 s/⊤/top/g
 s/↓/dn/g
 s/↑/up/g
-s/metΔ/met/g
+s/mΔ/mP/g
+s/metΔ/metP/g
 s/_Δ/Delta/g
 s/Δ/\&Delta;/g
 s/_σ/Sigma/g

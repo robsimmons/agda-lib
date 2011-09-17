@@ -31,14 +31,17 @@ a↑: stable (↑ A⁺).
 %{ An inversion or focus context Δ is a list of positive propositions. }%
 pos: type. %name pos _Δ.
 ·: pos.
-,: typ ⁺ -> pos -> pos. %infix right 2 ,.
+,: typ ⁺ -> pos -> pos. %infix right 3 ,.
 
 
 %{ === Syntax metric === }%
 
-met⁻: typ ⁻ -> type. %name met⁻ M.
-met⁺: typ ⁺ -> type. %name met⁺ M.
-metΔ: pos -> type. %name metΔ M.
+met: typ ⁻ -> type. %name met S.
+met⁻: typ ⁻ -> type. %name met⁻ S.
+met⁺: typ ⁺ -> type. %name met⁺ S.
+metΔ: pos -> type. %name metΔ S.
+
+m: met⁻ A⁻ -> met A⁻.
 
 mc⁻: met⁻ (c Q).
 m↑: met⁺ A⁺ -> met⁻ (↑ A⁺).
@@ -50,7 +53,7 @@ mΔ: metΔ (A⁺ , ·) -> met⁺ A⁺.
 
 m·: metΔ ·.
 mc⁺: metΔ _Δ -> metΔ (c Q , _Δ).
-m↓: met⁻ A⁻ -> metΔ _Δ -> metΔ (↓ A⁻ , _Δ).
+m↓: met A⁻ -> metΔ _Δ -> metΔ (↓ A⁻ , _Δ).
 m0: metΔ (0 , _Δ).
 m⊕: metΔ (A⁺ , _Δ) -> metΔ (B⁺ , _Δ) -> metΔ (A⁺ ⊕ B⁺ , _Δ).
 m1: metΔ _Δ -> metΔ (1 , _Δ).
@@ -72,27 +75,11 @@ lfoc: typ ⁻ -> typ ⁻ -> type. %name lfoc Sp.
 rfoc: pos -> type. %name rfoc V.
 
 %{ `N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
-foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ _γ -> conc C⁻.
+foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc C⁻.
 ↑R: rfoc (A⁺ , ·) -> conc (↑ A⁺).
 ⊤R: conc ⊤.
-&R: conc A⁻ -> conc B⁻ -> conc C⁻.
+&R: conc A⁻ -> conc B⁻ -> conc (A⁻ & B⁻).
 ⊸R: linv (A⁺ , ·) B⁻ -> conc (A⁺ ⊸ B⁻).
-
-%{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
-·L: conc C⁻ -> linv · C⁻.
-cL: (hyp⁺ Q⁺ -> linv _Δ C⁻) -> linv (c Q⁺ , _Δ) C⁻.
-↓L: (hyp⁻ A⁻ -> linv _Δ C⁻) -> linv (↓ A⁻ , _Δ) C⁻.
-0E: linv (0 , _Δ) C⁻.
-⊕L: linv (A⁺ , _Δ) C⁻ -> linv (B⁺ , _Δ) C⁻ -> linv (A⁺ ⊕ B⁺ , _Δ) C⁻.
-1E: linv _Δ C⁻ -> linv (1 , _Δ) C⁻.
-⊗L: linv (A⁺ , B⁺ , _Δ) C⁻ -> linv (A⁺ ⊗ B⁺ , _Δ) C⁻.
-
-%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ σ;Sp' }%
-init: lfoc (c Q⁻) (c Q⁻).
-↑L: linv (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
-&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
-&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
-⊸L: rfoc (A⁺ , ·) -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
 
 %{ `σ ::= · ∣ x⁺,σ ∣ N,σ ∣ inl σ ∣ inr σ ∣ <>,σ ∣ ⊗σ' }%
 ·R: rfoc ·.
@@ -103,37 +90,32 @@ cR: hyp⁺ Q⁺ -> rfoc _Δ -> rfoc (c Q⁺ , _Δ).
 1R: rfoc _Δ -> rfoc (1 , _Δ).
 ⊗R: rfoc (A⁺ , B⁺ , _Δ) -> rfoc (A⁺ ⊗ B⁺ , _Δ).
 
+%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ σ;Sp' }%
+init: lfoc (c Q⁻) (c Q⁻).
+↑L: linv (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
+&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+⊸L: rfoc (A⁺ , ·) -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
+
+%{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
+·L: conc C⁻ -> linv · C⁻.
+cL: (hyp⁺ Q⁺ -> linv _Δ C⁻) -> linv (c Q⁺ , _Δ) C⁻.
+↓L: (hyp⁻ A⁻ -> linv _Δ C⁻) -> linv (↓ A⁻ , _Δ) C⁻.
+0L: linv (0 , _Δ) C⁻.
+⊕L: linv (A⁺ , _Δ) C⁻ -> linv (B⁺ , _Δ) C⁻ -> linv (A⁺ ⊕ B⁺ , _Δ) C⁻.
+1L: linv _Δ C⁻ -> linv (1 , _Δ) C⁻.
+⊗L: linv (A⁺ , B⁺ , _Δ) C⁻ -> linv (A⁺ ⊗ B⁺ , _Δ) C⁻.
+
 
 %{ == Cut admissibility == }%
 
 %{ Cut admissibility has a lot of mutually inductive theorems, but no more
 than is absolutely necessary given the four syntactic classes we're dealing
 with. Furthermore, the different theorems we use neatly separate the 
-informal division of .
+informal division of cases that we are used to when dealing with cut 
+admissibility theorems.
 
-The "rightist" substitutions captures the right commutative cuts:
-* `[M/x]N' - right rules for negative connectives, 
-* `[M/x]σ' - right rules for positive connectives, 
-* `[M/x]Sp' - left rules for negative connectives, and
-* `[M/x]Ni' - left rules for positive connectives. 
-Each inductive call within this group decreases the size of the formula that 
-we are substituting into. }%
-
-cutN:   met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) 
-  -> conc C⁻ -> type.
-cutNi:  met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> linv _Δ C⁻) 
-  -> linv _Δ C⁻ -> type.
-cutV:   met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> rfoc _Δ) 
-  -> rfoc _Δ -> type.
-cutSp:  met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) 
-  -> lfoc B⁻ C⁻ -> type.
-
-%mode cutN  +M +D +E -F.
-%mode cutNi +M +D +E -F.
-%mode cutV  +M +D +E -F.
-%mode cutSp +M +D +E -F.
-
-%{ The "principal" substitutions capture the principal cuts: 
+The "principal" substitutions capture the principal cuts: 
 * `M • Sp' - negative cut formula, and
 * `σ • Ni' - positive cut formula.
 In this presentation, we have generalized what it means to be a "positive
@@ -151,9 +133,31 @@ subst⁺: metΔ _Δ -> rfoc _Δ -> linv _Δ C⁻
 %mode subst⁻ +M +D +E +S -F.
 %mode subst⁺ +M +D +E -F.
 
+%{ The "rightist" substitutions captures the right commutative cuts:
+* `[M/x]N' - right rules for negative connectives, 
+* `[M/x]σ' - right rules for positive connectives, 
+* `[M/x]Sp' - left rules for negative connectives, and
+* `[M/x]Ni' - left rules for positive connectives. 
+Each inductive call within this group decreases the size of the formula that 
+we are substituting into. }%
+
+cutN:   met A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) 
+  -> conc C⁻ -> type.
+cutV:   met A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> rfoc _Δ) 
+  -> rfoc _Δ -> type.
+cutSp:  met A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) 
+  -> lfoc B⁻ C⁻ -> type.
+cutNi:  met A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> linv _Δ C⁻) 
+  -> linv _Δ C⁻ -> type.
+
+%mode cutN  +M +D +E -F.
+%mode cutNi +M +D +E -F.
+%mode cutV  +M +D +E -F.
+%mode cutSp +M +D +E -F.
+
 %{ The "leftist" substitutions capture the left commutative cuts, and 
 are only called when we bottom out of principal substitutions:
-* `〈Sp〉Mi' - left rules for negative connectives
+* `〈Sp〉Ni' - left rules for negative connectives
 * `〈Mi⟩ Ni' - left rules for positive connectives.
 Each inductive call within this group decreases the size of the formula that
 we are substituting in, hence "leftist." }%
@@ -166,4 +170,184 @@ left⁺:  met⁺ A⁺ -> linv _Δ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable 
 %mode left⁻ +M +D +E +S -F.
 %mode left⁺ +M +D +E +S -F.
 
+%{ === Principal substitution/cuts === }%
 
+-: subst⁻ mc⁻ (foc X aQ Sp) init _ (foc X aQ Sp).
+
+-: subst⁻ (m↑ S) (foc X a↑ Sp) (↑L N) A (foc X A Sp2)
+  <- left⁻ S Sp N A (Sp2: lfoc B⁻ C⁻).
+
+-: subst⁻ (m↑ (mΔ S)) (↑R V) (↑L N) _ N2
+  <- subst⁺ S V N (N2: conc C⁻).
+
+-: subst⁻ (m& S₁ S₂) (&R N₁ N₂) (&L₁ Sp) A N2
+  <- subst⁻ S₁ N₁ Sp A (N2: conc C⁻).
+
+-: subst⁻ (m& S₁ S₂) (&R N₁ N₂) (&L₂ Sp) A N2
+  <- subst⁻ S₂ N₂ Sp A (N2: conc C⁻).
+
+-: subst⁻ (m⊸ (mΔ S₁) S₂) (⊸R N) (⊸L V Sp) A N3 
+  <- subst⁺ S₁ V N (N2: conc B⁻)
+  <- subst⁻ S₂ N2 Sp A (N3: conc C⁻).
+
+-: subst⁺ m· ·R (·L N) N.
+
+-: subst⁺ (mc⁺ S) (cR X V) (cL ([x] N x)) (N2 X)
+  <- ({x: hyp⁺ Q⁺} subst⁺ S V (N x) (N2 x: conc C⁻)).
+
+-: subst⁺ (m↓ S₁ S₂) (↓R M V) (↓L N) N3
+  <- cutNi S₁ M N (N2: linv _Δ C⁻)
+  <- subst⁺ S₂ V N2 (N3: conc C⁻).
+
+-: subst⁺ (m⊕ S₁ S₂) (⊕R₁ V) (⊕L N₁ N₂) N2
+  <- subst⁺ S₁ V N₁ (N2: conc C⁻).
+
+-: subst⁺ (m⊕ S₁ S₂) (⊕R₂ V) (⊕L N₁ N₂) N2
+  <- subst⁺ S₂ V N₂ (N2: conc C⁻).
+
+-: subst⁺ (m1 S) (1R V) (1L N) N2
+  <- subst⁺ S V N (N2: conc C⁻).
+
+-: subst⁺ (m⊗ S) (⊗R V) (⊗L N) N2
+  <- subst⁺ S V N (N2: conc C⁻).
+
+%{ === Rightist substitution (right commutative cuts) === }%
+
+-: cutN (m S) M ([x] foc x A (Sp x)) N2
+  <- cutSp (m S) M ([x] Sp x) (Sp2: lfoc A⁻ C⁻)
+  <- subst⁻ S M Sp2 A (N2: conc C⁻).
+
+-: cutN S M ([x] foc X A (Sp x)) (foc X A Sp2)
+  <- cutSp S M ([x] Sp x) (Sp2: lfoc B⁻ C⁻).
+
+-: cutN S M ([x] ↑R (V x)) (↑R V2)
+  <- cutV S M ([x] V x) (V2: rfoc (C⁺ , ·)).
+
+-: cutN S M ([x] ⊤R) ⊤R.
+
+-: cutN S M ([x] &R (N₁ x) (N₂ x)) (&R N₁2 N₂2)
+  <- cutN S M ([x] N₁ x) (N₁2: conc C₁⁻)
+  <- cutN S M ([x] N₂ x) (N₂2: conc C₂⁻).
+
+-: cutN S M ([x] ⊸R (N x)) (⊸R N2)
+  <- cutNi S M ([x] N x) (N2: linv (C₁⁺ , ·) C₂⁻).
+
+-: cutV S M ([x] ·R) ·R.
+
+-: cutV S M ([x] cR X (V x)) (cR X V2)
+  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+
+-: cutV S M ([x] ↓R (N x) (V x)) (↓R N2 V2)
+  <- cutN S M ([x] N x) (N2: conc C⁻)
+  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+
+-: cutV S M ([x] ⊕R₁ (V x)) (⊕R₁ V2)
+  <- cutV S M ([x] V x) (V2: rfoc (C₁⁺ , _Δ)).
+
+-: cutV S M ([x] ⊕R₂ (V x)) (⊕R₂ V2)
+  <- cutV S M ([x] V x) (V2: rfoc (C₂⁺ , _Δ)).
+
+-: cutV S M ([x] 1R (V x)) (1R V2)
+  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+
+-: cutV S M ([x] ⊗R (V x)) (⊗R V2)
+  <- cutV S M ([x] V x) (V2: rfoc (C₁⁺ , C₂⁺ , _Δ)).
+
+-: cutSp S M ([x] init) init.
+
+-: cutSp S M ([x] ↑L (N x)) (↑L N2)
+  <- cutNi S M ([x] N x) (N2: linv (B⁺ , ·) C⁻).
+
+-: cutSp S M ([x] &L₁ (Sp x)) (&L₁ Sp2)
+  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₁⁻ C⁻).
+
+-: cutSp S M ([x] &L₂ (Sp x)) (&L₂ Sp2)
+  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+
+-: cutSp S M ([x] ⊸L (V x) (Sp x)) (⊸L V2 Sp2)
+  <- cutV S M ([x] V x) (V2: rfoc (B₁⁺ , ·))
+  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+
+-: cutNi S M ([x] ·L (N x)) (·L N2)
+  <- cutN S M ([x] N x) (N2: conc C⁻).
+
+-: cutNi S M ([x] cL [y] N x y) (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} cutNi S M ([x] N x y) (N2 y: linv _Δ C⁻)).
+
+-: cutNi S M ([x] ↓L [y] N x y) (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} cutNi S M ([x] N x y) (N2 y: linv _Δ C⁻)).
+
+-: cutNi S M ([x] 0L) 0L.
+
+-: cutNi S M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁2 N₂2)
+  <- cutNi S M ([x] N₁ x) (N₁2: linv (B₁ , _Δ) C⁻)
+  <- cutNi S M ([x] N₂ x) (N₂2: linv (B₂ , _Δ) C⁻).
+
+-: cutNi S M ([x] 1L (N x)) (1L N2)
+  <- cutNi S M ([x] N x) (N2: linv _Δ C⁻).
+
+-: cutNi S M ([x] ⊗L (N x)) (⊗L N2)
+  <- cutNi S M ([x] N x) (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
+
+%{ === Leftist substitution (left commutative cuts) === }%
+
+-: left⁻ S (↑L M) N A (↑L N2)
+  <- left⁺ S M N A (N2: linv (B⁺ , ·) C⁻).
+
+-: left⁻ S (&L₁ Sp) N A (&L₁ Sp2)
+  <- left⁻ S Sp N A (Sp2: lfoc B₁⁻ C⁻).
+
+-: left⁻ S (&L₂ Sp) N A (&L₂ Sp2)
+  <- left⁻ S Sp N A (Sp2: lfoc B₂⁻ C⁻).
+
+-: left⁻ S (⊸L V Sp) N A (⊸L V Sp2)
+  <- left⁻ S Sp N A (Sp2: lfoc B₂⁻ C⁻).
+
+-: left⁺ S (·L (foc X _ Sp)) N A (·L (foc X A Sp2))
+  <- left⁻ S Sp N A (Sp2: lfoc B⁻ C⁻).
+
+-: left⁺ (mΔ S) (·L (↑R V)) N A (·L N2)
+  <- subst⁺ S V N (N2: conc C⁻).
+
+-: left⁺ S (cL [y] M y) N A (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} left⁺ S (M y) N A (N2 y: linv _Δ C⁻)).
+
+-: left⁺ S (↓L [y] M y) N A (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} left⁺ S (M y) N A (N2 y: linv _Δ C⁻)).
+
+-: left⁺ S 0L N A 0L.
+
+-: left⁺ S (⊕L M₁ M₂) N A (⊕L N₁2 N₂2)
+  <- left⁺ S M₁ N A (N₁2: linv (B₁⁺ , _Δ) C⁻)
+  <- left⁺ S M₂ N A (N₂2: linv (B₂⁺ , _Δ) C⁻).
+
+-: left⁺ S (1L M) N A (1L N2)
+  <- left⁺ S M N A (N2: linv _Δ C⁻).
+
+-: left⁺ S (⊗L M) N A (⊗L N2)
+  <- left⁺ S M N A (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
+
+%{ === Wrap-up === }%
+
+%worlds (atom⁺ | atom⁻ | x⁺ | x⁻)
+  (subst⁻ _ _ _ _ _)
+  (subst⁺ _ _ _ _)
+  (cutN _ _ _ _)
+  (cutV _ _ _ _)
+  (cutSp _ _ _ _)
+  (cutNi _ _ _ _)
+  (left⁻ _ _ _ _ _)
+  (left⁺ _ _ _ _ _).
+
+%total 
+  {(S1 S2 S3 S4 S5 S6 S7 S8) 
+    [(MN MV MSp MNi MP VP SpL MiL) 
+     (N V Sp Ni SpP NiP NiL⁻ NiL⁺)]}
+  (subst⁻ S5 MP  SpP _ _)
+  (subst⁺ S6 VP  NiP _)
+  (cutN   S1 MN  N _)
+  (cutV   S2 MV  V _)
+  (cutSp  S3 MSp Sp _)
+  (cutNi  S4 MNi Ni _)
+  (left⁻  S7 SpL NiL⁻ _ _)
+  (left⁺  S8 MiL NiL⁺ _ _).

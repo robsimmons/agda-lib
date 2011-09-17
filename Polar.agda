@@ -1,5 +1,3 @@
--- {-# OPTIONS --no-termination-check #-}
-
 open import Prelude hiding (⊤)
 
 module Polar where

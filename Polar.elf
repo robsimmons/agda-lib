@@ -1,0 +1,169 @@
+%{ Focusing for polarized logic. }%
+
+%{ == Syntax == }%
+
+pol: type. %name pol P.
+⁺: pol.
+⁻: pol.
+
+%{ We define propositions in an environment with free atoms. }%
+atom: pol -> type. %name atom Q.
+%block atom⁺: block {Q⁺: atom ⁺}.
+%block atom⁻: block {Q⁻: atom ⁻}.
+
+typ: pol -> type. %name typ A.
+c: atom P -> typ P.
+↓: typ ⁻ -> typ ⁺.
+↑: typ ⁺ -> typ ⁻.
+0: typ ⁺.
+⊕: typ ⁺ -> typ ⁺ -> typ ⁺. %infix none 5 ⊕.
+1: typ ⁺.
+⊗: typ ⁺ -> typ ⁺ -> typ ⁺. %infix none 5 ⊗.
+⊤: typ ⁻.
+&: typ ⁻ -> typ ⁻ -> typ ⁻. %infix none 5 &.
+⊸: typ ⁺ -> typ ⁻ -> typ ⁻. %infix none 5 ⊸.
+
+%{ Right-stable propositions are ones that are either atomic or shifted. }%
+stable: typ ⁻ -> type.
+aQ: stable (c Q).
+a↑: stable (↑ A⁺).
+
+%{ An inversion or focus context Δ is a list of positive propositions. }%
+pos: type. %name pos _Δ.
+·: pos.
+,: typ ⁺ -> pos -> pos. %infix right 2 ,.
+
+
+%{ === Syntax metric === }%
+
+met⁻: typ ⁻ -> type. %name met⁻ M.
+met⁺: typ ⁺ -> type. %name met⁺ M.
+metΔ: pos -> type. %name metΔ M.
+
+mc⁻: met⁻ (c Q).
+m↑: met⁺ A⁺ -> met⁻ (↑ A⁺).
+m⊤: met⁻ ⊤.
+m&: met⁻ A⁻ -> met⁻ B⁻ -> met⁻ (A⁻ & B⁻).
+m⊸: met⁺ A⁺ -> met⁻ B⁻ -> met⁻ (A⁺ ⊸ B⁻).
+
+mΔ: metΔ (A⁺ , ·) -> met⁺ A⁺.
+
+m·: metΔ ·.
+mc⁺: metΔ _Δ -> metΔ (c Q , _Δ).
+m↓: met⁻ A⁻ -> metΔ _Δ -> metΔ (↓ A⁻ , _Δ).
+m0: metΔ (0 , _Δ).
+m⊕: metΔ (A⁺ , _Δ) -> metΔ (B⁺ , _Δ) -> metΔ (A⁺ ⊕ B⁺ , _Δ).
+m1: metΔ _Δ -> metΔ (1 , _Δ).
+m⊗: metΔ (A⁺ , B⁺ , _Δ) -> metΔ (A⁺ ⊗ B⁺ , _Δ).
+
+
+%{ == Sequent calculus == }%
+
+%{ The judgments of the focused language (or, alternatively, syntax of 
+intrinsically typed spine form judgments) }%
+hyp⁻: typ ⁻ -> type. %name hyp⁻ X⁻ x⁻.
+hyp⁺: atom ⁺ -> type. %name hyp⁺ X⁺ x⁺.
+%block x⁺ : some {Q⁺ : atom ⁺} block {x⁺ : hyp⁺ Q⁺}.
+%block x⁻ : some {A⁻ : typ ⁻}  block {x⁻ : hyp⁻ A⁻}.
+
+conc: typ ⁻ -> type. %name conc N.
+linv:  pos -> typ ⁻ -> type. %name linv Ni.
+lfoc: typ ⁻ -> typ ⁻ -> type. %name lfoc Sp.
+rfoc: pos -> type. %name rfoc V.
+
+%{ `N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
+foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ _γ -> conc C⁻.
+↑R: rfoc (A⁺ , ·) -> conc (↑ A⁺).
+⊤R: conc ⊤.
+&R: conc A⁻ -> conc B⁻ -> conc C⁻.
+⊸R: linv (A⁺ , ·) B⁻ -> conc (A⁺ ⊸ B⁻).
+
+%{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
+·L: conc C⁻ -> linv · C⁻.
+cL: (hyp⁺ Q⁺ -> linv _Δ C⁻) -> linv (c Q⁺ , _Δ) C⁻.
+↓L: (hyp⁻ A⁻ -> linv _Δ C⁻) -> linv (↓ A⁻ , _Δ) C⁻.
+0E: linv (0 , _Δ) C⁻.
+⊕L: linv (A⁺ , _Δ) C⁻ -> linv (B⁺ , _Δ) C⁻ -> linv (A⁺ ⊕ B⁺ , _Δ) C⁻.
+1E: linv _Δ C⁻ -> linv (1 , _Δ) C⁻.
+⊗L: linv (A⁺ , B⁺ , _Δ) C⁻ -> linv (A⁺ ⊗ B⁺ , _Δ) C⁻.
+
+%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ σ;Sp' }%
+init: lfoc (c Q⁻) (c Q⁻).
+↑L: linv (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
+&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+⊸L: rfoc (A⁺ , ·) -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
+
+%{ `σ ::= · ∣ x⁺,σ ∣ N,σ ∣ inl σ ∣ inr σ ∣ <>,σ ∣ ⊗σ' }%
+·R: rfoc ·.
+cR: hyp⁺ Q⁺ -> rfoc _Δ -> rfoc (c Q⁺ , _Δ).
+↓R: conc A⁻ -> rfoc _Δ -> rfoc (↓ A⁻ , _Δ).
+⊕R₁: rfoc (A⁺ , _Δ) -> rfoc (A⁺ ⊕ B⁺ , _Δ).
+⊕R₂: rfoc (B⁺ , _Δ) -> rfoc (A⁺ ⊕ B⁺ , _Δ).
+1R: rfoc _Δ -> rfoc (1 , _Δ).
+⊗R: rfoc (A⁺ , B⁺ , _Δ) -> rfoc (A⁺ ⊗ B⁺ , _Δ).
+
+
+%{ == Cut admissibility == }%
+
+%{ Cut admissibility has a lot of mutually inductive theorems, but no more
+than is absolutely necessary given the four syntactic classes we're dealing
+with. Furthermore, the different theorems we use neatly separate the 
+informal division of .
+
+The "rightist" substitutions captures the right commutative cuts:
+* `[M/x]N' - right rules for negative connectives, 
+* `[M/x]σ' - right rules for positive connectives, 
+* `[M/x]Sp' - left rules for negative connectives, and
+* `[M/x]Ni' - left rules for positive connectives. 
+Each inductive call within this group decreases the size of the formula that 
+we are substituting into. }%
+
+cutN:   met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) 
+  -> conc C⁻ -> type.
+cutNi:  met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> linv _Δ C⁻) 
+  -> linv _Δ C⁻ -> type.
+cutV:   met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> rfoc _Δ) 
+  -> rfoc _Δ -> type.
+cutSp:  met⁻ A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) 
+  -> lfoc B⁻ C⁻ -> type.
+
+%mode cutN  +M +D +E -F.
+%mode cutNi +M +D +E -F.
+%mode cutV  +M +D +E -F.
+%mode cutSp +M +D +E -F.
+
+%{ The "principal" substitutions capture the principal cuts: 
+* `M • Sp' - negative cut formula, and
+* `σ • Ni' - positive cut formula.
+In this presentation, we have generalized what it means to be a "positive
+cut formula": instead of a single formula `A⁺', it is a context of positive
+formulas `Δ'. Each inductive call within this group decreases the "size" of the
+cut formula by a multiset ordering where the positive conjunction `⊗' counts
+for two and the conjunction of positive contexts `,' counts for one. To make
+Twelf happy, we turn this into a structural metric. }%
+
+subst⁻: met⁻ A⁻ -> conc A⁻ -> lfoc A⁻ C⁻ -> stable C⁻ 
+  -> conc C⁻ -> type.
+subst⁺: metΔ _Δ -> rfoc _Δ -> linv _Δ C⁻ 
+  -> conc C⁻ -> type.
+
+%mode subst⁻ +M +D +E +S -F.
+%mode subst⁺ +M +D +E -F.
+
+%{ The "leftist" substitutions capture the left commutative cuts, and 
+are only called when we bottom out of principal substitutions:
+* `〈Sp〉Mi' - left rules for negative connectives
+* `〈Mi⟩ Ni' - left rules for positive connectives.
+Each inductive call within this group decreases the size of the formula that
+we are substituting in, hence "leftist." }%
+
+left⁻:  met⁺ A⁺ -> lfoc B⁻ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable C⁻ 
+  -> lfoc B⁻ C⁻ -> type.
+left⁺:  met⁺ A⁺ -> linv _Δ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable C⁻ 
+  -> linv _Δ C⁻ -> type.
+
+%mode left⁻ +M +D +E +S -F.
+%mode left⁺ +M +D +E +S -F.
+
+

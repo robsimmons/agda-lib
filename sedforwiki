@@ -1,0 +1,20 @@
+# Invoke with sed -f <unicode>.elf <wiki>.elf
+s/`/<tt>/g
+s/'/<\/tt>/g
+s/·/#/g
+s/⊕/\\\//g
+s/⊗/*/g
+s/⊸/-o/g
+s/⊤/top/g
+s/↓/dn/g
+s/↑/up/g
+s/metΔ/met/g
+s/_Δ/Delta/g
+s/Δ/\&Delta;/g
+s/_σ/Sigma/g
+s/σ/\&sigma;/g
+s/π/\&pi;/g
+s/⁺/+/g
+s/⁻/-/g
+s/₁/1/g
+s/₂/2/g

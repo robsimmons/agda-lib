@@ -7,7 +7,7 @@ pol: type. %name pol P.
 ⁻: pol.
 
 %{ We define propositions in an environment with free atoms. }%
-atom: pol -> type. %name atom Q.
+atom: pol -> type. %name atom Q q.
 %block atom⁺: block {Q⁺: atom ⁺}.
 %block atom⁻: block {Q⁻: atom ⁻}.
 
@@ -24,7 +24,7 @@ c: atom P -> typ P.
 ⊸: typ ⁺ -> typ ⁻ -> typ ⁻. %infix none 5 ⊸.
 
 %{ Right-stable propositions are ones that are either atomic or shifted. }%
-stable: typ ⁻ -> type.
+stable: typ ⁻ -> type. %name stable St.
 aQ: stable (c Q).
 a↑: stable (↑ A⁺).
 
@@ -174,158 +174,158 @@ left⁺:  met⁺ A⁺ -> linv _Δ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable 
 
 -: subst⁻ mc⁻ (foc X aQ Sp) init _ (foc X aQ Sp).
 
--: subst⁻ (m↑ S) (foc X a↑ Sp) (↑L N) A (foc X A Sp2)
-  <- left⁻ S Sp N A (Sp2: lfoc B⁻ C⁻).
+-: subst⁻ (m↑ Mt) (foc X a↑ Sp) (↑L N) St (foc X St Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B⁻ C⁻).
 
--: subst⁻ (m↑ (mΔ S)) (↑R V) (↑L N) _ N2
-  <- subst⁺ S V N (N2: conc C⁻).
+-: subst⁻ (m↑ (mΔ Mt)) (↑R V) (↑L N) _ N2
+  <- subst⁺ Mt V N (N2: conc C⁻).
 
--: subst⁻ (m& S₁ S₂) (&R N₁ N₂) (&L₁ Sp) A N2
-  <- subst⁻ S₁ N₁ Sp A (N2: conc C⁻).
+-: subst⁻ (m& Mt₁ Mt₂) (&R N₁ N₂) (&L₁ Sp) St N2
+  <- subst⁻ Mt₁ N₁ Sp St (N2: conc C⁻).
 
--: subst⁻ (m& S₁ S₂) (&R N₁ N₂) (&L₂ Sp) A N2
-  <- subst⁻ S₂ N₂ Sp A (N2: conc C⁻).
+-: subst⁻ (m& Mt₁ Mt₂) (&R N₁ N₂) (&L₂ Sp) St N2
+  <- subst⁻ Mt₂ N₂ Sp St (N2: conc C⁻).
 
--: subst⁻ (m⊸ (mΔ S₁) S₂) (⊸R N) (⊸L V Sp) A N3 
-  <- subst⁺ S₁ V N (N2: conc B⁻)
-  <- subst⁻ S₂ N2 Sp A (N3: conc C⁻).
+-: subst⁻ (m⊸ (mΔ Mt₁) Mt₂) (⊸R N) (⊸L V Sp) St N3 
+  <- subst⁺ Mt₁ V N (N2: conc B⁻)
+  <- subst⁻ Mt₂ N2 Sp St (N3: conc C⁻).
 
 -: subst⁺ m· ·R (·L N) N.
 
--: subst⁺ (mc⁺ S) (cR X V) (cL ([x] N x)) (N2 X)
-  <- ({x: hyp⁺ Q⁺} subst⁺ S V (N x) (N2 x: conc C⁻)).
+-: subst⁺ (mc⁺ Mt) (cR X V) (cL ([x] N x)) (N2 X)
+  <- ({x: hyp⁺ Q⁺} subst⁺ Mt V (N x) (N2 x: conc C⁻)).
 
--: subst⁺ (m↓ S₁ S₂) (↓R M V) (↓L N) N3
-  <- cutNi S₁ M N (N2: linv _Δ C⁻)
-  <- subst⁺ S₂ V N2 (N3: conc C⁻).
+-: subst⁺ (m↓ Mt₁ Mt₂) (↓R M V) (↓L N) N3
+  <- cutNi Mt₁ M N (N2: linv _Δ C⁻)
+  <- subst⁺ Mt₂ V N2 (N3: conc C⁻).
 
--: subst⁺ (m⊕ S₁ S₂) (⊕R₁ V) (⊕L N₁ N₂) N2
-  <- subst⁺ S₁ V N₁ (N2: conc C⁻).
+-: subst⁺ (m⊕ Mt₁ Mt₂) (⊕R₁ V) (⊕L N₁ N₂) N2
+  <- subst⁺ Mt₁ V N₁ (N2: conc C⁻).
 
--: subst⁺ (m⊕ S₁ S₂) (⊕R₂ V) (⊕L N₁ N₂) N2
-  <- subst⁺ S₂ V N₂ (N2: conc C⁻).
+-: subst⁺ (m⊕ Mt₁ Mt₂) (⊕R₂ V) (⊕L N₁ N₂) N2
+  <- subst⁺ Mt₂ V N₂ (N2: conc C⁻).
 
--: subst⁺ (m1 S) (1R V) (1L N) N2
-  <- subst⁺ S V N (N2: conc C⁻).
+-: subst⁺ (m1 Mt) (1R V) (1L N) N2
+  <- subst⁺ Mt V N (N2: conc C⁻).
 
--: subst⁺ (m⊗ S) (⊗R V) (⊗L N) N2
-  <- subst⁺ S V N (N2: conc C⁻).
+-: subst⁺ (m⊗ Mt) (⊗R V) (⊗L N) N2
+  <- subst⁺ Mt V N (N2: conc C⁻).
 
 %{ === Rightist substitution (right commutative cuts) === }%
 
--: cutN (m S) M ([x] foc x A (Sp x)) N2
-  <- cutSp (m S) M ([x] Sp x) (Sp2: lfoc A⁻ C⁻)
-  <- subst⁻ S M Sp2 A (N2: conc C⁻).
+-: cutN (m Mt) M ([x] foc x St (Sp x)) N2
+  <- cutSp (m Mt) M ([x] Sp x) (Sp2: lfoc A⁻ C⁻)
+  <- subst⁻ Mt M Sp2 St (N2: conc C⁻).
 
--: cutN S M ([x] foc X A (Sp x)) (foc X A Sp2)
-  <- cutSp S M ([x] Sp x) (Sp2: lfoc B⁻ C⁻).
+-: cutN Mt M ([x] foc X St (Sp x)) (foc X St Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B⁻ C⁻).
 
--: cutN S M ([x] ↑R (V x)) (↑R V2)
-  <- cutV S M ([x] V x) (V2: rfoc (C⁺ , ·)).
+-: cutN Mt M ([x] ↑R (V x)) (↑R V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc (C⁺ , ·)).
 
--: cutN S M ([x] ⊤R) ⊤R.
+-: cutN Mt M ([x] ⊤R) ⊤R.
 
--: cutN S M ([x] &R (N₁ x) (N₂ x)) (&R N₁2 N₂2)
-  <- cutN S M ([x] N₁ x) (N₁2: conc C₁⁻)
-  <- cutN S M ([x] N₂ x) (N₂2: conc C₂⁻).
+-: cutN Mt M ([x] &R (N₁ x) (N₂ x)) (&R N₁2 N₂2)
+  <- cutN Mt M ([x] N₁ x) (N₁2: conc C₁⁻)
+  <- cutN Mt M ([x] N₂ x) (N₂2: conc C₂⁻).
 
--: cutN S M ([x] ⊸R (N x)) (⊸R N2)
-  <- cutNi S M ([x] N x) (N2: linv (C₁⁺ , ·) C₂⁻).
+-: cutN Mt M ([x] ⊸R (N x)) (⊸R N2)
+  <- cutNi Mt M ([x] N x) (N2: linv (C₁⁺ , ·) C₂⁻).
 
--: cutV S M ([x] ·R) ·R.
+-: cutV Mt M ([x] ·R) ·R.
 
--: cutV S M ([x] cR X (V x)) (cR X V2)
-  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+-: cutV Mt M ([x] cR X (V x)) (cR X V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc _Δ).
 
--: cutV S M ([x] ↓R (N x) (V x)) (↓R N2 V2)
-  <- cutN S M ([x] N x) (N2: conc C⁻)
-  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+-: cutV Mt M ([x] ↓R (N x) (V x)) (↓R N2 V2)
+  <- cutN Mt M ([x] N x) (N2: conc C⁻)
+  <- cutV Mt M ([x] V x) (V2: rfoc _Δ).
 
--: cutV S M ([x] ⊕R₁ (V x)) (⊕R₁ V2)
-  <- cutV S M ([x] V x) (V2: rfoc (C₁⁺ , _Δ)).
+-: cutV Mt M ([x] ⊕R₁ (V x)) (⊕R₁ V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc (C₁⁺ , _Δ)).
 
--: cutV S M ([x] ⊕R₂ (V x)) (⊕R₂ V2)
-  <- cutV S M ([x] V x) (V2: rfoc (C₂⁺ , _Δ)).
+-: cutV Mt M ([x] ⊕R₂ (V x)) (⊕R₂ V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc (C₂⁺ , _Δ)).
 
--: cutV S M ([x] 1R (V x)) (1R V2)
-  <- cutV S M ([x] V x) (V2: rfoc _Δ).
+-: cutV Mt M ([x] 1R (V x)) (1R V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc _Δ).
 
--: cutV S M ([x] ⊗R (V x)) (⊗R V2)
-  <- cutV S M ([x] V x) (V2: rfoc (C₁⁺ , C₂⁺ , _Δ)).
+-: cutV Mt M ([x] ⊗R (V x)) (⊗R V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc (C₁⁺ , C₂⁺ , _Δ)).
 
--: cutSp S M ([x] init) init.
+-: cutSp Mt M ([x] init) init.
 
--: cutSp S M ([x] ↑L (N x)) (↑L N2)
-  <- cutNi S M ([x] N x) (N2: linv (B⁺ , ·) C⁻).
+-: cutSp Mt M ([x] ↑L (N x)) (↑L N2)
+  <- cutNi Mt M ([x] N x) (N2: linv (B⁺ , ·) C⁻).
 
--: cutSp S M ([x] &L₁ (Sp x)) (&L₁ Sp2)
-  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₁⁻ C⁻).
+-: cutSp Mt M ([x] &L₁ (Sp x)) (&L₁ Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₁⁻ C⁻).
 
--: cutSp S M ([x] &L₂ (Sp x)) (&L₂ Sp2)
-  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+-: cutSp Mt M ([x] &L₂ (Sp x)) (&L₂ Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
 
--: cutSp S M ([x] ⊸L (V x) (Sp x)) (⊸L V2 Sp2)
-  <- cutV S M ([x] V x) (V2: rfoc (B₁⁺ , ·))
-  <- cutSp S M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+-: cutSp Mt M ([x] ⊸L (V x) (Sp x)) (⊸L V2 Sp2)
+  <- cutV Mt M ([x] V x) (V2: rfoc (B₁⁺ , ·))
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
 
--: cutNi S M ([x] ·L (N x)) (·L N2)
-  <- cutN S M ([x] N x) (N2: conc C⁻).
+-: cutNi Mt M ([x] ·L (N x)) (·L N2)
+  <- cutN Mt M ([x] N x) (N2: conc C⁻).
 
--: cutNi S M ([x] cL [y] N x y) (cL [y] N2 y)
-  <- ({y: hyp⁺ Q⁺} cutNi S M ([x] N x y) (N2 y: linv _Δ C⁻)).
+-: cutNi Mt M ([x] cL [y] N x y) (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} cutNi Mt M ([x] N x y) (N2 y: linv _Δ C⁻)).
 
--: cutNi S M ([x] ↓L [y] N x y) (↓L [y] N2 y)
-  <- ({y: hyp⁻ B⁻} cutNi S M ([x] N x y) (N2 y: linv _Δ C⁻)).
+-: cutNi Mt M ([x] ↓L [y] N x y) (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} cutNi Mt M ([x] N x y) (N2 y: linv _Δ C⁻)).
 
--: cutNi S M ([x] 0L) 0L.
+-: cutNi Mt M ([x] 0L) 0L.
 
--: cutNi S M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁2 N₂2)
-  <- cutNi S M ([x] N₁ x) (N₁2: linv (B₁ , _Δ) C⁻)
-  <- cutNi S M ([x] N₂ x) (N₂2: linv (B₂ , _Δ) C⁻).
+-: cutNi Mt M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁2 N₂2)
+  <- cutNi Mt M ([x] N₁ x) (N₁2: linv (B₁ , _Δ) C⁻)
+  <- cutNi Mt M ([x] N₂ x) (N₂2: linv (B₂ , _Δ) C⁻).
 
--: cutNi S M ([x] 1L (N x)) (1L N2)
-  <- cutNi S M ([x] N x) (N2: linv _Δ C⁻).
+-: cutNi Mt M ([x] 1L (N x)) (1L N2)
+  <- cutNi Mt M ([x] N x) (N2: linv _Δ C⁻).
 
--: cutNi S M ([x] ⊗L (N x)) (⊗L N2)
-  <- cutNi S M ([x] N x) (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
+-: cutNi Mt M ([x] ⊗L (N x)) (⊗L N2)
+  <- cutNi Mt M ([x] N x) (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
 
 %{ === Leftist substitution (left commutative cuts) === }%
 
--: left⁻ S (↑L M) N A (↑L N2)
-  <- left⁺ S M N A (N2: linv (B⁺ , ·) C⁻).
+-: left⁻ Mt (↑L M) N St (↑L N2)
+  <- left⁺ Mt M N St (N2: linv (B⁺ , ·) C⁻).
 
--: left⁻ S (&L₁ Sp) N A (&L₁ Sp2)
-  <- left⁻ S Sp N A (Sp2: lfoc B₁⁻ C⁻).
+-: left⁻ Mt (&L₁ Sp) N St (&L₁ Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₁⁻ C⁻).
 
--: left⁻ S (&L₂ Sp) N A (&L₂ Sp2)
-  <- left⁻ S Sp N A (Sp2: lfoc B₂⁻ C⁻).
+-: left⁻ Mt (&L₂ Sp) N St (&L₂ Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₂⁻ C⁻).
 
--: left⁻ S (⊸L V Sp) N A (⊸L V Sp2)
-  <- left⁻ S Sp N A (Sp2: lfoc B₂⁻ C⁻).
+-: left⁻ Mt (⊸L V Sp) N St (⊸L V Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₂⁻ C⁻).
 
--: left⁺ S (·L (foc X _ Sp)) N A (·L (foc X A Sp2))
-  <- left⁻ S Sp N A (Sp2: lfoc B⁻ C⁻).
+-: left⁺ Mt (·L (foc X _ Sp)) N St (·L (foc X St Sp2))
+  <- left⁻ Mt Sp N St (Sp2: lfoc B⁻ C⁻).
 
--: left⁺ (mΔ S) (·L (↑R V)) N A (·L N2)
-  <- subst⁺ S V N (N2: conc C⁻).
+-: left⁺ (mΔ Mt) (·L (↑R V)) N St (·L N2)
+  <- subst⁺ Mt V N (N2: conc C⁻).
 
--: left⁺ S (cL [y] M y) N A (cL [y] N2 y)
-  <- ({y: hyp⁺ Q⁺} left⁺ S (M y) N A (N2 y: linv _Δ C⁻)).
+-: left⁺ Mt (cL [y] M y) N St (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} left⁺ Mt (M y) N St (N2 y: linv _Δ C⁻)).
 
--: left⁺ S (↓L [y] M y) N A (↓L [y] N2 y)
-  <- ({y: hyp⁻ B⁻} left⁺ S (M y) N A (N2 y: linv _Δ C⁻)).
+-: left⁺ Mt (↓L [y] M y) N St (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} left⁺ Mt (M y) N St (N2 y: linv _Δ C⁻)).
 
--: left⁺ S 0L N A 0L.
+-: left⁺ Mt 0L N St 0L.
 
--: left⁺ S (⊕L M₁ M₂) N A (⊕L N₁2 N₂2)
-  <- left⁺ S M₁ N A (N₁2: linv (B₁⁺ , _Δ) C⁻)
-  <- left⁺ S M₂ N A (N₂2: linv (B₂⁺ , _Δ) C⁻).
+-: left⁺ Mt (⊕L M₁ M₂) N St (⊕L N₁2 N₂2)
+  <- left⁺ Mt M₁ N St (N₁2: linv (B₁⁺ , _Δ) C⁻)
+  <- left⁺ Mt M₂ N St (N₂2: linv (B₂⁺ , _Δ) C⁻).
 
--: left⁺ S (1L M) N A (1L N2)
-  <- left⁺ S M N A (N2: linv _Δ C⁻).
+-: left⁺ Mt (1L M) N St (1L N2)
+  <- left⁺ Mt M N St (N2: linv _Δ C⁻).
 
--: left⁺ S (⊗L M) N A (⊗L N2)
-  <- left⁺ S M N A (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
+-: left⁺ Mt (⊗L M) N St (⊗L N2)
+  <- left⁺ Mt M N St (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
 
 %{ === Wrap-up === }%
 
@@ -340,14 +340,16 @@ left⁺:  met⁺ A⁺ -> linv _Δ (↑ A⁺) -> linv (A⁺ , ·) C⁻ -> stable 
   (left⁺ _ _ _ _ _).
 
 %total 
-  {(S1 S2 S3 S4 S5 S6 S7 S8) 
+  {(Mt1 Mt2 Mt3 Mt4 Mt5 Mt6 Mt7 Mt8) 
     [(MN MV MSp MNi MP VP SpL MiL) 
      (N V Sp Ni SpP NiP NiL⁻ NiL⁺)]}
-  (subst⁻ S5 MP  SpP _ _)
-  (subst⁺ S6 VP  NiP _)
-  (cutN   S1 MN  N _)
-  (cutV   S2 MV  V _)
-  (cutSp  S3 MSp Sp _)
-  (cutNi  S4 MNi Ni _)
-  (left⁻  S7 SpL NiL⁻ _ _)
-  (left⁺  S8 MiL NiL⁺ _ _).
+  (subst⁻ Mt5 MP  SpP _ _)
+  (subst⁺ Mt6 VP  NiP _)
+  (cutN   Mt1 MN  N _)
+  (cutV   Mt2 MV  V _)
+  (cutSp  Mt3 MSp Sp _)
+  (cutNi  Mt4 MNi Ni _)
+  (left⁻  Mt7 SpL NiL⁻ _ _)
+  (left⁺  Mt8 MiL NiL⁺ _ _).
+
+

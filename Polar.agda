@@ -18,9 +18,9 @@ data Type : Pol → Set where
   _&_ : (A⁻ B⁻ : Type ⁻) → Type ⁻
   _⊸_ : (A⁺ : Type ⁺) (B⁻ : Type ⁻) → Type ⁻
 
-data Atomic : Type ⁻ → Set where
-  c : ∀{Q} → Atomic (c Q)
-  ↑ : ∀{A⁺} → Atomic (↑ A⁺)
+data Stable : Type ⁻ → Set where
+  c : ∀{Q} → Stable (c Q)
+  ↑ : ∀{A⁺} → Stable (↑ A⁺)
 
 Ctx = List (Type ⁻ + String)
 
@@ -36,7 +36,7 @@ mutual
   data _⊢_ (Γ : Ctx) : Type ⁻ → Set where
     foc : ∀{A⁻ γ}
       (x : Inl A⁻ ∈ Γ)
-      (atm : Atomic γ)
+      (atm : Stable γ)
       (Sp : Γ [ A⁻ ]⊢ γ)
       → Γ ⊢ γ
     ↑R : ∀{A⁺}
@@ -101,13 +101,13 @@ mutual
     ↓L : ∀{A⁻ Δ C⁻}
       (N : (Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻)
       → Γ ∣ ↓ A⁻ :: Δ ⊢ C⁻
-    falseE : ∀{Δ C⁻}
+    falseL : ∀{Δ C⁻}
       → Γ ∣ false :: Δ ⊢ C⁻
     ⊕L : ∀{A⁺ B⁺ Δ C⁻}
       (N₁ : Γ ∣ A⁺ :: Δ ⊢ C⁻)
       (N₂ : Γ ∣ B⁺ :: Δ ⊢ C⁻)
       → Γ ∣ A⁺ ⊕ B⁺ :: Δ ⊢ C⁻
-    trueE : ∀{Δ C⁻}
+    trueL : ∀{Δ C⁻}
       (N : Γ ∣ Δ ⊢ C⁻)
       → Γ ∣ true :: Δ ⊢ C⁻
     ⊗L : ∀{A⁺ B⁺ Δ C⁻}
@@ -164,108 +164,18 @@ mutual
 
 -- Cut admissibility
 mutual
-  -- Right commutive cases
-  -- Negative connectives, right rules
-  cutN : ∀{Γ A⁻ C⁻} (Γ' : Ctx)
-    → mA⁻ A⁻
-    → Γ ⊢ A⁻
-    → (Γ' ++ Inl A⁻ :: Γ) ⊢ C⁻
-    → (Γ' ++ Γ) ⊢ C⁻
-  cutN Γ' m M (foc x atm Sp) with Γ? Γ' x
-  ... | Inl Refl = subst⁻ Γ' m atm M (cutSp Γ' m M Sp) -- PRINCIPAL
-  ... | Inr y = foc y atm (cutSp Γ' m M Sp)
-  cutN Γ' m M (↑R σ) = ↑R (cutσ Γ' m M σ)
-  cutN Γ' m M ⊤R = ⊤R
-  cutN Γ' m M (&R N₁ N₂) = &R (cutN Γ' m M N₁) (cutN Γ' m M N₂)
-  cutN Γ' m M (⊸R N) = ⊸R (cutNI Γ' m M N)
-
-  -- Negative connectives, left rules
-  cutNI : ∀{Γ A⁻ Δ C⁻} (Γ' : Ctx)
-    → mA⁻ A⁻
-    → Γ ⊢ A⁻
-    → (Γ' ++ Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻
-    → (Γ' ++ Γ) ∣ Δ ⊢ C⁻
-  cutNI Γ' m M (nil N) = nil (cutN Γ' m M N)
-  cutNI Γ' m M (cL N) = cL (cutNI (_ :: Γ') m M N)
-  cutNI Γ' m M (↓L N) = ↓L (cutNI (_ :: Γ') m M N)
-  cutNI Γ' m M falseE = falseE
-  cutNI Γ' m M (⊕L N₁ N₂) = ⊕L (cutNI Γ' m M N₁) (cutNI Γ' m M N₂)
-  cutNI Γ' m M (trueE N) = trueE (cutNI Γ' m M N)
-  cutNI Γ' m M (⊗L N) = ⊗L (cutNI Γ' m M N) 
-
-  -- Positive connectives, right rules
-  cutσ : ∀{Γ A⁻ Δ} (Γ' : Ctx)
-    → mA⁻ A⁻
-    → Γ ⊢ A⁻
-    → (Γ' ++ Inl A⁻ :: Γ) ⊢[ Δ ]
-    → (Γ' ++ Γ) ⊢[ Δ ]
-  cutσ Γ' m M nil = nil
-  cutσ Γ' m M (cR x σ) with Γ? Γ' x
-  ... | Inl () 
-  ... | Inr y = cR y (cutσ Γ' m M σ)
-  cutσ Γ' m M (↓R N σ) = ↓R (cutN Γ' m M N) (cutσ Γ' m M σ)
-  cutσ Γ' m M (⊕R₁ σ) = ⊕R₁ (cutσ Γ' m M σ)
-  cutσ Γ' m M (⊕R₂ σ) = ⊕R₂ (cutσ Γ' m M σ)
-  cutσ Γ' m M (trueR σ) = trueR (cutσ Γ' m M σ)
-  cutσ Γ' m M (⊗R σ) = ⊗R (cutσ Γ' m M σ)
-
-  -- Positive connectives, left rules
-  cutSp : ∀{Γ A⁻ B⁻ C⁻} (Γ' : Ctx)
-    → mA⁻ A⁻
-    → Γ ⊢ A⁻
-    → (Γ' ++ Inl A⁻ :: Γ) [ B⁻ ]⊢ C⁻
-    → (Γ' ++ Γ) [ B⁻ ]⊢ C⁻
-  cutSp Γ' m M nil = nil
-  cutSp Γ' m M (cont N) = cont (cutNI Γ' m M N)
-  cutSp Γ' m M (&L₁ Sp) = &L₁ (cutSp Γ' m M Sp)
-  cutSp Γ' m M (&L₂ Sp) = &L₂ (cutSp Γ' m M Sp)
-  cutSp Γ' m M (⊸L σ Sp) = ⊸L (cutσ Γ' m M σ) (cutSp Γ' m M Sp)
-
-
-  -- Left commutative cases ("Leftist substitution")
-  -- Negative connectives
-  left⁻ : ∀{Γ B⁻ A⁺ γ} (Γ' : Ctx)
-    → mA⁺ A⁺
-    → Atomic γ
-    → Γ' ++ Γ [ B⁻ ]⊢ ↑ A⁺
-    → Γ ∣ [ A⁺ ] ⊢ γ
-    → Γ' ++ Γ [ B⁻ ]⊢ γ
-  left⁻ Γ' m a (cont M) N = cont (left⁺ Γ' m a M N)
-  left⁻ Γ' m a (&L₁ Sp) N = &L₁ (left⁻ Γ' m a Sp N)
-  left⁻ Γ' m a (&L₂ Sp) N = &L₂ (left⁻ Γ' m a Sp N)
-  left⁻ Γ' m a (⊸L σ Sp) N = ⊸L σ (left⁻ Γ' m a Sp N)
-
-  -- Positive connectives
-  left⁺ : ∀{Γ A⁺ Δ γ} (Γ' : Ctx)
-    → mA⁺ A⁺
-    → Atomic γ
-    → Γ' ++ Γ ∣ Δ ⊢ ↑ A⁺
-    → Γ ∣ [ A⁺ ] ⊢ γ
-    → Γ' ++ Γ ∣ Δ ⊢ γ
-  left⁺ Γ' m a (nil (foc x atm Sp)) N = 
-    nil (foc x a (left⁻ Γ' m a Sp N))
-  left⁺ Γ' (Δ m) a (nil (↑R σ)) N = 
-    nil (subst⁺ [] m σ (wkNI (LIST.SET.sub-appendl _ Γ') N))
-  left⁺ Γ' m a (cL M) N = cL (left⁺ (_ :: Γ') m a M N)
-  left⁺ Γ' m a (↓L M) N = ↓L (left⁺ (_ :: Γ') m a M N)
-  left⁺ Γ' m a falseE N = falseE
-  left⁺ Γ' m a (⊕L N₁ N₂) N = ⊕L (left⁺ Γ' m a N₁ N) (left⁺ Γ' m a N₂ N)
-  left⁺ Γ' m a (trueE M) N = trueE (left⁺ Γ' m a M N)
-  left⁺ Γ' m a (⊗L M) N = ⊗L (left⁺ Γ' m a M N)
-
-
-  -- Principal cuts ("Hereditary reduction")
+  -- Principal cuts 
   -- Negative connectives
   subst⁻ : ∀{A⁻ Γ γ}  (Γ' : Ctx)
     → mA⁻ A⁻
-    → Atomic γ
+    → Stable γ
     → Γ ⊢ A⁻
     → (Γ' ++ Γ) [ A⁻ ]⊢ γ
     → (Γ' ++ Γ) ⊢ γ
   subst⁻ Γ' c a (foc x atm Sp) nil = 
     wkN (LIST.SET.sub-appendl _ Γ') (foc x atm Sp)
   subst⁻ Γ' (↑ m) a (foc x atm Sp) (cont N) = 
-    foc (LIST.SET.sub-appendl _ Γ' x) a
+    foc (LIST.SET.sub-appendl _ Γ' x) {!!}
       (left⁻ [] m a (wkSp (LIST.SET.sub-appendl _ Γ') Sp) N)
   subst⁻ Γ' (↑ (Δ m)) a (↑R σ) (cont N) = subst⁺ Γ' m σ N
   subst⁻ Γ' ⊤ a M ()
@@ -290,6 +200,98 @@ mutual
   subst⁺ Γ' (⊕ m₁ m₂) (⊕R₁ σ) (⊕L N₁ N₂) = subst⁺ Γ' m₁ σ N₁
   subst⁺ Γ' (⊕ m₁ m₂) (⊕R₂ σ) (⊕L N₁ N₂) = subst⁺ Γ' m₂ σ N₂
   subst⁺ Γ' false () falseL 
-  subst⁺ Γ' (true m) (trueR σ) (trueE N) = subst⁺ Γ' m σ N
+  subst⁺ Γ' (true m) (trueR σ) (trueL N) = subst⁺ Γ' m σ N
   subst⁺ Γ' (⊗ m) (⊗R σ) (⊗L N) = subst⁺ Γ' m σ N
+
+
+  -- Right commutive cases ("Rightist substitution")
+  -- Negative connectives, right rules
+  cutN : ∀{Γ A⁻ C⁻} (Γ' : Ctx)
+    → mA⁻ A⁻
+    → Γ ⊢ A⁻
+    → (Γ' ++ Inl A⁻ :: Γ) ⊢ C⁻
+    → (Γ' ++ Γ) ⊢ C⁻
+  cutN Γ' m M (foc x atm Sp) with Γ? Γ' x
+  ... | Inl Refl = subst⁻ Γ' m atm M (cutSp Γ' m M Sp) -- PRINCIPAL
+  ... | Inr y = foc y atm (cutSp Γ' m M Sp)
+  cutN Γ' m M (↑R σ) = ↑R (cutσ Γ' m M σ)
+  cutN Γ' m M ⊤R = ⊤R
+  cutN Γ' m M (&R N₁ N₂) = &R (cutN Γ' m M N₁) (cutN Γ' m M N₂)
+  cutN Γ' m M (⊸R N) = ⊸R (cutNI Γ' m M N)
+
+  -- Positive connectives, left rules
+  cutNI : ∀{Γ A⁻ Δ C⁻} (Γ' : Ctx)
+    → mA⁻ A⁻
+    → Γ ⊢ A⁻
+    → (Γ' ++ Inl A⁻ :: Γ) ∣ Δ ⊢ C⁻
+    → (Γ' ++ Γ) ∣ Δ ⊢ C⁻
+  cutNI Γ' m M (nil N) = nil (cutN Γ' m M N)
+  cutNI Γ' m M (cL N) = cL (cutNI (_ :: Γ') m M N)
+  cutNI Γ' m M (↓L N) = ↓L (cutNI (_ :: Γ') m M N)
+  cutNI Γ' m M falseL = falseL
+  cutNI Γ' m M (⊕L N₁ N₂) = ⊕L (cutNI Γ' m M N₁) (cutNI Γ' m M N₂)
+  cutNI Γ' m M (trueL N) = trueL (cutNI Γ' m M N)
+  cutNI Γ' m M (⊗L N) = ⊗L (cutNI Γ' m M N) 
+
+  -- Positive connectives, right rules
+  cutσ : ∀{Γ A⁻ Δ} (Γ' : Ctx)
+    → mA⁻ A⁻
+    → Γ ⊢ A⁻
+    → (Γ' ++ Inl A⁻ :: Γ) ⊢[ Δ ]
+    → (Γ' ++ Γ) ⊢[ Δ ]
+  cutσ Γ' m M nil = nil
+  cutσ Γ' m M (cR x σ) with Γ? Γ' x
+  ... | Inl () 
+  ... | Inr y = cR y (cutσ Γ' m M σ)
+  cutσ Γ' m M (↓R N σ) = ↓R (cutN Γ' m M N) (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊕R₁ σ) = ⊕R₁ (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊕R₂ σ) = ⊕R₂ (cutσ Γ' m M σ)
+  cutσ Γ' m M (trueR σ) = trueR (cutσ Γ' m M σ)
+  cutσ Γ' m M (⊗R σ) = ⊗R (cutσ Γ' m M σ)
+
+  -- Negative connectives, left rules
+  cutSp : ∀{Γ A⁻ B⁻ C⁻} (Γ' : Ctx)
+    → mA⁻ A⁻
+    → Γ ⊢ A⁻
+    → (Γ' ++ Inl A⁻ :: Γ) [ B⁻ ]⊢ C⁻
+    → (Γ' ++ Γ) [ B⁻ ]⊢ C⁻
+  cutSp Γ' m M nil = nil
+  cutSp Γ' m M (cont N) = cont (cutNI Γ' m M N)
+  cutSp Γ' m M (&L₁ Sp) = &L₁ (cutSp Γ' m M Sp)
+  cutSp Γ' m M (&L₂ Sp) = &L₂ (cutSp Γ' m M Sp)
+  cutSp Γ' m M (⊸L σ Sp) = ⊸L (cutσ Γ' m M σ) (cutSp Γ' m M Sp)
+
+
+  -- Left commutative cases ("Leftist substitution")
+  -- Negative connectives
+  left⁻ : ∀{Γ B⁻ A⁺ γ} (Γ' : Ctx)
+    → mA⁺ A⁺
+    → Stable γ
+    → Γ' ++ Γ [ B⁻ ]⊢ ↑ A⁺
+    → Γ ∣ [ A⁺ ] ⊢ γ
+    → Γ' ++ Γ [ B⁻ ]⊢ γ
+  left⁻ Γ' m a (cont M) N = cont (left⁺ Γ' m a M N)
+  left⁻ Γ' m a (&L₁ Sp) N = &L₁ (left⁻ Γ' m a Sp N)
+  left⁻ Γ' m a (&L₂ Sp) N = &L₂ (left⁻ Γ' m a Sp N)
+  left⁻ Γ' m a (⊸L σ Sp) N = ⊸L σ (left⁻ Γ' m a Sp N)
+
+  -- Positive connectives
+  left⁺ : ∀{Γ A⁺ Δ γ} (Γ' : Ctx)
+    → mA⁺ A⁺
+    → Stable γ
+    → Γ' ++ Γ ∣ Δ ⊢ ↑ A⁺
+    → Γ ∣ [ A⁺ ] ⊢ γ
+    → Γ' ++ Γ ∣ Δ ⊢ γ
+  left⁺ Γ' m a (nil (foc x atm Sp)) N = 
+    nil (foc x a (left⁻ Γ' m a Sp N))
+  left⁺ Γ' (Δ m) a (nil (↑R σ)) N = 
+    nil (subst⁺ [] m σ (wkNI (LIST.SET.sub-appendl _ Γ') N))
+  left⁺ Γ' m a (cL M) N = cL (left⁺ (_ :: Γ') m a M N)
+  left⁺ Γ' m a (↓L M) N = ↓L (left⁺ (_ :: Γ') m a M N)
+  left⁺ Γ' m a falseL N = falseL
+  left⁺ Γ' m a (⊕L N₁ N₂) N = ⊕L (left⁺ Γ' m a N₁ N) (left⁺ Γ' m a N₂ N)
+  left⁺ Γ' m a (trueL M) N = trueL (left⁺ Γ' m a M N)
+  left⁺ Γ' m a (⊗L M) N = ⊗L (left⁺ Γ' m a M N)
+
+
 

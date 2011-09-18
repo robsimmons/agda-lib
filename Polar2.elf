@@ -344,69 +344,60 @@ left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable 
 
 %{ == Expansion == }%
 
-eta⁻: met⁻ A⁻ 
-  -> ({γ: typ ⁻} stable γ -> lfoc A⁻ γ -> conc γ) 
-  -> conc A⁻ 
+eta⁻: {A⁻} ({γ: typ ⁻} stable γ -> lfoc A⁻ γ -> conc · γ) 
+  -> conc · A⁻ 
   -> type.
 
-eta⁺: metΔ _Δ 
-  -> (rfoc _Δ -> conc C⁻)
-  -> linv _Δ C⁻ 
+eta⁺: {A⁺} (rfoc A⁺ -> conc _Δ C⁻)
+  -> conc (A⁺ , _Δ) C⁻ 
   -> type.
 
-%mode eta⁻ +Mt +A -B.
-%mode eta⁺ +Mt +A -B.
+%mode eta⁻ +A⁻ +Sp -N.
+%mode eta⁺ +A⁺ +N -Ni.
 
--: eta⁻ mc⁻ ([γ][st][sp: lfoc (c Q⁻) γ] N γ st sp) (N (c Q⁻) aQ init). 
+-: eta⁺ (c Q⁺) ([v: rfoc (c Q⁺)] N v) (cL [x: hyp⁺ Q⁺] (N (cR x))).
 
--: eta⁻
-  (m↑ (mΔ Mt)) ([γ][st][sp: lfoc (↑ A⁺) γ] N γ st sp) 
-  (N (↑ A⁺) a↑ (↑L N2))
-  <- eta⁺ Mt ([v: rfoc (A⁺ , ·)] ↑R v) (N2: linv (A⁺ , ·) (↑ A⁺)).
+-: eta⁻ (c Q⁻) ([γ][st][sp: lfoc (c Q⁻) γ] N γ st sp) (N (c Q⁻) aQ init). 
 
--: eta⁻ m⊤ ([γ][st][sp: lfoc ⊤ γ] N γ st sp) ⊤R.
+-: eta⁺ (↓ A⁻) ([v: rfoc (↓ A⁻)] N v) (↓L [x: hyp⁻ A⁻] (N (↓R (N2 x))))
+  <- ({x: hyp⁻ A⁻} 
+       eta⁻ A⁻ ([γ][st][sp: lfoc A⁻ γ] foc x st sp) 
+         (N2 x: conc · A⁻)).
 
--: eta⁻ (m& Mt₁ Mt₂) ([γ][st][sp: lfoc (A⁻ & B⁻) γ] N γ st sp) (&R N₁ N₂)
-  <- eta⁻ Mt₁ ([γ][st][sp: lfoc A⁻ γ] N γ st (&L₁ sp)) N₁
-  <- eta⁻ Mt₂ ([γ][st][sp: lfoc B⁻ γ] N γ st (&L₂ sp)) N₂.  
+-: eta⁻ (↑ A⁺) ([γ][st][sp: lfoc (↑ A⁺) γ] N γ st sp) (N (↑ A⁺) a↑ (↑L N2))
+  <- eta⁺ A⁺ ([v: rfoc A⁺] ↑R v) (N2: conc (A⁺ , ·) (↑ A⁺)).
 
--: eta⁻ (m⊸ (mΔ Mt₁) Mt₂) ([γ][st][sp: lfoc (A⁺ ⊸ B⁻) γ] N γ st sp) (⊸R Ni2)
-  <- ({σ: rfoc (A⁺ , ·)}
-       eta⁻ Mt₂ ([γ][st][sp: lfoc B⁻ γ] N γ st (⊸L σ sp)) (N2 σ))
-  <- eta⁺ Mt₁ ([σ: rfoc (A⁺ , ·)] N2 σ) Ni2.
+-: eta⁺ 0 ([v: rfoc 0] N v) 0L.
 
--: eta⁺ m· ([σ: rfoc ·] N σ) (·L (N ·R)).
+-: eta⁺ (A⁺ ⊕ B⁺) ([v: rfoc (A⁺ ⊕ B⁺)] N v) (⊕L N₁ N₂)
+  <- eta⁺ A⁺ ([v: rfoc A⁺] N (⊕R₁ v)) (N₁: conc (A⁺ , _Δ) C⁻)
+  <- eta⁺ B⁺ ([v: rfoc B⁺] N (⊕R₂ v)) (N₂: conc (B⁺ , _Δ) C⁻).
 
--: eta⁺ (mc⁺ Mt) ([v: rfoc (c Q⁺ , _Δ)] N v) (cL [x] N2 x)
-  <- ({x} eta⁺ Mt ([σ: rfoc _Δ] N (cR x σ)) (N2 x: linv _Δ C⁻)).
+-: eta⁺ 1 ([v: rfoc 1] N v) (1L (N 1R)).
 
--: eta⁺ (m↓ (m Mt₁) Mt₂) ([v: rfoc (↓ A⁻ , _Δ)] N v) (↓L [x: hyp⁻ A⁻] Ni2 x)
-  <- ({x: hyp⁻ A⁻}
-       eta⁻ Mt₁ ([γ][st][sp: lfoc A⁻ γ] foc x st sp)
-       (N2 x: conc A⁻))
-  <- ({x: hyp⁻ A⁻}
-       eta⁺ Mt₂ ([v: rfoc _Δ] N (↓R (N2 x) v)) 
-       (Ni2 x: linv _Δ C⁻)).
+-: eta⁺ (A⁺ ⊗ B⁺) ([v: rfoc (A⁺ ⊗ B⁺)] N v) (⊗L N₂)
+  <- ({v₁: rfoc A⁺} 
+       eta⁺ B⁺ ([v₂: rfoc B⁺] N (⊗R v₁ v₂)) (N₁ v₁: conc (B⁺ , _Δ) C⁻))
+  <- eta⁺ A⁺ ([v₁: rfoc A⁺] N₁ v₁) (N₂: conc (A⁺ , B⁺ , _Δ) C⁻).
 
--: eta⁺ m0 ([v: rfoc (0 , _Δ)] N v) 0L.
+-: eta⁻ ⊤ ([γ][st][sp: lfoc ⊤ γ] N γ st sp) ⊤R.
 
--: eta⁺ (m⊕ Mt₁ Mt₂) ([v: rfoc (A⁺ ⊕ B⁺ , _Δ)] N v) (⊕L N₁2 N₂2)
-  <- eta⁺ Mt₁ ([v: rfoc (A⁺ , _Δ)] N (⊕R₁ v)) (N₁2: linv (A⁺ , _Δ) C⁻)
-  <- eta⁺ Mt₂ ([v: rfoc (B⁺ , _Δ)] N (⊕R₂ v)) (N₂2: linv (B⁺ , _Δ) C⁻).
+-: eta⁻ (A⁻ & B⁻) ([γ][st][sp: lfoc (A⁻ & B⁻) γ] N γ st sp) (&R N₁ N₂)
+  <- eta⁻ A⁻ ([γ][st][sp: lfoc A⁻ γ] N γ st (&L₁ sp)) (N₁: conc · A⁻)
+  <- eta⁻ B⁻ ([γ][st][sp: lfoc B⁻ γ] N γ st (&L₂ sp)) (N₂: conc · B⁻).
 
--: eta⁺ (m1 Mt) ([v: rfoc (1 , _Δ)] N v) (1L N2)
-  <- eta⁺ Mt ([v: rfoc _Δ] N (1R v)) (N2: linv _Δ C⁻).
+-: eta⁻ (A⁺ ⊸ B⁻) ([γ][st][sp: lfoc (A⁺ ⊸ B⁻) γ] N γ st sp) (⊸R N₂)
+  <- ({v: rfoc A⁺}
+       eta⁻ B⁻ ([γ][st][sp: lfoc B⁻ γ] N γ st (⊸L v sp)) (N₁ v: conc · B⁻))
+  <- eta⁺ A⁺ ([v: rfoc A⁺] N₁ v) (N₂: conc (A⁺ , ·) B⁻).
 
--: eta⁺ (m⊗ Mt) ([v: rfoc (A⁺ ⊗ B⁺ , _Δ)] N v) (⊗L N2)
-  <- eta⁺ Mt ([v: rfoc (A⁺ , B⁺ , _Δ)] N (⊗R v)) (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
-
-%block rfocs: some {_Δ: pos} block {v: rfoc _Δ}.
+%block rfocs: some {A⁺: typ ⁺} block {v: rfoc A⁺}.
 %worlds (atom⁺ | atom⁻ | x⁺ | x⁻ | rfocs)
-  (eta⁻ _ _ _)
-  (eta⁺ _ _ _).
-%total (Mt1 Mt2)
-  (eta⁻ Mt1 _ _)
-  (eta⁺ Mt2 _ _).
+  (eta⁺ _ _ _)
+  (eta⁻ _ _ _).
+%total (A⁺ A⁻)
+  (eta⁺ A⁺ _ _)
+  (eta⁻ A⁻ _ _).
 
 
 %{ == Unfocused admissibility == }%

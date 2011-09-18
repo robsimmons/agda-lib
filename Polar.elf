@@ -462,69 +462,47 @@ cut: conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) -> conc C⁻ -> type.
 %worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (cut _ _ _).
 %total {} (cut _ _ _).
 
-splitty: ({δ} metΔ δ -> metΔ (DΔ δ))
-  -> ({δ} rfoc δ -> rfoc (DΔ δ)) 
+append-rfoc: {DΔ: pos -> pos}
+  rfoc (DΔ ·)
   -> rfoc _Δ 
   -> rfoc (DΔ _Δ) 
   -> type.
-%mode splitty +Mt +V₁ +V₂ -V.
+%mode append-rfoc +DΔ +V₁ +V₂ -V.
 
--: splitty ([δ][s] m·) _ _ ·R. % Would be suprious if we had linearity
+-: append-rfoc ([δ] δ) ·R V₂ V₂. % Actual base case
+-: append-rfoc ([δ] ·) _ _ ·R. % Would be suprious if we had linearity
+-: append-rfoc ([δ] c Q⁺ , DΔ δ) (cR X V₁) V₂ (cR X V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] ↓ A⁻ , DΔ δ) (↓R N V₁) V₂ (↓R N V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₁ V₁) V₂ (⊕R₁ V)
+  <- append-rfoc ([δ] A⁺ , DΔ δ) V₁ V₂ (V: rfoc (A⁺ , DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₂ V₁) V₂ (⊕R₂ V)
+  <- append-rfoc ([δ] B⁺ , DΔ δ) V₁ V₂ (V: rfoc (B⁺ , DΔ _Δ)).
+-: append-rfoc ([δ] 1 , DΔ δ) (1R V₁) V₂ (1R V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊗ B⁺ , DΔ δ) (⊗R V₁) V₂ (⊗R V)
+  <- append-rfoc ([δ] A⁺ , B⁺ , DΔ δ) V₁ V₂ V.
 
--: splitty ([δ][s] s) 
-     ([δ][v] v) V₂ V₂.
--: splitty ([δ][s] mc⁺ (Mt δ s: metΔ (DΔ δ)))
-     ([δ][v] cR X (V₁ δ v)) V₂ (cR X V)
-  <- splitty Mt V₁ V₂ V.
--: splitty ([δ][s] m↓ (_: met A⁻) (Mt δ s: metΔ (DΔ δ))) 
-     ([δ][v] ↓R (N δ v) (V₁ δ v)) V₂ (↓R (N · ·R) V) % Kinda ugly
-  <- splitty Mt V₁ V₂ V.
--: splitty ([δ][s] m⊕ (Mt₁ δ s: metΔ (A⁺ , DΔ δ)) (Mt₂ δ s: metΔ (B⁺ , DΔ δ)))
-     ([δ][v] ⊕R₁ (V₁ δ v)) V₂ (⊕R₁ V)
-  <- splitty Mt₁ V₁ V₂ (V: rfoc (A⁺ , DΔ _Δ)).
--: splitty ([δ][s] m⊕ (Mt₁ δ s: metΔ (A⁺ , DΔ δ)) (Mt₂ δ s: metΔ (B⁺ , DΔ δ)))
-     ([δ][v] ⊕R₂ (V₁ δ v)) V₂ (⊕R₂ V)
-  <- splitty Mt₂ V₁ V₂ (V: rfoc (B⁺ , DΔ _Δ)).
--: splitty ([δ][s] m1 (Mt δ s: metΔ (DΔ δ)))
-     ([δ][v] 1R (V₁ δ v)) V₂ (1R V)
-  <- splitty Mt V₁ V₂ (V: rfoc (DΔ _Δ)).
--: splitty ([δ][s] m⊗ (Mt δ s: metΔ (A⁺ , B⁺ , DΔ δ))) 
-     ([δ][v] ⊗R (V₁ δ v)) V₂ (⊗R V)
-  <- splitty Mt V₁ V₂ (V: rfoc (A⁺ , B⁺ , DΔ _Δ)).
-
-%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (splitty _ _ _ _).
-%total Mt (splitty Mt _ _ _).
-
-split: rfoc (A⁺ , ·) -> rfoc _Δ -> rfoc (A⁺ , _Δ) -> type.
-%mode split +V₁ +V₂ -V.
-
--: split V₁ V₂ V
-  <- ({δ}{s: metΔ δ} inmet⁺ A⁺ s (Mt δ s: metΔ (A⁺ , δ)))
-  <- splitty Mt _ V₂ V.
-
-
-%{
--: lemma m· V₁ ·R (V₁ · ·R).
--: lemma (mc⁺ Mt) ([δ][v] V₁ δ v) (cR X V₂) V2
-  <- lemma Mt ([δ][v] V₁ (c Q⁺ , δ) (cR X v)) V₂ V.
--: lemma (m↓ Mt₁ Mt₂) ([δ][v] V₁ δ v) (↓R N V₂) V
-  <- lemma Mt₂ ([δ][v] V₁ (↓ A⁻ , δ) (↓R N v)) V₂ V.
--: lemma (m⊕ Mt₁ Mt₂) ([δ][v] V₁ δ v) (⊕R₁ V₂) _
-  <- lemma Mt₁ ([δ][v] V₁ (A⁺ , δ) (⊕R₁ v)) V₂ V.
-}%
-
-% eta⁺: linv (A⁺ , _Δ) C⁻ -> (hyp⁻ (↑ A⁺) -> linv _Δ C⁻) -> type.
-% -: eta⁺ Ni
-%   <- inmet⁺ A⁺ _ (Mt
+%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (append-rfoc _ _ _ _).
+%total V (append-rfoc _ V _ _).
 
 adm-andR: conc (↑ A⁺) -> conc (↑ B⁺) -> conc (↑ (A⁺ ⊗ B⁺)) -> type.
 %mode adm-andR +A +B -C.
 
--: adm-andR N₁ N₂ NX
+-: adm-andR N₁ N₂ M4
   <- inmet⁺ B⁺ m· Mt1
-  <- inmet⁺ A⁺ Mt1 Mt2
-  <- eta⁺ Mt2 ([v₂: rfoc (A⁺ , B⁺ , ·)] ↑R (⊗R v₂)) 
-       (Ni: linv (A⁺ , B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
+  <- inmet⁺ A⁺ m· Mt2
+  <- ({v₁: rfoc (A⁺ , ·)} {v₂: rfoc (B⁺ , ·)}
+       append-rfoc ([δ] A⁺ , δ) v₁ v₂ (V v₁ v₂: rfoc (A⁺ , B⁺ , ·)))
+  <- ({v₁: rfoc (A⁺ , ·)} 
+       eta⁺ Mt1 ([v₂: rfoc (B⁺ , ·)] ↑R (⊗R (V v₁ v₂))) 
+         (M1 v₁: linv (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
   <- ({x₂: hyp⁻ (↑ B⁺)} 
-       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] M₁ x₁ x₂) (M2 x₂: conc (↑ (A⁺ ⊗ B⁺))))
-  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] M₂ x₂) (M3: conc (↑ (A⁺ ⊗ B⁺))).
+       eta⁺ Mt2 ([v₁: rfoc (A⁺ , ·)] foc x₂ a↑ (↑L (M1 v₁)))
+         (M2 x₂: linv (A⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₂: hyp⁻ (↑ B⁺)} 
+       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] foc x₁ a↑ (↑L (M2 x₂)))
+         (M3 x₂: conc (↑ (A⁺ ⊗ B⁺))))
+  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] M3 x₂) 
+         (M4: conc (↑ (A⁺ ⊗ B⁺))).

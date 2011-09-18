@@ -1,0 +1,463 @@
+%{ Focusing for polarized logic. }%
+
+%{ == Syntax == }%
+
+pol: type. %name pol P.
+⁺: pol.
+⁻: pol.
+⁼: pol. 
+
+%{ We define propositions in an environment with free atoms. }%
+atom: pol -> type. %name atom Q q.
+%block atom⁺: block {Q⁺: atom ⁺}.
+%block atom⁻: block {Q⁻: atom ⁻}.
+
+typ: pol -> type. %name typ A.
+c: atom P -> typ P.
+↓: typ ⁻ -> typ ⁺.
+↑: typ ⁺ -> typ ⁻.
+0: typ ⁺.
+⊕: typ ⁺ -> typ ⁺ -> typ ⁺. %infix none 5 ⊕.
+1: typ ⁺.
+⊗: typ ⁺ -> typ ⁺ -> typ ⁺. %infix none 5 ⊗.
+⊤: typ ⁻.
+&: typ ⁻ -> typ ⁻ -> typ ⁻. %infix none 5 &.
+⊸: typ ⁺ -> typ ⁻ -> typ ⁻. %infix none 5 ⊸.
+
+%{ Right-stable propositions are ones that are either atomic or shifted. }%
+stable: typ ⁻ -> type. %name stable St.
+aQ: stable (c Q).
+a↑: stable (↑ A⁺).
+
+%{ An inversion or focus context Δ is a list of positive propositions. }%
+pos: type. %name pos _Δ.
+·: pos.
+,: typ ⁺ -> pos -> pos. %infix right 3 ,.
+
+%{ === Term metric === }%
+
+%{ Twelf's termination ordering isn't quite right for what we need. Ordering
+of rules is given lowest priority and we need to be able to give it 
+second-highest priority, because we make a call to the subst⁻ function on
+larger subterms but at the same type. }%
+
+met: {P: pol} typ Q -> type. %name met Mt.
+
+me: met ⁻ A⁻ -> met ⁼ (A⁻: typ ⁻).
+
+mc: met P (c Q: typ P).
+m↓: met ⁼ A⁻ -> met ⁺ (↓ A⁻).
+m↑: met ⁺ A⁺ -> met ⁻ (↑ A⁺).
+m0: met ⁺ 0.
+m⊕: met ⁺ A⁺ -> met ⁺ B⁺ -> met ⁺ (A⁺ ⊕ B⁺).
+m1: met ⁺ 1.
+m⊗: met ⁺ A⁺ -> met ⁺ B⁺ -> met ⁺ (A⁺ ⊗ B⁺).
+m⊤: met ⁻ ⊤.
+m&: met ⁻ A⁻ -> met ⁻ B⁻ -> met ⁻ (A⁻ & B⁻).
+m⊸: met ⁺ A⁺ -> met ⁻ B⁻ -> met ⁻ (A⁺ ⊸ B⁻).
+
+inmet: {A: typ P} met P A -> type.
+%mode inmet +A -Mt.
+
+-: inmet (c Q) mc.
+-: inmet (↓ A⁻) (m↓ (me Mt)) <- inmet A⁻ Mt.
+-: inmet (↑ A⁺) (m↑ Mt) <- inmet A⁺ Mt.
+-: inmet 0 m0.
+-: inmet (A⁺ ⊕ B⁺) (m⊕ Mt₁ Mt₂) <- inmet A⁺ Mt₁ <- inmet B⁺ Mt₂.
+-: inmet 1 m1.
+-: inmet (A⁺ ⊗ B⁺) (m⊗ Mt₁ Mt₂) <- inmet A⁺ Mt₁ <- inmet B⁺ Mt₂.
+-: inmet ⊤ m⊤.
+-: inmet (A⁻ & B⁻) (m& Mt₁ Mt₂) <- inmet A⁻ Mt₁ <- inmet B⁻ Mt₂.
+-: inmet (A⁺ ⊸ B⁻) (m⊸ Mt₁ Mt₂) <- inmet A⁺ Mt₁ <- inmet B⁻ Mt₂.
+
+%worlds (atom⁺ | atom⁻) (inmet _ _).
+%total A (inmet A _).
+
+%{ == Sequent calculus == }%
+
+%{ The judgments of the focused language (or, alternatively, syntax of 
+intrinsically typed spine form judgments) }%
+hyp⁺: atom ⁺ -> type. %name hyp⁺ X⁺ x⁺.
+hyp⁻: typ ⁻ -> type. %name hyp⁻ X⁻ x⁻.
+%block x⁺ : some {Q⁺ : atom ⁺} block {x⁺ : hyp⁺ Q⁺}.
+%block x⁻ : some {A⁻ : typ ⁻}  block {x⁻ : hyp⁻ A⁻}.
+
+rfoc: typ ⁺ -> type. %name rfoc V.
+conc: pos -> typ ⁻ -> type. %name conc N.
+lfoc: typ ⁻ -> typ ⁻ -> type. %name lfoc Sp.
+
+%{ `V ::= · ∣ x⁺ ∣ N ∣ inl V ∣ inr V ∣ <> ∣ <V₁,V₂>' }%
+cR: hyp⁺ Q⁺ -> rfoc (c Q⁺).
+↓R: conc · A⁻ -> rfoc (↓ A⁻).
+⊕R₁: rfoc A⁺ -> rfoc (A⁺ ⊕ B⁺).
+⊕R₂: rfoc B⁺ -> rfoc (A⁺ ⊕ B⁺).
+1R: rfoc 1.
+⊗R: rfoc A⁺ -> rfoc B⁺ -> rfoc (A⁺ ⊗ B⁺).
+
+%{ `N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
+foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc · C⁻.
+↑R: rfoc A⁺ -> conc · (↑ A⁺).
+⊤R: conc · ⊤.
+&R: conc · A⁻ -> conc · B⁻ -> conc · (A⁻ & B⁻).
+⊸R: conc (A⁺ , ·) B⁻ -> conc · (A⁺ ⊸ B⁻).
+
+%{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
+cL: (hyp⁺ Q⁺ -> conc _Δ C⁻) -> conc (c Q⁺ , _Δ) C⁻.
+↓L: (hyp⁻ A⁻ -> conc _Δ C⁻) -> conc (↓ A⁻ , _Δ) C⁻.
+0L: conc (0 , _Δ) C⁻.
+⊕L: conc (A⁺ , _Δ) C⁻ -> conc (B⁺ , _Δ) C⁻ -> conc (A⁺ ⊕ B⁺ , _Δ) C⁻.
+1L: conc _Δ C⁻ -> conc (1 , _Δ) C⁻.
+⊗L: conc (A⁺ , B⁺ , _Δ) C⁻ -> conc (A⁺ ⊗ B⁺ , _Δ) C⁻.
+
+%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ V;Sp' }%
+init: lfoc (c Q⁻) (c Q⁻).
+↑L: conc (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
+&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+⊸L: rfoc A⁺ -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
+
+
+%{ == Cut admissibility == }%
+
+%{ Cut admissibility has a lot of mutually inductive theorems, but no more
+than is absolutely necessary given the syntactic classes we're dealing
+with. Furthermore, the different theorems we use neatly sort out the 
+informal division of cases that we are used to dealing with when proving
+cut admissibility theorems.
+
+The "principal" substitutions capture the principal cuts: 
+* `V • Ni' - positive cut formula, and
+* `M • Sp' - negative cut formula.
+In this presentation, we have generalized what it means to be a "positive
+cut formula": instead of a single formula `A⁺', it is a context of positive
+formulas `Δ'. Each inductive call within this group decreases the "size" of the
+cut formula by a multiset ordering where the positive conjunction `⊗' counts
+for two and the conjunction of positive contexts `,' counts for one. To make
+Twelf happy, we turn this into a structural metric. }%
+
+subst⁺: met ⁺ A⁺ -> rfoc A⁺ -> conc (A⁺ , _Δ) C⁻ -> conc _Δ C⁻ -> type.
+subst⁻: met ⁻ A⁻ -> conc · A⁻ -> lfoc A⁻ C⁻ -> stable C⁻ -> conc · C⁻ -> type.
+
+%mode subst⁺ +A +V +N -N2.
+%mode subst⁻ +A +N +Sp +St -N2.
+
+%{ The "rightist" substitutions capture the right commutative cuts:
+* `[M/x]V' - right rules for positive connectives,  
+* `[M/x]N' - right rules for negative connectives, 
+* `[M/x]Ni' - left rules for positive connectives,
+* `[M/x]Sp' - left rules for negative connectives, and
+Each inductive call within this group decreases the size of the formula that 
+we are substituting into. }%
+
+cutV:  met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> rfoc C⁺) -> rfoc C⁺ -> type.
+cutN:  met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> conc _Δ C⁻) -> conc _Δ C⁻ -> type.
+cutSp: met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) -> lfoc B⁻ C⁻ ->  type.
+
+%mode cutV  +A +M +V -F.
+%mode cutN  +A +M +N -F.
+%mode cutSp +A +M +Sp -F.
+
+%{ The "leftist" substitutions capture the left commutative cuts, and 
+are only called when we bottom out of principal substitutions:
+* `〈Sp〉Ni' - left rules for negative connectives
+* `〈Mi⟩ Ni' - left rules for positive connectives.
+Each inductive call within this group decreases the size of the formula that
+we are substituting in, hence "leftist." }%
+
+left⁻: met ⁺ A⁺ -> lfoc B⁻ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻
+  -> lfoc B⁻ C⁻ -> type.
+left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻ 
+  -> conc _Δ C⁻ -> type.
+
+%mode left⁻ +A +Sp +Ni +Sp2 -F.
+%mode left⁺ +A +Mi +Ni +Ni2 -F.
+
+%{ === Principal substitution/cuts === }%
+
+-: subst⁻ mc (foc X aQ Sp) init _ (foc X aQ Sp).
+
+-: subst⁻ (m↑ Mt) (foc X a↑ Sp) (↑L N) St (foc X St Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B⁻ C⁻).
+
+-: subst⁻ (m↑ Mt) (↑R V) (↑L N) _ N2
+  <- subst⁺ Mt V N (N2: conc · C⁻).
+
+-: subst⁻ (m& Mt₁ Mt₂) (&R N₁ N₂) (&L₁ Sp) St N2
+  <- subst⁻ Mt₁ N₁ Sp St (N2: conc · C⁻).
+
+-: subst⁻ (m& Mt₁ Mt₂) (&R N₁ N₂) (&L₂ Sp) St N2
+  <- subst⁻ Mt₂ N₂ Sp St (N2: conc · C⁻).
+
+-: subst⁻ (m⊸ Mt₁ Mt₂) (⊸R N) (⊸L V Sp) St N3 
+  <- subst⁺ Mt₁ V N (N2: conc · B⁻)
+  <- subst⁻ Mt₂ N2 Sp St (N3: conc · C⁻).
+
+-: subst⁺ mc (cR X) (cL ([x] N x)) (N X).
+
+-: subst⁺ (m↓ Mt) (↓R M) (↓L N) N2
+  <- cutN Mt M N (N2: conc _Δ C⁻).
+
+-: subst⁺ (m⊕ Mt₁ Mt₂) (⊕R₁ V) (⊕L N₁ N₂) N2
+  <- subst⁺ Mt₁ V N₁ (N2: conc _Δ C⁻).
+
+-: subst⁺ (m⊕ Mt₁ Mt₂) (⊕R₂ V) (⊕L N₁ N₂) N2
+  <- subst⁺ Mt₂ V N₂ (N2: conc _Δ C⁻).
+
+-: subst⁺ m1 1R (1L N) N.
+
+-: subst⁺ (m⊗ Mt₁ Mt₂) (⊗R V₁ V₂) (⊗L N) N3
+  <- subst⁺ Mt₁ V₁ N (N2: conc (B⁺ , _Δ) C⁻)
+  <- subst⁺ Mt₂ V₂ N2 (N3: conc _Δ C⁻).
+
+%{ === Rightist substitution (right commutative cuts) === }%
+
+-: cutV Mt M ([x] cR X) (cR X).
+
+-: cutV Mt M ([x] ↓R (N x)) (↓R N2)
+  <- cutN Mt M ([x] N x) (N2: conc · C⁻).
+
+-: cutV Mt M ([x] ⊕R₁ (V x)) (⊕R₁ V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc C₁⁺).
+
+-: cutV Mt M ([x] ⊕R₂ (V x)) (⊕R₂ V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc C₂⁺).
+
+-: cutV Mt M ([x] 1R) (1R).
+
+-: cutV Mt M ([x] ⊗R (V₁ x) (V₂ x)) (⊗R V₁2 V₂2)
+  <- cutV Mt M ([x] V₁ x) (V₁2: rfoc C₁⁺)
+  <- cutV Mt M ([x] V₂ x) (V₂2: rfoc C₂⁺).
+
+-: cutN (me Mt) M ([x] foc x St (Sp x)) N2
+  <- cutSp (me Mt) M ([x] Sp x) (Sp2: lfoc A⁻ C⁻)
+  <- subst⁻ Mt M Sp2 St (N2: conc · C⁻).
+
+-: cutN Mt M ([x] foc X St (Sp x)) (foc X St Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B⁻ C⁻).
+
+-: cutN Mt M ([x] ↑R (V x)) (↑R V2)
+  <- cutV Mt M ([x] V x) (V2: rfoc C⁺).
+
+-: cutN Mt M ([x] ⊤R) ⊤R.
+
+-: cutN Mt M ([x] &R (N₁ x) (N₂ x)) (&R N₁2 N₂2)
+  <- cutN Mt M ([x] N₁ x) (N₁2: conc · C₁⁻)
+  <- cutN Mt M ([x] N₂ x) (N₂2: conc · C₂⁻).
+
+-: cutN Mt M ([x] ⊸R (N x)) (⊸R N2)
+  <- cutN Mt M ([x] N x) (N2: conc (C₁⁺ , ·) C₂⁻).
+
+-: cutN Mt M ([x] cL [y] N x y) (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} cutN Mt M ([x] N x y) (N2 y: conc _Δ C⁻)).
+
+-: cutN Mt M ([x] ↓L [y] N x y) (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} cutN Mt M ([x] N x y) (N2 y: conc _Δ C⁻)).
+
+-: cutN Mt M ([x] 0L) 0L.
+
+-: cutN Mt M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁2 N₂2)
+  <- cutN Mt M ([x] N₁ x) (N₁2: conc (B₁ , _Δ) C⁻)
+  <- cutN Mt M ([x] N₂ x) (N₂2: conc (B₂ , _Δ) C⁻).
+
+-: cutN Mt M ([x] 1L (N x)) (1L N2)
+  <- cutN Mt M ([x] N x) (N2: conc _Δ C⁻).
+
+-: cutN Mt M ([x] ⊗L (N x)) (⊗L N2)
+  <- cutN Mt M ([x] N x) (N2: conc (A⁺ , B⁺ , _Δ) C⁻).
+
+-: cutSp Mt M ([x] init) init.
+
+-: cutSp Mt M ([x] ↑L (N x)) (↑L N2)
+  <- cutN Mt M ([x] N x) (N2: conc (B⁺ , ·) C⁻).
+
+-: cutSp Mt M ([x] &L₁ (Sp x)) (&L₁ Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₁⁻ C⁻).
+
+-: cutSp Mt M ([x] &L₂ (Sp x)) (&L₂ Sp2)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+
+-: cutSp Mt M ([x] ⊸L (V x) (Sp x)) (⊸L V2 Sp2)
+  <- cutV Mt M ([x] V x) (V2: rfoc B₁⁺)
+  <- cutSp Mt M ([x] Sp x) (Sp2: lfoc B₂⁻ C⁻).
+
+%{ === Leftist substitution (left commutative cuts) === }%
+
+-: left⁻ Mt (↑L M) N St (↑L N2)
+  <- left⁺ Mt M N St (N2: conc (B⁺ , ·) C⁻).
+
+-: left⁻ Mt (&L₁ Sp) N St (&L₁ Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₁⁻ C⁻).
+
+-: left⁻ Mt (&L₂ Sp) N St (&L₂ Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₂⁻ C⁻).
+
+-: left⁻ Mt (⊸L V Sp) N St (⊸L V Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B₂⁻ C⁻).
+
+-: left⁺ Mt (foc X _ Sp) N St (foc X St Sp2)
+  <- left⁻ Mt Sp N St (Sp2: lfoc B⁻ C⁻).
+
+-: left⁺ Mt (↑R V) N St N2
+  <- subst⁺ Mt V N (N2: conc · C⁻).
+
+-: left⁺ Mt (cL [y] M y) N St (cL [y] N2 y)
+  <- ({y: hyp⁺ Q⁺} left⁺ Mt (M y) N St (N2 y: conc _Δ C⁻)).
+
+-: left⁺ Mt (↓L [y] M y) N St (↓L [y] N2 y)
+  <- ({y: hyp⁻ B⁻} left⁺ Mt (M y) N St (N2 y: conc _Δ C⁻)).
+
+-: left⁺ Mt 0L N St 0L.
+
+-: left⁺ Mt (⊕L M₁ M₂) N St (⊕L N₁2 N₂2)
+  <- left⁺ Mt M₁ N St (N₁2: conc (B₁⁺ , _Δ) C⁻)
+  <- left⁺ Mt M₂ N St (N₂2: conc (B₂⁺ , _Δ) C⁻).
+
+-: left⁺ Mt (1L M) N St (1L N2)
+  <- left⁺ Mt M N St (N2: conc _Δ C⁻).
+
+-: left⁺ Mt (⊗L M) N St (⊗L N2)
+  <- left⁺ Mt M N St (N2: conc (A⁺ , B⁺ , _Δ) C⁻).
+
+%{ === Wrap-up === }%
+
+%worlds (atom⁺ | atom⁻ | x⁺ | x⁻)
+  (subst⁻ _ _ _ _ _)
+  (subst⁺ _ _ _ _)
+  (cutN _ _ _ _)
+  (cutV _ _ _ _)
+  (cutSp _ _ _ _)
+  (left⁻ _ _ _ _ _)
+  (left⁺ _ _ _ _ _).
+
+%total 
+  {(Mt1 Mt2 Mt3 Mt5 Mt6 Mt7 Mt8) 
+    [(MN MV MSp MP VP SpL MiL) 
+     (N V Sp SpP NiP NiL⁻ NiL⁺)]}
+  (subst⁻ Mt5 MP  SpP _ _)
+  (subst⁺ Mt6 VP  NiP _)
+  (cutN   Mt1 MN  N _)
+  (cutV   Mt2 MV  V _)
+  (cutSp  Mt3 MSp Sp _)
+  (left⁻  Mt7 SpL NiL⁻ _ _)
+  (left⁺  Mt8 MiL NiL⁺ _ _).
+
+
+%{ == Expansion == }%
+
+eta⁻: met⁻ A⁻ 
+  -> ({γ: typ ⁻} stable γ -> lfoc A⁻ γ -> conc γ) 
+  -> conc A⁻ 
+  -> type.
+
+eta⁺: metΔ _Δ 
+  -> (rfoc _Δ -> conc C⁻)
+  -> linv _Δ C⁻ 
+  -> type.
+
+%mode eta⁻ +Mt +A -B.
+%mode eta⁺ +Mt +A -B.
+
+-: eta⁻ mc⁻ ([γ][st][sp: lfoc (c Q⁻) γ] N γ st sp) (N (c Q⁻) aQ init). 
+
+-: eta⁻
+  (m↑ (mΔ Mt)) ([γ][st][sp: lfoc (↑ A⁺) γ] N γ st sp) 
+  (N (↑ A⁺) a↑ (↑L N2))
+  <- eta⁺ Mt ([v: rfoc (A⁺ , ·)] ↑R v) (N2: linv (A⁺ , ·) (↑ A⁺)).
+
+-: eta⁻ m⊤ ([γ][st][sp: lfoc ⊤ γ] N γ st sp) ⊤R.
+
+-: eta⁻ (m& Mt₁ Mt₂) ([γ][st][sp: lfoc (A⁻ & B⁻) γ] N γ st sp) (&R N₁ N₂)
+  <- eta⁻ Mt₁ ([γ][st][sp: lfoc A⁻ γ] N γ st (&L₁ sp)) N₁
+  <- eta⁻ Mt₂ ([γ][st][sp: lfoc B⁻ γ] N γ st (&L₂ sp)) N₂.  
+
+-: eta⁻ (m⊸ (mΔ Mt₁) Mt₂) ([γ][st][sp: lfoc (A⁺ ⊸ B⁻) γ] N γ st sp) (⊸R Ni2)
+  <- ({σ: rfoc (A⁺ , ·)}
+       eta⁻ Mt₂ ([γ][st][sp: lfoc B⁻ γ] N γ st (⊸L σ sp)) (N2 σ))
+  <- eta⁺ Mt₁ ([σ: rfoc (A⁺ , ·)] N2 σ) Ni2.
+
+-: eta⁺ m· ([σ: rfoc ·] N σ) (·L (N ·R)).
+
+-: eta⁺ (mc⁺ Mt) ([v: rfoc (c Q⁺ , _Δ)] N v) (cL [x] N2 x)
+  <- ({x} eta⁺ Mt ([σ: rfoc _Δ] N (cR x σ)) (N2 x: linv _Δ C⁻)).
+
+-: eta⁺ (m↓ (m Mt₁) Mt₂) ([v: rfoc (↓ A⁻ , _Δ)] N v) (↓L [x: hyp⁻ A⁻] Ni2 x)
+  <- ({x: hyp⁻ A⁻}
+       eta⁻ Mt₁ ([γ][st][sp: lfoc A⁻ γ] foc x st sp)
+       (N2 x: conc A⁻))
+  <- ({x: hyp⁻ A⁻}
+       eta⁺ Mt₂ ([v: rfoc _Δ] N (↓R (N2 x) v)) 
+       (Ni2 x: linv _Δ C⁻)).
+
+-: eta⁺ m0 ([v: rfoc (0 , _Δ)] N v) 0L.
+
+-: eta⁺ (m⊕ Mt₁ Mt₂) ([v: rfoc (A⁺ ⊕ B⁺ , _Δ)] N v) (⊕L N₁2 N₂2)
+  <- eta⁺ Mt₁ ([v: rfoc (A⁺ , _Δ)] N (⊕R₁ v)) (N₁2: linv (A⁺ , _Δ) C⁻)
+  <- eta⁺ Mt₂ ([v: rfoc (B⁺ , _Δ)] N (⊕R₂ v)) (N₂2: linv (B⁺ , _Δ) C⁻).
+
+-: eta⁺ (m1 Mt) ([v: rfoc (1 , _Δ)] N v) (1L N2)
+  <- eta⁺ Mt ([v: rfoc _Δ] N (1R v)) (N2: linv _Δ C⁻).
+
+-: eta⁺ (m⊗ Mt) ([v: rfoc (A⁺ ⊗ B⁺ , _Δ)] N v) (⊗L N2)
+  <- eta⁺ Mt ([v: rfoc (A⁺ , B⁺ , _Δ)] N (⊗R v)) (N2: linv (A⁺ , B⁺ , _Δ) C⁻).
+
+%block rfocs: some {_Δ: pos} block {v: rfoc _Δ}.
+%worlds (atom⁺ | atom⁻ | x⁺ | x⁻ | rfocs)
+  (eta⁻ _ _ _)
+  (eta⁺ _ _ _).
+%total (Mt1 Mt2)
+  (eta⁻ Mt1 _ _)
+  (eta⁺ Mt2 _ _).
+
+
+%{ == Unfocused admissibility == }%
+
+cut: conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) -> conc C⁻ -> type.
+-: cut M N N2 <- inmet⁻ A⁻ Mt <- cutN (m Mt) M N N2.
+%mode cut +M +N -N2.
+%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (cut _ _ _).
+%total {} (cut _ _ _).
+
+append-rfoc: {DΔ: pos -> pos}
+  rfoc (DΔ ·)
+  -> rfoc _Δ 
+  -> rfoc (DΔ _Δ) 
+  -> type.
+%mode append-rfoc +DΔ +V₁ +V₂ -V.
+
+-: append-rfoc ([δ] δ) ·R V₂ V₂. % Actual base case
+-: append-rfoc ([δ] ·) _ _ ·R. % Would be suprious if we had linearity
+-: append-rfoc ([δ] c Q⁺ , DΔ δ) (cR X V₁) V₂ (cR X V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] ↓ A⁻ , DΔ δ) (↓R N V₁) V₂ (↓R N V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₁ V₁) V₂ (⊕R₁ V)
+  <- append-rfoc ([δ] A⁺ , DΔ δ) V₁ V₂ (V: rfoc (A⁺ , DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₂ V₁) V₂ (⊕R₂ V)
+  <- append-rfoc ([δ] B⁺ , DΔ δ) V₁ V₂ (V: rfoc (B⁺ , DΔ _Δ)).
+-: append-rfoc ([δ] 1 , DΔ δ) (1R V₁) V₂ (1R V)
+  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: append-rfoc ([δ] A⁺ ⊗ B⁺ , DΔ δ) (⊗R V₁) V₂ (⊗R V)
+  <- append-rfoc ([δ] A⁺ , B⁺ , DΔ δ) V₁ V₂ V.
+
+%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (append-rfoc _ _ _ _).
+%total V (append-rfoc _ V _ _).
+
+adm-andR: conc (↑ A⁺) -> conc (↑ B⁺) -> conc (↑ (A⁺ ⊗ B⁺)) -> type.
+%mode adm-andR +A +B -C.
+
+-: adm-andR N₁ N₂ M4
+  <- inmet⁺ B⁺ m· Mt1
+  <- inmet⁺ A⁺ m· Mt2
+  <- ({v₁: rfoc (A⁺ , ·)} {v₂: rfoc (B⁺ , ·)}
+       append-rfoc ([δ] A⁺ , δ) v₁ v₂ (V v₁ v₂: rfoc (A⁺ , B⁺ , ·)))
+  <- ({v₁: rfoc (A⁺ , ·)} 
+       eta⁺ Mt1 ([v₂: rfoc (B⁺ , ·)] ↑R (⊗R (V v₁ v₂))) 
+         (M1 v₁: linv (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₂: hyp⁻ (↑ B⁺)} 
+       eta⁺ Mt2 ([v₁: rfoc (A⁺ , ·)] foc x₂ a↑ (↑L (M1 v₁)))
+         (M2 x₂: linv (A⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₂: hyp⁻ (↑ B⁺)} 
+       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] foc x₁ a↑ (↑L (M2 x₂)))
+         (M3 x₂: conc (↑ (A⁺ ⊗ B⁺))))
+  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] M3 x₂) 
+         (M4: conc (↑ (A⁺ ⊗ B⁺))).

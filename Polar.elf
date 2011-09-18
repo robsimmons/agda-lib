@@ -108,14 +108,7 @@ linv:  pos -> typ ⁻ -> type. %name linv Ni.
 lfoc: typ ⁻ -> typ ⁻ -> type. %name lfoc Sp.
 rfoc: pos -> type. %name rfoc V.
 
-%{ `N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
-foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc C⁻.
-↑R: rfoc (A⁺ , ·) -> conc (↑ A⁺).
-⊤R: conc ⊤.
-&R: conc A⁻ -> conc B⁻ -> conc (A⁻ & B⁻).
-⊸R: linv (A⁺ , ·) B⁻ -> conc (A⁺ ⊸ B⁻).
-
-%{ `σ ::= · ∣ x⁺,σ ∣ N,σ ∣ inl σ ∣ inr σ ∣ <>,σ ∣ ⊗σ' }%
+%{ `V ::= · ∣ x⁺,V ∣ N,V ∣ inl V ∣ inr V ∣ <>,V ∣ ⊗V' }%
 ·R: rfoc ·.
 cR: hyp⁺ Q⁺ -> rfoc _Δ -> rfoc (c Q⁺ , _Δ).
 ↓R: conc A⁻ -> rfoc _Δ -> rfoc (↓ A⁻ , _Δ).
@@ -124,12 +117,12 @@ cR: hyp⁺ Q⁺ -> rfoc _Δ -> rfoc (c Q⁺ , _Δ).
 1R: rfoc _Δ -> rfoc (1 , _Δ).
 ⊗R: rfoc (A⁺ , B⁺ , _Δ) -> rfoc (A⁺ ⊗ B⁺ , _Δ).
 
-%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ σ;Sp' }%
-init: lfoc (c Q⁻) (c Q⁻).
-↑L: linv (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
-&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
-&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
-⊸L: rfoc (A⁺ , ·) -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
+%{ `N ::= x⁻ • Sp ∣ V ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
+foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc C⁻.
+↑R: rfoc (A⁺ , ·) -> conc (↑ A⁺).
+⊤R: conc ⊤.
+&R: conc A⁻ -> conc B⁻ -> conc (A⁻ & B⁻).
+⊸R: linv (A⁺ , ·) B⁻ -> conc (A⁺ ⊸ B⁻).
 
 %{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
 ·L: conc C⁻ -> linv · C⁻.
@@ -139,6 +132,14 @@ cL: (hyp⁺ Q⁺ -> linv _Δ C⁻) -> linv (c Q⁺ , _Δ) C⁻.
 ⊕L: linv (A⁺ , _Δ) C⁻ -> linv (B⁺ , _Δ) C⁻ -> linv (A⁺ ⊕ B⁺ , _Δ) C⁻.
 1L: linv _Δ C⁻ -> linv (1 , _Δ) C⁻.
 ⊗L: linv (A⁺ , B⁺ , _Δ) C⁻ -> linv (A⁺ ⊗ B⁺ , _Δ) C⁻.
+
+%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ σ;Sp' }%
+init: lfoc (c Q⁻) (c Q⁻).
+↑L: linv (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
+&L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+&L₂: lfoc B⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
+⊸L: rfoc (A⁺ , ·) -> lfoc B⁻ C⁻ -> lfoc (A⁺ ⊸ B⁻) C⁻.
+
 
 
 %{ == Cut admissibility == }%

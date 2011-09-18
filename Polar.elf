@@ -36,10 +36,10 @@ pos: type. %name pos _Δ.
 
 %{ === Syntax metric === }%
 
-met: typ ⁻ -> type. %name met S.
-met⁻: typ ⁻ -> type. %name met⁻ S.
-met⁺: typ ⁺ -> type. %name met⁺ S.
-metΔ: pos -> type. %name metΔ S.
+met: typ ⁻ -> type. %name met Mt.
+met⁻: typ ⁻ -> type. %name met⁻ Mt.
+met⁺: typ ⁺ -> type. %name met⁺ Mt.
+metΔ: pos -> type. %name metΔ Mt.
 
 m: met⁻ A⁻ -> met A⁻.
 
@@ -58,6 +58,40 @@ m0: metΔ (0 , _Δ).
 m⊕: metΔ (A⁺ , _Δ) -> metΔ (B⁺ , _Δ) -> metΔ (A⁺ ⊕ B⁺ , _Δ).
 m1: metΔ _Δ -> metΔ (1 , _Δ).
 m⊗: metΔ (A⁺ , B⁺ , _Δ) -> metΔ (A⁺ ⊗ B⁺ , _Δ).
+
+%{ Every type can be assigned a metric. }%
+
+inmet⁻: {A⁻: typ ⁻} met⁻ A⁻ -> type.
+inmet⁺: {A⁺: typ ⁺} metΔ _Δ -> metΔ (A⁺ , _Δ) -> type.
+
+%mode inmet⁻ +A⁻ -Mt.
+%mode inmet⁺ +A⁺ +Mt₁ -Mt₂.
+
+-: inmet⁻ (c Q⁻) mc⁻.
+-: inmet⁻ (↑ A⁺) (m↑ (mΔ Mt)) 
+  <- inmet⁺ A⁺ m· (Mt: metΔ (A⁺ , ·)). 
+-: inmet⁻ ⊤ m⊤.
+-: inmet⁻ (A⁻ & B⁻) (m& Mt₁ Mt₂)
+  <- inmet⁻ A⁻ (Mt₁: met⁻ A⁻)
+  <- inmet⁻ B⁻ (Mt₂: met⁻ B⁻).
+-: inmet⁻ (A⁺ ⊸ B⁻) (m⊸ (mΔ Mt₁) Mt₂) 
+  <- inmet⁺ A⁺ m· (Mt₁: metΔ (A⁺ , ·))
+  <- inmet⁻ B⁻ (Mt₂: met⁻ B⁻).
+
+-: inmet⁺ (c Q⁺) Mt (mc⁺ Mt).
+-: inmet⁺ (↓ A⁻) Mt (m↓ (m Mt2) Mt) 
+  <- inmet⁻ A⁻ (Mt2: met⁻ A⁻).
+-: inmet⁺ 0 Mt m0.
+-: inmet⁺ (A⁺ ⊕ B⁺) Mt (m⊕ Mt₁ Mt₂)
+  <- inmet⁺ A⁺ Mt (Mt₁: metΔ (A⁺ , _Δ))
+  <- inmet⁺ B⁺ Mt (Mt₂: metΔ (B⁺ , _Δ)).
+-: inmet⁺ 1 Mt (m1 Mt). 
+-: inmet⁺ (A⁺ ⊗ B⁺) Mt (m⊗ Mt₂)
+  <- inmet⁺ B⁺ Mt (Mt₁: metΔ (B⁺ , _Δ))
+  <- inmet⁺ A⁺ Mt₁ (Mt₂: metΔ (A⁺ , B⁺ , _Δ)).
+
+%worlds (atom⁺ | atom⁻) (inmet⁻ _ _) (inmet⁺ _ _ _).
+%total (A⁻ A⁺) (inmet⁻ A⁻ _) (inmet⁺ A⁺ _ _).
 
 
 %{ == Sequent calculus == }%
@@ -418,3 +452,79 @@ eta⁺: metΔ _Δ
 %total (Mt1 Mt2)
   (eta⁻ Mt1 _ _)
   (eta⁺ Mt2 _ _).
+
+
+%{ == Unfocused admissibility == }%
+
+cut: conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) -> conc C⁻ -> type.
+-: cut M N N2 <- inmet⁻ A⁻ Mt <- cutN (m Mt) M N N2.
+%mode cut +M +N -N2.
+%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (cut _ _ _).
+%total {} (cut _ _ _).
+
+splitty: ({δ} metΔ δ -> metΔ (DΔ δ))
+  -> ({δ} rfoc δ -> rfoc (DΔ δ)) 
+  -> rfoc _Δ 
+  -> rfoc (DΔ _Δ) 
+  -> type.
+%mode splitty +Mt +V₁ +V₂ -V.
+
+-: splitty ([δ][s] m·) _ _ ·R. % Would be suprious if we had linearity
+
+-: splitty ([δ][s] s) 
+     ([δ][v] v) V₂ V₂.
+-: splitty ([δ][s] mc⁺ (Mt δ s: metΔ (DΔ δ)))
+     ([δ][v] cR X (V₁ δ v)) V₂ (cR X V)
+  <- splitty Mt V₁ V₂ V.
+-: splitty ([δ][s] m↓ (_: met A⁻) (Mt δ s: metΔ (DΔ δ))) 
+     ([δ][v] ↓R (N δ v) (V₁ δ v)) V₂ (↓R (N · ·R) V) % Kinda ugly
+  <- splitty Mt V₁ V₂ V.
+-: splitty ([δ][s] m⊕ (Mt₁ δ s: metΔ (A⁺ , DΔ δ)) (Mt₂ δ s: metΔ (B⁺ , DΔ δ)))
+     ([δ][v] ⊕R₁ (V₁ δ v)) V₂ (⊕R₁ V)
+  <- splitty Mt₁ V₁ V₂ (V: rfoc (A⁺ , DΔ _Δ)).
+-: splitty ([δ][s] m⊕ (Mt₁ δ s: metΔ (A⁺ , DΔ δ)) (Mt₂ δ s: metΔ (B⁺ , DΔ δ)))
+     ([δ][v] ⊕R₂ (V₁ δ v)) V₂ (⊕R₂ V)
+  <- splitty Mt₂ V₁ V₂ (V: rfoc (B⁺ , DΔ _Δ)).
+-: splitty ([δ][s] m1 (Mt δ s: metΔ (DΔ δ)))
+     ([δ][v] 1R (V₁ δ v)) V₂ (1R V)
+  <- splitty Mt V₁ V₂ (V: rfoc (DΔ _Δ)).
+-: splitty ([δ][s] m⊗ (Mt δ s: metΔ (A⁺ , B⁺ , DΔ δ))) 
+     ([δ][v] ⊗R (V₁ δ v)) V₂ (⊗R V)
+  <- splitty Mt V₁ V₂ (V: rfoc (A⁺ , B⁺ , DΔ _Δ)).
+
+%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (splitty _ _ _ _).
+%total Mt (splitty Mt _ _ _).
+
+split: rfoc (A⁺ , ·) -> rfoc _Δ -> rfoc (A⁺ , _Δ) -> type.
+%mode split +V₁ +V₂ -V.
+
+-: split V₁ V₂ V
+  <- ({δ}{s: metΔ δ} inmet⁺ A⁺ s (Mt δ s: metΔ (A⁺ , δ)))
+  <- splitty Mt _ V₂ V.
+
+
+%{
+-: lemma m· V₁ ·R (V₁ · ·R).
+-: lemma (mc⁺ Mt) ([δ][v] V₁ δ v) (cR X V₂) V2
+  <- lemma Mt ([δ][v] V₁ (c Q⁺ , δ) (cR X v)) V₂ V.
+-: lemma (m↓ Mt₁ Mt₂) ([δ][v] V₁ δ v) (↓R N V₂) V
+  <- lemma Mt₂ ([δ][v] V₁ (↓ A⁻ , δ) (↓R N v)) V₂ V.
+-: lemma (m⊕ Mt₁ Mt₂) ([δ][v] V₁ δ v) (⊕R₁ V₂) _
+  <- lemma Mt₁ ([δ][v] V₁ (A⁺ , δ) (⊕R₁ v)) V₂ V.
+}%
+
+% eta⁺: linv (A⁺ , _Δ) C⁻ -> (hyp⁻ (↑ A⁺) -> linv _Δ C⁻) -> type.
+% -: eta⁺ Ni
+%   <- inmet⁺ A⁺ _ (Mt
+
+adm-andR: conc (↑ A⁺) -> conc (↑ B⁺) -> conc (↑ (A⁺ ⊗ B⁺)) -> type.
+%mode adm-andR +A +B -C.
+
+-: adm-andR N₁ N₂ NX
+  <- inmet⁺ B⁺ m· Mt1
+  <- inmet⁺ A⁺ Mt1 Mt2
+  <- eta⁺ Mt2 ([v₂: rfoc (A⁺ , B⁺ , ·)] ↑R (⊗R v₂)) 
+       (Ni: linv (A⁺ , B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
+  <- ({x₂: hyp⁻ (↑ B⁺)} 
+       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] M₁ x₁ x₂) (M2 x₂: conc (↑ (A⁺ ⊗ B⁺))))
+  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] M₂ x₂) (M3: conc (↑ (A⁺ ⊗ B⁺))).

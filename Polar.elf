@@ -151,9 +151,9 @@ cutNi:  met A⁻ -> conc A⁻ -> (hyp⁻ A⁻ -> linv _Δ C⁻)
   -> linv _Δ C⁻ -> type.
 
 %mode cutN  +M +D +E -F.
-%mode cutNi +M +D +E -F.
 %mode cutV  +M +D +E -F.
 %mode cutSp +M +D +E -F.
+%mode cutNi +M +D +E -F.
 
 %{ The "leftist" substitutions capture the left commutative cuts, and 
 are only called when we bottom out of principal substitutions:

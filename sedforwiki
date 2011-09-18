@@ -16,7 +16,7 @@ s/Δ/\&Delta;/g
 s/_σ/Sigma/g
 s/σ/\&sigma;/g
 s/π/\&pi;/g
-s/⁺/+/g
-s/⁻/-/g
+s/⁺/p+/g
+s/⁻/p-/g
 s/₁/1/g
 s/₂/2/g

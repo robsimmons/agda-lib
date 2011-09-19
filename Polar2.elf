@@ -555,9 +555,7 @@ adm-falseL: {C⁻} hyp⁻ (↑ 0)
 %mode adm-falseL +C⁻ +X -C.
 
 -: adm-falseL C⁻ (X: hyp⁻ (↑ 0)) N
-  <- eta⁻ C⁻ 
-       ([γ][st][sp: lfoc C⁻ γ] foc X st (↑L 0L)) 
-       (N: conc · C⁻).
+  <- unshift (foc X a↑ (↑L 0L)) (N: conc · C⁻).
 
 %worlds (vars) (adm-falseL _ _ _).
 %total [] (adm-falseL _ _ _).
@@ -573,79 +571,23 @@ adm-orL: (hyp⁻ (↑ A⁺) -> conc · C⁻)
      (N₂: hyp⁻ (↑ B⁺) -> conc · C⁻)
      (X: hyp⁻ (↑ (A⁺ ⊕ B⁺)))
      N
-  <- ({x₁: hyp⁻ (↑ A⁺)} shift (N₁ x₁) (M₁ x₁: conc · (↑ (↓ C⁻))))
-  <- ({x₂: hyp⁻ (↑ B⁺)} shift (N₂ x₂) (M₂ x₂: conc · (↑ (↓ C⁻))))
+  <- ({x₁: hyp⁻ (↑ A⁺)} shift (N₁ x₁) (NShift₁ x₁: conc · (↑ (↓ C⁻))))
+  <- ({x₂: hyp⁻ (↑ B⁺)} shift (N₂ x₂) (NShift₂ x₂: conc · (↑ (↓ C⁻))))
   <- eta⁺ A⁺ 
        ([v: rfoc A⁺] ↑R (⊕R₁ (↓R (↑R v))))
-       (N₃: conc (A⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))
+       (NId₁: conc (A⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))
   <- eta⁺ B⁺ 
        ([v: rfoc B⁺] ↑R (⊕R₂ (↓R (↑R v))))
-       (N₄: conc (B⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))
-  <- cut (foc X a↑ (↑L (⊕L N₃ N₄)))
+       (NId₂: conc (B⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))
+  <- cut (foc X a↑ (↑L (⊕L NId₁ NId₂)))
        ([x: hyp⁻ (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺)))]  
-         foc x a↑ (↑L (⊕L (↓L M₁) (↓L M₂))))
-       (M₃: conc · (↑ (↓ C⁻)))
-  <- unshift M₃
+         foc x a↑ (↑L (⊕L (↓L NShift₁) (↓L NShift₂))))
+       (NShift: conc · (↑ (↓ C⁻)))
+  <- unshift NShift
        (N: conc · C⁻).
 
-  <- ({x: hyp⁻ (↑ (A⁺ ⊕ B⁺))}
-       eta⁺ A⁺ ([v: rfoc A⁺] foc x a↑ (↑L (⊕L _ _))) 
-         _).
-
-
-  <- ({x: hyp⁻ C⁻}{γ}{st}{sp: lfoc C⁻ γ} 
-       eta⁺ A⁺ ([v: rfoc A⁺] foc x st sp)
-         (ABC γ st sp: conc (A⁺ , ·) γ))
-  <- ({γ}{st}{sp: lfoc C⁻ γ} 
-       eta⁺ B⁺ ([v: rfoc B⁺] _)
-         (ABD γ st sp: conc (B⁺ , ·) γ))
-
-  <- ({x₁: hyp⁻ (↑ A⁺)}
-       cut (N₁ x₁) ([x: hyp⁻ C⁻] ↑R (↓R _)) _). 
-  <- ({x₁: hyp⁻ (↑ A⁺)}
-       eta⁺ A⁺ ([v: foc A⁺] ↓R (↑R (N₁ x₁)))
-         (NS₁ x₁: conc · (↓ (↑ C⁻)))).
-  <- ({x₁: hyp⁻ (↑ A⁺)}
-       eta⁻ (↑ (↓ C⁻)) 
-         ([γ][st][sp: lfoc (↑ (↓ C⁻)) γ] 
-            _) 
-         (QQQ x₁)).
-  <- eta⁻ C⁻
-       ([γ][st][sp: lfoc C⁻ γ] 
-         foc X st
-           (↑L
-             (⊕L (ABC γ st sp) (ABD γ st sp))))
-       (M: conc · C⁻).
-
-  <- ({x₁: hyp⁻ (↑ (A⁺ ⊕ B⁺))}
-       eta⁺ B⁺ 
-         ([v: rfoc B⁺] _) _).
-
-  <- ({x: hyp⁻ C⁻} 
-       eta⁻ C⁻
-         ([γ][st][sp: lfoc C⁻ γ] 
-           foc X st
-             (↑L
-               (⊕L _ _)))
-         (MMM x: conc · C⁻))
-
-  <- ({v₁: rfoc A⁺}
-       eta⁻ (↑ B⁺)
-         ([γ][st][sp: lfoc (↑ B⁺) γ] 
-           foc X st
-             (↑L
-               (⊕L _ _)))
-         (M v₁: conc · (↑ B⁺))).
-
-  <- eta⁺ A⁺
-       ([v: rfoc A⁺] ↑R (⊕R₁ (↓R (↑R v))))
-       (N₃: conc (A⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))      
-  <- eta⁺ B⁺
-       ([v: rfoc B⁺] ↑R (⊕R₂ (↓R (↑R v))))
-       (N₄: conc (B⁺ , ·) (↑ (↓ (↑ A⁺) ⊕ ↓ (↑ B⁺))))
-  <- cut (foc X a↑ (↑L (⊕L N₃ N₄))) 
-       ([x] foc) _.
-
+%worlds (vars) (adm-orL _ _ _ _).
+%total [] (adm-orL _ _ _ _).
     
 
 %.

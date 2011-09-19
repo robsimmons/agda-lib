@@ -633,16 +633,67 @@ adm-and-L1: (hyp⁻ A⁻ -> conc · C⁻)
          -> type.
 %mode adm-and-L1 +N₁ +X -N.
 
--: adm-and-L1 (N₁: hyp⁻ A⁻ -> conc · C⁻) (X: hyp⁻ A⁻ & B⁻) N
-  <- ({x₁: hyp⁻ A⁻} 
-       shift (N₁ x₁) (NShift₁ x₁: conc · (↓ (↑ C⁻))))
-  <- cut _ _ 
+-: adm-and-L1 (N₁: hyp⁻ A⁻ -> conc · C⁻) (X: hyp⁻ (A⁻ & B⁻)) N
+  <- ({x₁: hyp⁻ A⁻} shift (N₁ x₁) (NShift₁ x₁: conc · (↑ (↓ C⁻))))
+  <- eta⁻ A⁻ ([γ][st][sp: lfoc A⁻ γ] foc X st (&L₁ sp)) (NId₁: conc · A⁻)
+  <- eta⁻ B⁻ ([γ][st][sp: lfoc B⁻ γ] foc X st (&L₂ sp)) (NId₂: conc · B⁻)
+  <- cut (&R (↑R (↓R NId₁)) (↑R (↓R NId₂))) 
+       ([x: hyp⁻ (↑ (↓ A⁻) & ↑ (↓ B⁻))]
+         foc x a↑ (&L₁ (↑L (↓L [x₁: hyp⁻ A⁻] NShift₁ x₁))))
        (NShift: conc · (↑ (↓ C⁻)))
   <- unshift NShift (N: conc · C⁻).  
 
+%worlds (vars) (adm-and-L1 _ _ _).
+%total [] (adm-and-L1 _ _ _).
+
+adm-and-L2: (hyp⁻ B⁻ -> conc · C⁻)
+         -> hyp⁻ (A⁻ & B⁻)
+         -> conc · C⁻ 
+         -> type.
+%mode adm-and-L2 +N₂ +X -N.
+
+-: adm-and-L2 (N₂: hyp⁻ B⁻ -> conc · C⁻) (X: hyp⁻ (A⁻ & B⁻)) N
+  <- ({x₂: hyp⁻ B⁻} shift (N₂ x₂) (NShift₂ x₂: conc · (↑ (↓ C⁻))))
+  <- eta⁻ A⁻ ([γ][st][sp: lfoc A⁻ γ] foc X st (&L₁ sp)) (NId₁: conc · A⁻)
+  <- eta⁻ B⁻ ([γ][st][sp: lfoc B⁻ γ] foc X st (&L₂ sp)) (NId₂: conc · B⁻)
+  <- cut (&R (↑R (↓R NId₁)) (↑R (↓R NId₂))) 
+       ([x: hyp⁻ (↑ (↓ A⁻) & ↑ (↓ B⁻))]
+         foc x a↑ (&L₂ (↑L (↓L [x₂: hyp⁻ B⁻] NShift₂ x₂))))
+       (NShift: conc · (↑ (↓ C⁻)))
+  <- unshift NShift (N: conc · C⁻).  
+
+%worlds (vars) (adm-and-L2 _ _ _).
+%total [] (adm-and-L2 _ _ _).
+
+
+%{ Implication }%
+
+adm-impR: (hyp⁻ (↑ A⁺) -> conc · B⁻)
+       -> conc · (A⁺ ⊸ B⁻)
+       -> type.
+%mode adm-impR +N₁ -N.
+
+-: adm-impR (N₁: hyp⁻ (↑ A⁺) -> conc · B⁻) N
+  <- ({x: hyp⁻ (↓ (↑ A⁺) ⊸ B⁻)}{v: rfoc A⁺}
+       eta⁻ B⁻
+         ([γ][st][sp: lfoc B⁻ γ] 
+           foc x st (⊸L (↓R (↑R v)) sp))
+         (NId₁ x v: conc · B⁻))
+  <- ({x: hyp⁻ (↓ (↑ A⁺) ⊸ B⁻)}
+       eta⁺ A⁺
+         ([v: rfoc A⁺] NId₁ x v)
+         (NId x: conc (A⁺ , ·) B⁻))
+  <- cut (⊸R (↓L [x₁: hyp⁻ (↑ A⁺)] N₁ x₁))
+       ([x: hyp⁻ (↓ (↑ A⁺) ⊸ B⁻)] ⊸R (NId x))
+       N.
+
+%worlds (vars) (adm-impR _ _).
+%total [] (adm-impR _ _).
+
+
 %.
 
-  <- eta⁺ (↓ A⁻) ([v: rfoc (↓ A⁻)] ↑R (⊕R₁ v)) 
+  Implication eta⁺ (↓ A⁻) ([v: rfoc (↓ A⁻)] ↑R (⊕R₁ v)) 
        (M₁: conc (↓ A⁻ , ·) (↑ (↓ A⁻ ⊕ ↓ B⁻)))
   <- eta⁺ (↓ B⁻) ([v: rfoc (↓ B⁻)] ↑R (⊕R₂ v))
        (M₂: conc (↓ B⁻ , ·) (↑ (↓ A⁻ ⊕ ↓ B⁻)))

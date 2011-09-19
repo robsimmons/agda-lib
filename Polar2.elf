@@ -411,6 +411,31 @@ cut: conc · A⁻ -> (hyp⁻ A⁻ -> conc · C⁻) -> conc · C⁻ -> type.
 %worlds (vars) (cut _ _ _).
 %total [] (cut _ _ _).
 
+%{
+unflail: {A⁺} conc (A⁺ , _Δ) C⁻ -> (hyp⁻ (↑ A⁺) -> conc _Δ C⁻) -> type.
+%mode unflail +A +N -M. 
+
+-: unflail (A⁺ ⊗ B⁺) (⊗L N₁) ([x: hyp⁻ (↑ (A⁺ ⊗ B⁺))] _)
+  <- unflail A⁺ N₁ 
+       ([x₁: hyp⁻ (↑ A⁺)] N₂ x₁: conc (B⁺ , _Δ) C⁻)
+  <- ({x₁: hyp⁻ (↑ A⁺)} 
+       unflail B⁺ (N₂ x₁)
+         ([x₂: hyp⁻ (↑ B⁺)] N₃ x₁ x₂: conc _Δ C⁻))
+  <- ({v₁: rfoc A⁺}
+       eta⁺ B⁺ ([v₂: rfoc B⁺] (↑R (⊗R v₁ v₂))) 
+        (N₄ v₁: conc (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- eta⁺ A⁺ ([v₁: rfoc A⁺] N₄ v₁) 
+       (N₅: conc (A⁺ , B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
+  <- unflail A⁺ N₅ 
+       ([x₁: hyp⁻ (↑ A⁺)] N₆ x₁: conc (B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
+  <- ({x₁: hyp⁻ (↑ A⁺)} 
+       unflail B⁺ (N₆ x₁)
+         ([x₂: hyp⁻ (↑ B⁺)] N₇ x₁ x₂: conc · (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₁: 
+
+
+  <- ({x: hyp⁻ (↑ (A⁺ ⊗ B⁺))}{v₁: rfoc A⁺}
+}%
 
 %{ Initial rules }%
 
@@ -445,36 +470,50 @@ adm-oneR: conc · (↑ 1) -> type.
 %worlds (vars) (adm-oneR _).
 %total [] (adm-oneR _).
 
-adm-and+R: conc · A⁻ 
-        -> conc · B⁻ 
-        -> conc · (↑ (↓ A⁻ ⊗ ↓ B⁻))
+adm-and+R: conc · (↑ A⁺) 
+        -> conc · (↑ B⁺) 
+        -> conc · (↑ (A⁺ ⊗ B⁺))
         -> type.
 %mode adm-and+R +D +E -F.
 
--: adm-and+R (N₁: conc · A⁻) (N₂: conc · B⁻) (↑R (⊗R (↓R N₁) (↓R N₂))).
+-: adm-and+R (N₁: conc · (↑ A⁺)) (N₂: conc · (↑ B⁺)) N₆
+  <- ({v₁: rfoc A⁺}
+       eta⁺ B⁺ ([v₂: rfoc B⁺] (↑R (⊗R v₁ v₂))) 
+         (N₃ v₁: conc (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₂: hyp⁻ (↑ B⁺)}
+       eta⁺ A⁺ ([v₁: rfoc A⁺] foc x₂ a↑ (↑L (N₃ v₁))) 
+         (N₄ x₂: conc (A⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
+  <- ({x₂: hyp⁻ (↑ B⁺)}
+       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] foc x₁ a↑ (↑L (N₄ x₂))) 
+         (N₅ x₂: conc · (↑ (A⁺ ⊗ B⁺))))
+  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] N₅ x₂)
+       (N₆: conc · (↑ (A⁺ ⊗ B⁺))).
 
 %worlds (vars) (adm-and+R _ _ _).
 %total [] (adm-and+R _ _ _).
 
-adm-and+L: (hyp⁻ A⁻ -> hyp⁻ B⁻ -> conc · C⁻) 
-        -> hyp⁻ (↑ (↓ A⁻ ⊗ ↓ B⁻)) 
+adm-and+L: (hyp⁻ (↑ A⁺) -> hyp⁻ (↑ B⁺) -> conc · C⁻) 
+        -> hyp⁻ (↑ (A⁺ ⊗ B⁺))
         -> conc · C⁻
         -> type.
 %mode adm-and+L +D +X -F.
 
--: adm-and+L (N: hyp⁻ A⁻ -> hyp⁻ B⁻ -> conc · C⁻) 
-     (X: hyp⁻ (↑ (↓ A⁻ ⊗ ↓ B⁻)))
-     M₂
-  <- eta⁻ A⁻ 
-       ([γ][st][sp: lfoc A⁻ γ] 
-         foc X st (↑L (⊗L (↓L [x₁] ↓L [x₂] foc x₁ st sp)))) 
-       (N₁: conc · A⁻)
-  <- eta⁻ B⁻ 
-       ([γ][st][sp: lfoc B⁻ γ] 
-         foc X st (↑L (⊗L (↓L [x₁] ↓L [x₂] foc x₂ st sp)))) 
-       (N₂: conc · B⁻)
-  <- ({x₂} cut N₁ ([x₁] N x₁ x₂) (M₁ x₂: conc · C⁻))
-  <- cut N₂ ([x₂] M₁ x₂) (M₂: conc · C⁻).
+-: adm-and+L (N: hyp⁻ (↑ A⁺) -> hyp⁻ (↑ B⁺) -> conc · C⁻) 
+     (X: hyp⁻ (↑ (A⁺ ⊗ B⁺))) N₈
+  <- ({v₁: rfoc A⁺}
+       eta⁺ B⁺ ([v₂: rfoc B⁺] ↑R v₁)
+         (N₃ v₁: conc (B⁺ , ·) (↑ A⁺)))
+  <- eta⁺ A⁺ ([v₁: rfoc A⁺] N₃ v₁)
+       (N₄: conc (A⁺ , B⁺ , ·) (↑ A⁺))
+  <- ({x₂: hyp⁻ (↑ B⁺)}
+       cut (foc X a↑ (↑L (⊗L N₄))) ([x₁: hyp⁻ (↑ A⁺)] N x₁ x₂) 
+         (N₅ x₂: conc · C⁻))
+  <- eta⁺ B⁺ ([v₂: rfoc B⁺] ↑R v₂)
+         (N₆: conc (B⁺ , ·) (↑ B⁺))
+  <- eta⁺ A⁺ ([v₁: rfoc A⁺] N₆)
+       (N₇: conc (A⁺ , B⁺ , ·) (↑ B⁺))
+  <- cut (foc X a↑ (↑L (⊗L N₇))) ([x₂: hyp⁻ (↑ B⁺)] N₅ x₂)
+       (N₈: conc · C⁻).
 
 %worlds (vars) (adm-and+L _ _ _).
 %total [] (adm-and+L _ _ _).

@@ -89,7 +89,7 @@ lfoc: typ ⁻ -> typ ⁻ -> type. %name lfoc Sp.
 %block v : some {A⁺: typ ⁺} block {v: rfoc A⁺}.
 %block sp : some {A⁻: typ ⁻} block {γ}{sp: lfoc A⁻ (c γ)}.
 
-%{ `V ::= · ∣ x⁺ ∣ N ∣ inl V ∣ inr V ∣ <> ∣ <V₁,V₂>' }%
+%{ ``V ::= · ∣ x⁺ ∣ N ∣ inl V ∣ inr V ∣ <> ∣ <V₁,V₂>'' }%
 cR: hyp⁺ Q⁺ -> rfoc (c Q⁺).
 ↓R: conc · A⁻ -> rfoc (↓ A⁻).
 ⊕R₁: rfoc A⁺ -> rfoc (A⁺ ⊕ B⁺).
@@ -97,14 +97,14 @@ cR: hyp⁺ Q⁺ -> rfoc (c Q⁺).
 1R: rfoc 1.
 ⊗R: rfoc A⁺ -> rfoc B⁺ -> rfoc (A⁺ ⊗ B⁺).
 
-%{ `N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi' }%
+%{ ``N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi'' }%
 foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc · C⁻.
 ↑R: rfoc A⁺ -> conc · (↑ A⁺).
 ⊤R: conc · ⊤.
 &R: conc · A⁻ -> conc · B⁻ -> conc · (A⁻ & B⁻).
 ⊸R: conc (A⁺ , ·) B⁻ -> conc · (A⁺ ⊸ B⁻).
 
-%{ `Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni' }%
+%{ ``Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni'' }%
 cL: (hyp⁺ Q⁺ -> conc _Δ C⁻) -> conc (c Q⁺ , _Δ) C⁻.
 ↓L: (hyp⁻ A⁻ -> conc _Δ C⁻) -> conc (↓ A⁻ , _Δ) C⁻.
 0L: conc (0 , _Δ) C⁻.
@@ -112,7 +112,7 @@ cL: (hyp⁺ Q⁺ -> conc _Δ C⁻) -> conc (c Q⁺ , _Δ) C⁻.
 1L: conc _Δ C⁻ -> conc (1 , _Δ) C⁻.
 ⊗L: conc (A⁺ , B⁺ , _Δ) C⁻ -> conc (A⁺ ⊗ B⁺ , _Δ) C⁻.
 
-%{ `Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ V;Sp' }%
+%{ ``Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ V;Sp'' }%
 init: lfoc (c Q⁻) (c Q⁻).
 ↑L: conc (A⁺ , ·) C⁻ -> lfoc (↑ A⁺) C⁻.
 &L₁: lfoc A⁻ C⁻ -> lfoc (A⁻ & B⁻) C⁻.
@@ -129,26 +129,26 @@ informal division of cases that we are used to dealing with when proving
 cut admissibility theorems.
 
 The "principal" substitutions capture the principal cuts: 
-* `V • Ni' - positive cut formula, and
-* `M • Sp' - negative cut formula.
+* ``V • Ni'' - positive cut formula, and
+* ``M • Sp'' - negative cut formula.
 In this presentation, we have generalized what it means to be a "positive
 cut formula": instead of a single formula `A⁺', it is a context of positive
-formulas `Δ'. Each inductive call within this group decreases the "size" of the
-cut formula by a multiset ordering where the positive conjunction `⊗' counts
-for two and the conjunction of positive contexts `,' counts for one. To make
-Twelf happy, we turn this into a structural metric. }%
+formulas ``Δ''. Each inductive call within this group decreases the "size" of 
+the cut formula by a multiset ordering where the positive conjunction ``⊗'' 
+counts for two and the conjunction of positive contexts ``,'' counts for one. 
+To make Twelf happy, we turn this into a structural metric. }%
 
 subst⁺: met ⁺ A⁺ -> rfoc A⁺ -> conc (A⁺ , _Δ) C⁻ -> conc _Δ C⁻ -> type.
 subst⁻: met ⁻ A⁻ -> conc · A⁻ -> lfoc A⁻ C⁻ -> stable C⁻ -> conc · C⁻ -> type.
 
-%mode subst⁺ +A +V +N -N2.
-%mode subst⁻ +A +N +Sp +St -N2.
+%mode subst⁺ +A +V +N -N'.
+%mode subst⁻ +A +N +Sp +St -N'.
 
 %{ The "rightist" substitutions capture the right commutative cuts:
-* `[M/x]V' - right rules for positive connectives,  
-* `[M/x]N' - right rules for negative connectives, 
-* `[M/x]Ni' - left rules for positive connectives,
-* `[M/x]Sp' - left rules for negative connectives, and
+* ``[M/x]V'' - right rules for positive connectives,  
+* ``[M/x]N'' - right rules for negative connectives, 
+* ``[M/x]Ni'' - left rules for positive connectives,
+* ``[M/x]Sp'' - left rules for negative connectives, and
 Each inductive call within this group decreases the size of the formula that 
 we are substituting into. }%
 
@@ -156,14 +156,14 @@ cutV:  met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> rfoc C⁺) -> rfoc C⁺ -
 cutN:  met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> conc _Δ C⁻) -> conc _Δ C⁻ -> type.
 cutSp: met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) -> lfoc B⁻ C⁻ ->  type.
 
-%mode cutV  +A +M +V -F.
-%mode cutN  +A +M +N -F.
-%mode cutSp +A +M +Sp -F.
+%mode cutV  +A +M +V -N'.
+%mode cutN  +A +M +N -N'.
+%mode cutSp +A +M +Sp -N'.
 
 %{ The "leftist" substitutions capture the left commutative cuts, and 
 are only called when we bottom out of principal substitutions:
-* `〈Sp〉Ni' - left rules for negative connectives
-* `〈Mi⟩ Ni' - left rules for positive connectives.
+* ``〈Sp〉Ni'' - left rules for negative connectives
+* ``〈Mi⟩ Ni'' - left rules for positive connectives.
 Each inductive call within this group decreases the size of the formula that
 we are substituting in, hence "leftist." }%
 
@@ -172,8 +172,8 @@ left⁻: met ⁺ A⁺ -> lfoc B⁻ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable
 left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻ 
   -> conc _Δ C⁻ -> type.
 
-%mode left⁻ +A +Sp +Ni +Sp2 -F.
-%mode left⁺ +A +Mi +Ni +Ni2 -F.
+%mode left⁻ +A +Sp +Ni +Sp' -F.
+%mode left⁺ +A +Mi +Ni +Ni' -F.
 
 %{ === Principal substitution/cuts === }%
 

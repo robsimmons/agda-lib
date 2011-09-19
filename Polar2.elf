@@ -690,132 +690,30 @@ adm-impR: (hyp⁻ (↑ A⁺) -> conc · B⁻)
 %worlds (vars) (adm-impR _ _).
 %total [] (adm-impR _ _).
 
+adm-impL: conc · (↑ A⁺)
+       -> (hyp⁻ B⁻ -> conc · C⁻)
+       -> hyp⁻ (A⁺ ⊸ B⁻)
+       -> conc · C⁻
+       -> type.
+%mode adm-impL +N₁ +N₂ +X -N.
 
-%.
+-: adm-impL (N₁: conc · (↑ A⁺)) 
+     (N₂: hyp⁻ B⁻ -> conc · C⁻)
+     (X: hyp⁻ (A⁺ ⊸ B⁻))
+     N
+  <- ({x₂: hyp⁻ B⁻} shift (N₂ x₂) (NShift₂ x₂: conc · (↑ (↓ C⁻)))) 
+  <- ({v: rfoc A⁺}
+       eta⁻ B⁻
+         ([γ][st][sp: lfoc B⁻ γ] foc X st (⊸L v sp))
+         (NId₁ v: conc · B⁻))
+  <- eta⁺ A⁺ ([v: rfoc A⁺] ↑R (↓R (NId₁ v)))
+       (NId₂: conc (A⁺ , ·) (↑ (↓ B⁻)))
+  <- cut (⊸R (↓L [x₁: hyp⁻ (↑ A⁺)] foc x₁ a↑ (↑L NId₂)))
+       ([x: hyp⁻ (↓ (↑ A⁺) ⊸ ↑ (↓ B⁻))]
+         foc x a↑ (⊸L (↓R N₁) (↑L (↓L [x₂: hyp⁻ B⁻] NShift₂ x₂))))
+       (NShift: conc · (↑ (↓ C⁻)))
+  <- unshift NShift (N: conc · C⁻).
 
-  Implication eta⁺ (↓ A⁻) ([v: rfoc (↓ A⁻)] ↑R (⊕R₁ v)) 
-       (M₁: conc (↓ A⁻ , ·) (↑ (↓ A⁻ ⊕ ↓ B⁻)))
-  <- eta⁺ (↓ B⁻) ([v: rfoc (↓ B⁻)] ↑R (⊕R₂ v))
-       (M₂: conc (↓ B⁻ , ·) (↑ (↓ A⁻ ⊕ ↓ B⁻)))
-% 
-
-  <- eta⁺ (↓ A⁻ ⊕ ↓ B⁻) 
-       ([v: rfoc (↓ A⁻ ⊕ ↓ B⁻)] 
-          foc X _ _)
-       (M₃)
-  <- eta⁻ (↑ (↓ A⁻ ⊕ ↓ B⁻)) 
-       ([γ][st][sp: lfoc (↑ (↓ A⁻ ⊕ ↓ B⁻)) γ]
-          foc X st
-            (↑L
-              (⊕L 
-                (↓L [x] _) 
-                (↓L [x] _))))
-       (M₄: conc · (↑ (↓ A⁻ ⊕ ↓ B⁻))).
-
-
-  <- ({x₁: hyp⁻ A⁻}{x₂: hyp⁻ B⁻}
-       cut  (foc x₁ ↑L
-
-  <- subst⁻ _ QQQ (↑L (⊕L M₁ M₂)) _ _.
-
-
-  <- eta⁻ A⁻ 
-       ([γ][st][sp: lfoc A⁻ γ]
-          foc X st (↑L (⊕L (↓L [x] foc x st sp) (↓L [x] foc x st _))))
-       (M₁: conc · (↑ (↓ A⁻ ⊕ ↓ B⁻))).
-
-
-
-  <- inmet A⁻ MtA
-  <- inmet B⁻ MtB
-
-  <- ({v₁: rfoc A⁺}
-       eta⁺ B⁺ ([v₂: rfoc B⁺] ↑R (⊗R v₁ v₂)) 
-         (M₁ v₁: conc (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
-  <- eta⁺ A⁺ ([v₁: rfoc A⁺] M₁ v₁) (M₂: conc (A⁺ , B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
-  <- subst⁺ (m⊗ MtA MtB) _ (⊗L M₂) _.
-
-
-etab: {A⁺} conc (A⁺ , _Δ) C⁻ -> (hyp⁻ (↑ A⁺) -> conc _Δ C⁻) -> type.
-%mode etab +N +M -P.
-
--: etab (A⁺ ⊗ B⁺) (⊗L (N₁: conc (A⁺ , B⁺ , _Δ) C⁻)) N₄
-  <- etab A⁺ N₁ (N₂: {x₁: hyp⁻ (↑ A⁺)} conc (B⁺ , _Δ) C⁻)
-  <- ({x₁: hyp⁻ (↑ A⁺)} 
-       etab B⁺ (N₂ x₁) (N₃ x₁: {x₂: hyp⁻ (↑ B⁺)} conc _Δ C⁻))
-  <- ({x: hyp⁻ (↑ (A⁺ ⊗ B⁺))}
-       eta⁻ (↑ A⁺) ([γ][st][lf: lfoc (↑ A⁺) γ] _) (AAA x))
-  <- inmet (↓ (↑ A⁺) ⊗ ↓ (↑ B⁺)) Mt 
-  <- ({x: hyp⁻ (↑ (A⁺ ⊗ B⁺))}
-       subst⁺ Mt 
-         (⊗R (↓R (foc x a↑ (⊗L (↓L [x₁] ↓L [x₂] _)))) (↓R (BBB x)))
-         (⊗L (↓L [x₁] ↓L [x₂] N₃ x₁ x₂)) 
-         (N₄ x: conc _Δ C⁻)).
-
-
-cut⁺: conc · (↑ A⁺) -> conc (A⁺ , _Δ) C⁻ -> conc _Δ C⁻ -> type.
-%mode cut⁺ +M +N -N2.
-
--: cut⁺ (M: conc · (↑ (A⁺ ⊗ B⁺))) (⊗L N₁) N₃
-  <- ({v₂: rfoc B⁺} eta⁺ A⁺ ([v₁: rfoc A⁺] ↑R (⊗R v₁ v₂)) (V v₂))
-  <- eta⁻ (↑ A⁺) ([γ][st][sp: lfoc (↑ A⁺) γ] _) _
-  <- cut⁺ _ N₁ (N₂: conc (B⁺ , _Δ) C⁻)
-  <- cut⁺ _ N₂ (N₃: conc _Δ C⁻).
-
-adm-andR: conc · (↑ A⁺) -> conc · (↑ B⁺) -> conc · (↑ (A⁺ ⊗ B⁺)) -> type.
-%mode adm-andR +A +B -C.
-
--: adm-andR (N₁: conc · (↑ A⁺)) (N₂: conc · (↑ B⁺)) M4
-  <- inmet A⁺ MtA
-  <- inmet B⁺ MtB
-  <- ({v₁: rfoc A⁺}
-       eta⁺ B⁺ ([v₂: rfoc B⁺] ↑R (⊗R v₁ v₂)) 
-         (M₁ v₁: conc (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
-  <- eta⁺ A⁺ ([v₁: rfoc A⁺] M₁ v₁) (M₂: conc (A⁺ , B⁺ , ·) (↑ (A⁺ ⊗ B⁺)))
-  <- subst⁺ (m⊗ MtA MtB) _ (⊗L M₂) _.
-
-  <- ({v₁: rfoc (A⁺ , ·)} {v₂: rfoc (B⁺ , ·)}
-       append-rfoc ([δ] A⁺ , δ) v₁ v₂ (V v₁ v₂: rfoc (A⁺ , B⁺ , ·)))
-  <- ({v₁: rfoc (A⁺ , ·)} 
-       eta⁺ Mt1 ([v₂: rfoc (B⁺ , ·)] ↑R (⊗R (V v₁ v₂))) 
-         (M1 v₁: linv (B⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
-  <- ({x₂: hyp⁻ (↑ B⁺)} 
-       eta⁺ Mt2 ([v₁: rfoc (A⁺ , ·)] foc x₂ a↑ (↑L (M1 v₁)))
-         (M2 x₂: linv (A⁺ , ·) (↑ (A⁺ ⊗ B⁺))))
-  <- ({x₂: hyp⁻ (↑ B⁺)} 
-       cut N₁ ([x₁: hyp⁻ (↑ A⁺)] foc x₁ a↑ (↑L (M2 x₂)))
-         (M3 x₂: conc (↑ (A⁺ ⊗ B⁺))))
-  <- cut N₂ ([x₂: hyp⁻ (↑ B⁺)] M3 x₂) 
-         (M4: conc (↑ (A⁺ ⊗ B⁺))).
-
-cut: conc A⁻ -> (hyp⁻ A⁻ -> conc C⁻) -> conc C⁻ -> type.
--: cut M N N2 <- inmet⁻ A⁻ Mt <- cutN (m Mt) M N N2.
-%mode cut +M +N -N2.
-%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (cut _ _ _).
-%total {} (cut _ _ _).
-
-append-rfoc: {DΔ: pos -> pos}
-  rfoc (DΔ ·)
-  -> rfoc _Δ 
-  -> rfoc (DΔ _Δ) 
-  -> type.
-%mode append-rfoc +DΔ +V₁ +V₂ -V.
-
--: append-rfoc ([δ] δ) ·R V₂ V₂. % Actual base case
--: append-rfoc ([δ] ·) _ _ ·R. % Would be suprious if we had linearity
--: append-rfoc ([δ] c Q⁺ , DΔ δ) (cR X V₁) V₂ (cR X V)
-  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
--: append-rfoc ([δ] ↓ A⁻ , DΔ δ) (↓R N V₁) V₂ (↓R N V)
-  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
--: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₁ V₁) V₂ (⊕R₁ V)
-  <- append-rfoc ([δ] A⁺ , DΔ δ) V₁ V₂ (V: rfoc (A⁺ , DΔ _Δ)).
--: append-rfoc ([δ] A⁺ ⊕ B⁺ , DΔ δ) (⊕R₂ V₁) V₂ (⊕R₂ V)
-  <- append-rfoc ([δ] B⁺ , DΔ δ) V₁ V₂ (V: rfoc (B⁺ , DΔ _Δ)).
--: append-rfoc ([δ] 1 , DΔ δ) (1R V₁) V₂ (1R V)
-  <- append-rfoc ([δ] DΔ δ) V₁ V₂ (V: rfoc (DΔ _Δ)).
--: append-rfoc ([δ] A⁺ ⊗ B⁺ , DΔ δ) (⊗R V₁) V₂ (⊗R V)
-  <- append-rfoc ([δ] A⁺ , B⁺ , DΔ δ) V₁ V₂ V.
-
-%worlds (atom⁻ | atom⁺ | x⁻ | x⁺) (append-rfoc _ _ _ _).
-%total V (append-rfoc _ V _ _).
+%worlds (vars) (adm-impL _ _ _ _).
+%total [] (adm-impL _ _ _ _).
 

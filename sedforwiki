@@ -1,4 +1,4 @@
-# Invoke with sed -f <unicode>.elf <wiki>.elf
+# Invoke with sed -f sedforwiki <unicode>.elf > <wiki>.elf
 s/``/<tt>/g
 s/''/<\/tt>/g
 s/·/#/g

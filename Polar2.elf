@@ -905,6 +905,23 @@ sound-orL: left (or P₁ P₂)
   <- soundN N₂ (t, T₂ TΔ) TCQ (' (D₂: left P₂ -> right' _Ψ Q))
   <- ({h: left (or P₁ P₂)} sound-orL h D₁ D₂ (D h)).
 
+-: soundN (1L N) (t, t1 TΔ) TCQ (' [h: left true] D)
+  <- soundN N TΔ TCQ (D: right' _Ψ Q).
+
+sound-andL: left (and P₁ P₂)
+         -> (left P₁ -> left P₂ -> right' _Ψ Q)
+         -> right' _Ψ Q -> type.
+-: sound-andL H D₁ (andL D₁ H).
+-: sound-andL H ([h₁] [h₂] ' (D₁ h₁ h₂)) (' D) 
+  <- {h} sound-andL H ([h₁] [h₂] D₁ h₁ h₂ h) (D h).
+%mode sound-andL +H +D₁ -D.
+%worlds (atom⁺ | atom⁻ | h) (sound-andL _ _ _).
+%total D₁ (sound-andL _ D₁ _).
+
+-: soundN (⊗L N) (t, (t⊗ T₁ T₂) TΔ) TCQ (' D)
+  <- soundN N (t, T₁ (t, T₂ TΔ)) TCQ (' [h₁] ' [h₂] D₁ h₁ h₂)
+  <- ({h: left (and P₁ P₂)} sound-andL h D₁ (D h: right' _Ψ Q)).
+
 -: soundSp nil tc tc ([h] init h).
 
 -: soundSp (↑L N) (t↑ T₁) TCQ D

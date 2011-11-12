@@ -100,13 +100,6 @@ cR: hyp⁺ Q⁺ -> rfoc (c Q⁺).
 1R: rfoc 1.
 ⊗R: rfoc A⁺ -> rfoc B⁺ -> rfoc (A⁺ ⊗ B⁺).
 
-%{ ``N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi'' }%
-foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc · C⁻.
-↑R: rfoc A⁺ -> conc · (↑ A⁺).
-⊤R: conc · ⊤.
-&R: conc · A⁻ -> conc · B⁻ -> conc · (A⁻ & B⁻).
-⊸R: conc (A⁺ , ·) B⁻ -> conc · (A⁺ ⊸ B⁻).
-
 %{ ``Ni ::= N ∣ x⁺.p ∣ x⁻.Ni ∣ abort ∣ [Ni₁,Ni₂] ∣ <>.Ni ∣ ⊗Ni'' }%
 cL: (hyp⁺ Q⁺ -> conc _Δ C⁻) -> conc (c Q⁺ , _Δ) C⁻.
 ↓L: (hyp⁻ A⁻ -> conc _Δ C⁻) -> conc (↓ A⁻ , _Δ) C⁻.
@@ -114,6 +107,13 @@ cL: (hyp⁺ Q⁺ -> conc _Δ C⁻) -> conc (c Q⁺ , _Δ) C⁻.
 ⊕L: conc (A⁺ , _Δ) C⁻ -> conc (B⁺ , _Δ) C⁻ -> conc (A⁺ ⊕ B⁺ , _Δ) C⁻.
 1L: conc _Δ C⁻ -> conc (1 , _Δ) C⁻.
 ⊗L: conc (A⁺ , B⁺ , _Δ) C⁻ -> conc (A⁺ ⊗ B⁺ , _Δ) C⁻.
+
+%{ ``N ::= x⁻ • Sp ∣ σ ∣ <> ∣ <N₁,N₂> ∣ λNi'' }%
+foc: hyp⁻ A⁻ -> stable C⁻ -> lfoc A⁻ C⁻ -> conc · C⁻.
+↑R: rfoc A⁺ -> conc · (↑ A⁺).
+⊤R: conc · ⊤.
+&R: conc · A⁻ -> conc · B⁻ -> conc · (A⁻ & B⁻).
+⊸R: conc (A⁺ , ·) B⁻ -> conc · (A⁺ ⊸ B⁻).
 
 %{ ``Sp ::= nil ∣ cont Ni ∣ π₁ Sp ∣ π₂ Sp ∣ V;Sp'' }%
 nil: lfoc (c Q⁻) (c Q⁻).
@@ -149,8 +149,8 @@ subst⁻: met ⁻ A⁻ -> conc · A⁻ -> lfoc A⁻ C⁻ -> stable C⁻ -> conc 
 
 %{ The "rightist" substitutions capture the right commutative cuts:
 * ``[M/x]V'' - right rules for positive connectives,  
-* ``[M/x]N'' - right rules for negative connectives, 
 * ``[M/x]Ni'' - left rules for positive connectives,
+* ``[M/x]N'' - right rules for negative connectives, 
 * ``[M/x]Sp'' - left rules for negative connectives, and
 Each inductive call within this group decreases the size of the formula that 
 we are substituting into. }%
@@ -165,18 +165,18 @@ cutSp: met ⁼ A⁻ -> conc · A⁻ -> (hyp⁻ A⁻ -> lfoc B⁻ C⁻) -> lfoc B
 
 %{ The "leftist" substitutions capture the left commutative cuts, and 
 are only called when we bottom out of principal substitutions:
-* ``{Sp}Ni'' - left rules for negative connectives
-* ``{Mi}Ni'' - left rules for positive connectives.
+* ``{Mi}Ni'' - left rules for positive connectives, and
+* ``{Sp}Ni'' - left rules for negative connectives.
 Each inductive call within this group decreases the size of the formula that
 we are substituting in, hence "leftist." }%
 
-left⁻: met ⁺ A⁺ -> lfoc B⁻ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻
-  -> lfoc B⁻ C⁻ -> type.
 left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻ 
   -> conc _Δ C⁻ -> type.
+left⁻: met ⁺ A⁺ -> lfoc B⁻ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable C⁻
+  -> lfoc B⁻ C⁻ -> type.
 
-%mode left⁻ +A +Sp +Ni +Sp' -F.
 %mode left⁺ +A +Mi +Ni +Ni' -F.
+%mode left⁻ +A +Sp +Ni +Sp' -F.
 
 %{ === Principal substitution/cuts === }%
 
@@ -234,6 +234,24 @@ left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable 
   <- cutV Mt M ([x] V₁ x) (V₁': rfoc C₁⁺)
   <- cutV Mt M ([x] V₂ x) (V₂': rfoc C₂⁺).
 
+-: cutN Mt M ([x] cL [y] N x y) (cL [y] N' y)
+  <- ({y: hyp⁺ Q⁺} cutN Mt M ([x] N x y) (N' y: conc _Δ C⁻)).
+
+-: cutN Mt M ([x] ↓L [y] N x y) (↓L [y] N' y)
+  <- ({y: hyp⁻ B⁻} cutN Mt M ([x] N x y) (N' y: conc _Δ C⁻)).
+
+-: cutN Mt M ([x] 0L) 0L.
+
+-: cutN Mt M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁' N₂')
+  <- cutN Mt M ([x] N₁ x) (N₁': conc (B₁ , _Δ) C⁻)
+  <- cutN Mt M ([x] N₂ x) (N₂': conc (B₂ , _Δ) C⁻).
+
+-: cutN Mt M ([x] 1L (N x)) (1L N')
+  <- cutN Mt M ([x] N x) (N': conc _Δ C⁻).
+
+-: cutN Mt M ([x] ⊗L (N x)) (⊗L N')
+  <- cutN Mt M ([x] N x) (N': conc (A⁺ , B⁺ , _Δ) C⁻).
+
 -: cutN (me Mt) M ([x] foc x St (Sp x)) N'
   <- cutSp (me Mt) M ([x] Sp x) (Sp': lfoc A⁻ C⁻)
   <- subst⁻ Mt M Sp' St (N': conc · C⁻).
@@ -252,24 +270,6 @@ left⁺: met ⁺ A⁺ -> conc _Δ (↑ A⁺) -> conc (A⁺ , ·) C⁻ -> stable 
 
 -: cutN Mt M ([x] ⊸R (N x)) (⊸R N')
   <- cutN Mt M ([x] N x) (N': conc (C₁⁺ , ·) C₂⁻).
-
--: cutN Mt M ([x] cL [y] N x y) (cL [y] N' y)
-  <- ({y: hyp⁺ Q⁺} cutN Mt M ([x] N x y) (N' y: conc _Δ C⁻)).
-
--: cutN Mt M ([x] ↓L [y] N x y) (↓L [y] N' y)
-  <- ({y: hyp⁻ B⁻} cutN Mt M ([x] N x y) (N' y: conc _Δ C⁻)).
-
--: cutN Mt M ([x] 0L) 0L.
-
--: cutN Mt M ([x] ⊕L (N₁ x) (N₂ x)) (⊕L N₁' N₂')
-  <- cutN Mt M ([x] N₁ x) (N₁': conc (B₁ , _Δ) C⁻)
-  <- cutN Mt M ([x] N₂ x) (N₂': conc (B₂ , _Δ) C⁻).
-
--: cutN Mt M ([x] 1L (N x)) (1L N')
-  <- cutN Mt M ([x] N x) (N': conc _Δ C⁻).
-
--: cutN Mt M ([x] ⊗L (N x)) (⊗L N')
-  <- cutN Mt M ([x] N x) (N': conc (A⁺ , B⁺ , _Δ) C⁻).
 
 -: cutSp Mt M ([x] nil) nil.
 
@@ -444,6 +444,18 @@ unshift: conc · (↑ (↓ A⁻)) -> conc · A⁻ -> type.
 
 %worlds (vars) (unshift _ _).
 %total [] (unshift _ _).
+
+id: {A⁻} (hyp⁻ A⁻ -> conc · A⁻) -> type.
+%mode id +A -N.
+
+-: id A⁻ N
+  <- ({x: hyp⁻ A⁻}
+       eta⁻ A⁻
+         ([γ][st][sp: lfoc A⁻ γ] foc x st sp)
+         (N x: conc · A⁻)).
+
+%worlds (vars) (id _ _).
+%total [] (id _ _).       
 
 
 %{ === Initial rules === }%
@@ -1147,3 +1159,7 @@ cimpL: small
   (candL SandL TandL DandL _ _ _)
   (cimpL SimpL TimpL DimpL _ _ _)
   (complete S D T _).
+
+
+%{ === Inheriting the focused calculus's metatheory === }%
+

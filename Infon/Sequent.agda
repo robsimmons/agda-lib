@@ -4,7 +4,7 @@
 open import Prelude
 open import Infon.Core
 open import Infon.SequentCore
-open import Infon.SequentAxiom
+open import Infon.SequentCut
 
 module Infon.Sequent where
 

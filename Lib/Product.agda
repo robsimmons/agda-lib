@@ -25,7 +25,7 @@ module PRODUCT where
 
    Product : ∀{a b} (A : Set a) (B : A → Set b) → Set (LEVEL.max a b)
    Product A B = Σ A B
-   Product0 = Product {Z} {Z}
+   Product0 = Product {LZ} {LZ}
 
    syntax Σ A (λ x → B) = Σ[ x :: A ] B
  

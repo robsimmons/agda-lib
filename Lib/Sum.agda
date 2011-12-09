@@ -18,7 +18,7 @@ module SUM where
       Inr : (inr : B) → A + B
    Sum : ∀{a b} (A : Set a) (B : Set b) → Set (LEVEL.max a b)
    Sum A B = A + B
-   Sum0 = Sum {Z} {Z}
+   Sum0 = Sum {LZ} {LZ}
 
    case : ∀{a b} {A B : Set a} (C : Set b) → A + B → (A → C) → (B → C) → C
    case _ (Inl x) f g = f x

@@ -12,8 +12,9 @@ open import DetetheredCPL.Core
 open import DetetheredCPL.NatDeduction
 open import DetetheredCPL.Sequent
 
-module EQUIV (UWF : UpwardsWellFounded
-   ; dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+module EQUIV 
+   (UWF : UpwardsWellFounded)
+   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
    open TRANS-UWF UWF
    open ILIST UWF
    open CORE UWF

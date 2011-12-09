@@ -10,8 +10,8 @@ open import DetetheredCPL.Core
 open import DetetheredCPL.SequentMetatheory.Core
 
 module SEQUENT-IH
-  (UWF : UpwardsWellFounded 
-   ; dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+   (UWF : UpwardsWellFounded)
+   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
    open TRANS-UWF UWF
    open ILIST UWF
    open CORE UWF 

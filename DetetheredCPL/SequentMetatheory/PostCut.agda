@@ -14,8 +14,8 @@ open import DetetheredCPL.SequentMetatheory.PreCut
 open import DetetheredCPL.SequentMetatheory.CutAxiom -- "Fake" version
 
 module SEQUENT-POST-CUT
-  (UWF : UpwardsWellFounded 
-   ; dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+   (UWF : UpwardsWellFounded)
+   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
    open TRANS-UWF UWF
    open ILIST UWF
    open CORE UWF 

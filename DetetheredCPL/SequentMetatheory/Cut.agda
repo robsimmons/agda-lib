@@ -8,7 +8,7 @@
 -- eventually, though). Therefore, the only result in this file is duplicated 
 -- in CutAxiom.agda as a postulate.
 
--- {-# OPTIONS --no-termination-check #-}
+{-# OPTIONS --no-termination-check #-}
 
 module DetetheredCPL.SequentMetatheory.Cut where
 open import Prelude hiding (⊥)
@@ -20,8 +20,8 @@ open import DetetheredCPL.SequentMetatheory.IH
 open import DetetheredCPL.SequentMetatheory.PreCut
 
 module SEQUENT-CUT
-  (UWF : UpwardsWellFounded 
-   ; dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+   (UWF : UpwardsWellFounded)
+   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
    open TRANS-UWF UWF
    open ILIST UWF
    open CORE UWF 
@@ -29,6 +29,7 @@ module SEQUENT-CUT
    open SEQUENT-IH UWF dec≺
    open SEQUENT-PRE-CUT UWF dec≺
 
+   x : Set
    x = {!!}
 
    cutP : (wc : W) → ((wc' : W) → wc ≺+ wc' → P wc') → ∀{Γ w A C}

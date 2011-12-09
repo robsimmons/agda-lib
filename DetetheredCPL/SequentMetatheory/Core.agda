@@ -9,8 +9,8 @@ open import Accessibility.IndexedList
 open import DetetheredCPL.Core 
 
 module SEQUENT-CORE 
-  (UWF : UpwardsWellFounded 
-   ; dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+   (UWF : UpwardsWellFounded)
+   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
    open TRANS-UWF UWF
    open ILIST UWF
    open CORE UWF 
@@ -37,7 +37,7 @@ module SEQUENT-CORE
          → (x : (A ⊃ B) at wc ∈ Γ)
          → (D₁ : Δ / Γ ⇒ A [ wc ]/ s₁)
          → (D₂ : Δ / B at wc :: Γ ⇒ C [ wc ]/ s₂)
-         → Δ / Γ ⇒ C [ wc ]/ s₁ , s₂
+         → Δ / Γ ⇒ C [ wc ]/ (s₁ , s₂)
       ⊃L+ : ∀{A B w wc C s}
          → (ωh : wc ≺+ w)
          → (x : (A ⊃ B) at w ∈ Γ)

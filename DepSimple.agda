@@ -1,44 +1,87 @@
-open import Prelude hiding (⊤)
+open import Prelude hiding (⊤ ; abort)
 
-module Polar where
+module DepSimple where
 
 data Pol : Set where
   ⁻ : Pol
   ⁺ : Pol  
  
 data Type : Pol → Set where
-  c : {⁼ : Pol} (Q : String) → Type ⁼
+  c : {⁼ : Pol} → Type ⁼
   ↓ : (A⁻ : Type ⁻) → Type ⁺
-  ↑ : (A⁺ : Type ⁺) → Type ⁻
   false : Type ⁺ 
   _⊕_ : (A⁺ B⁺ : Type ⁺) → Type ⁺ 
   true : Type ⁺
   _⊗_ : (A⁺ B⁺ : Type ⁺) → Type ⁺
+  ↑ : (A⁺ : Type ⁺) → Type ⁻
+  _⊸_ : (A⁺ : Type ⁺) (B⁻ : Type ⁻) → Type ⁻
   ⊤ : Type ⁻
   _&_ : (A⁻ B⁻ : Type ⁻) → Type ⁻
-  _⊸_ : (A⁺ : Type ⁺) (B⁻ : Type ⁻) → Type ⁻
 
 data Stable : Type ⁻ → Set where
-  c : ∀{Q} → Stable (c Q)
+  c : Stable c
   ↑ : ∀{A⁺} → Stable (↑ A⁺)
 
-Ctx = List (Type ⁻ + String)
+Ctx = List (Maybe (Type ⁻))
+ICtx = List (Type ⁺)
 
 _⊆_ : Ctx → Ctx → Set
 _⊆_ = LIST.SET.Sub
 
-infix 1 _⊢_
-infix 1 _[_]⊢_
-infix 1 _⊢[_]
-infix 1 _∣_⊢_
-
 mutual
-  data _⊢_ (Γ : Ctx) : Type ⁻ → Set where
-    foc : ∀{A⁻ γ}
-      (x : Inl A⁻ ∈ Γ)
+  data Value (γ : Ctx) : Type ⁺ → Set where
+    ⁺ : (x : Nothing ∈ γ) → Value γ c
+    ⟨_⟩⁻ : ∀{a⁻} (N : Term γ [] a⁻) → Value γ (↓ a⁻)    
+    inl : ∀{a⁺ b⁺} (V : Value γ a⁺) → Value γ (a⁺ ⊕ b⁺)
+    inr : ∀{a⁺ b⁺} (V : Value γ b⁺) → Value γ (a⁺ ⊕ b⁺)
+    ⟪⟫⁺ : Value γ true
+    ⟪_,_⟫⁺ : ∀{a⁺ b⁺} (V₁ : Value γ a⁺) (V₂ : Value γ b⁺) → Value γ (a⁺ ⊗ b⁺)
+
+  data Term (γ : Ctx) : ICtx → Type ⁻ → Set where
+    foc : ∀{a⁻ c⁻}
+      (x : Just a⁻ ∈ γ)
+      (atm : Stable c⁻)
+      (S : Spine γ a⁻ c⁻)
+      → Term γ [] c⁻
+    ·⁺ : ∀{ω c⁻} 
+      (N : Term (Nothing :: γ) ω c⁻)
+      → Term γ (c :: ω) c⁻ 
+    ·⁻ : ∀{ω a⁻ c⁻} 
+      (N : Term (Just a⁻ :: γ) ω c⁻)
+      → Term γ (↓ a⁻ :: ω) c⁻ 
+    abort : ∀{ω c⁻} 
+      → Term γ (false :: ω) c⁻
+    ⟦_,_⟧ : ∀{ω a⁺ b⁺ c⁻} 
+      (N₁ : Term γ (a⁺ :: ω) c⁻)
+      (N₂ : Term γ (b⁺ :: ω) c⁻)
+      → Term γ (a⁺ ⊕ b⁺ :: ω) c⁻
+    ⟪⟫· : ∀{ω c⁻}
+      (N₁ : Term γ ω c⁻)
+      → Term γ (true :: ω) c⁻
+    ⟨_⟩⁺ : ∀{a⁺}
+      (V : Value γ a⁺)
+      → Term γ [] (↑ a⁺)
+    Λ : ∀{a⁺ b⁻}
+      (N : Term γ [ a⁺ ] b⁻)
+      → Term γ [] (a⁺ ⊸ b⁻)
+    ⟪⟫⁻ : Term γ [] ⊤
+    ⟪_,_⟫⁻ : ∀{a⁻ b⁻}
+      (N₁ : Term γ [] a⁻)
+      (N₂ : Term γ [] b⁻)
+      → Term γ [] (a⁻ & b⁻)
+  
+  data Spine (γ : Ctx) : Type ⁻ → Type ⁻ → Set where
+     
+{-
+
+ 
+  data Term (γ : Ctx) : Type ⁻ → Type ⁺ → Set where
+    foc : ∀{a⁻ ω}
+      (x : Inl a⁻ ∈ γ)
       (atm : Stable γ)
-      (Sp : Γ [ A⁻ ]⊢ γ)
-      → Γ ⊢ γ
+      (Sp : Term γ ω a⁻)
+      → 
+
     ↑R : ∀{A⁺}
       (σ : Γ ⊢[ [ A⁺ ] ])
       → Γ ⊢ ↑ A⁺ 
@@ -116,11 +159,7 @@ mutual
 
 mutual
   wkN : ∀{Γ Γ' A⁻} → Γ ⊆ Γ' → Γ ⊢ A⁻ → Γ' ⊢ A⁻ 
-  wkN θ (foc x atm Sp) = ?
-  wkN θ (↑R σ) = ?
-  wkN θ ⊤R = ?
-  wkN θ (&R N₁ N₂) = ?
-  wkN θ (⊸R N) = ? 
+  wkN θ N = {!N!} 
 
   wkNI : ∀{Γ Γ' Δ A⁻} → Γ ⊆ Γ' → Γ ∣ Δ ⊢ A⁻ → Γ' ∣ Δ ⊢ A⁻ 
   wkNI θ N = {!!} 
@@ -299,3 +338,4 @@ mutual
 
 
 
+-}

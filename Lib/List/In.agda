@@ -57,10 +57,10 @@ split-append : ∀{a} {A : Set a} {x : A} {xs ys : List A}
    → (x ∈ xs) + (x ∈ ys)
 split-append {xs = []} n = Inr n
 split-append {xs = x :: xs} Z = Inl Z
-split-append {xs = x :: xs} (S n) = case (split-append n) (Inl o S) Inr
+split-append {xs = x :: xs} (S n) = case _ (split-append n) (Inl o S) Inr
 
 module SET where
-   open MEMBERSHIP.SET List In public
+   open MEMBERSHIP.SET {List} {In} public
    
    sub-cons : ∀{a} {A : Set a} {x : A} {xs : List A} → Sub xs (x :: xs)
    sub-cons = S
@@ -93,12 +93,24 @@ module SET where
    sub-appendr (x' :: xs) ys Z = Z
    sub-appendr (x' :: xs) ys (S n) = S (sub-appendr xs ys n)
 
+   sub-appendr' : ∀{a} {A : Set a} {xs1 xs2 : List A}
+      → (ys : List A)
+      → Sub xs1 xs2
+      → Sub xs1 (xs2 ++ ys)
+   sub-appendr' ys f x = sub-appendr _ ys (f x)
+
    sub-appendl : ∀{a} {A : Set a} 
       → (xs : List A)
       → (ys : List A)
       → Sub xs (ys ++ xs)
    sub-appendl xs [] n = n
    sub-appendl xs (y :: ys) n = S (sub-appendl xs ys n)
+
+   sub-appendl' : ∀{a} {A : Set a} {xs1 xs2 : List A}
+      → (ys : List A)
+      → Sub xs1 xs2
+      → Sub xs1 (ys ++ xs2)
+   sub-appendl' ys f x = sub-appendl _ ys (f x)
 
    sub-cons-cong : ∀{a} {A : Set a} {x y : A} {xs ys : List A} 
       → x ≡ y
@@ -115,17 +127,9 @@ module SET where
    sub-append-congr : ∀{a} {A : Set a} {xs2 ys2 : List A}
       (xs : List A)
       → Sub xs2 ys2
-      → Sub (xs ++ xs2) (xs ++ xs2)
-   sub-append-congr [] f n = n
+      → Sub (xs ++ xs2) (xs ++ ys2)
+   sub-append-congr [] f n = (f n)
    sub-append-congr (x :: xs) f n = sub-cons-congr (sub-append-congr xs f) n
-
-{-
-   sub-appendl : ∀{a} {A : Set a} {x y : A} {ys1 ys2 : List A}
-      → (xs : List A)
-      → Sub ys1 ys2 
-      → Sub (xs ++ ys1) (xs ++ ys2)
-   sub-appendl xs f = {!!}
--}
 
    cons-cong : ∀{a} {A : Set a} {x y : A} {xs ys : List A} 
       → x ≡ y
@@ -135,13 +139,13 @@ module SET where
       (λ n → sub-cons-cong ID.refl f n) , (λ n → sub-cons-cong ID.refl g n)
 
 module BAG where
-   open MEMBERSHIP.BAG List In public
+   open MEMBERSHIP.BAG {List} {In} public
 
 module ANY where
-   open MEMBERSHIP.ANY List In public
+   open MEMBERSHIP.ANY {List} {In} public
 
 module ALL where
-   open MEMBERSHIP.ALL List In public
+   open MEMBERSHIP.ALL {List} {In} public
 
    nil : ∀{a} {A : Set a} {P : A → Set a}
       → All P []
@@ -155,4 +159,4 @@ module ALL where
    cons px pxs (S n) = pxs n    
 
 
-open MEMBERSHIP List In public using (Any ; All)
+open MEMBERSHIP {List} {In} public using (Any ; All)

@@ -13,8 +13,8 @@ open import Lib.Id using (Refl ; _≡_ ; _≡≡_ ; resp)
 module Lib.Membership where
 
 module MEMBERSHIP 
-  (Collection : ∀{a} → Set a → Set a
-   ; Member : ∀{a} {A : Set a} → A → Collection A → Set a) where
+  {Collection : ∀{a} → Set a → Set a}
+  {Member : ∀{a} {A : Set a} → A → Collection A → Set a} where
 
    module SET where
 

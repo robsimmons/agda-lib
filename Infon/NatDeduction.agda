@@ -6,7 +6,9 @@ open import Infon.Core
 
 module Infon.NatDeduction where
 
-module NAT-DEDUCTION (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module NAT-DEDUCTION 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
 

@@ -8,7 +8,9 @@ open import Infon.SequentCore
 
 module Infon.SequentAxiom where
 
-module SEQUENT-CUT (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SEQUENT-CUT 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
    open SEQUENT-CORE Prin _≡?_

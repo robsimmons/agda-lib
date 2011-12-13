@@ -8,7 +8,9 @@ open import Infon.SequentCut
 
 module Infon.Sequent where
 
-module SEQUENT (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SEQUENT 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
    open SEQUENT-CORE Prin _≡?_ public

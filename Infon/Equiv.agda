@@ -8,7 +8,9 @@ open import Infon.NormalForms
 
 module Infon.Equiv where
 
-module EQUIV (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module EQUIV 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
    open NAT-DEDUCTION Prin _≡?_ renaming (wk to wkND ; _⊢_ to _⊢_true)

@@ -6,7 +6,9 @@ open import Infon.Core
 
 module Infon.NormalForms where
 
-module NORMAL-FORMS (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module NORMAL-FORMS 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
 

@@ -2,9 +2,10 @@ open import Prelude
 
 module Infon.Judgments where
 
-module JUDGMENTS (Type : Set;
-                  Prin : Set; 
-                  _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module JUDGMENTS 
+   (Type : Set)
+   (Prin : Set)
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    infix 0 _true
    infix 0 _said_

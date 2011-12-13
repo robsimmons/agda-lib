@@ -7,8 +7,9 @@ open import Infon.NatDeduction
 
 module Infon.ReceivedCtx where
 
-module RECEIVED-CTX (Prin : Set; 
-                     _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module RECEIVED-CTX 
+   (Prin : Set) 
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
    open NAT-DEDUCTION Prin _≡?_
@@ -186,9 +187,9 @@ module RECEIVED-CTX (Prin : Set;
    -- p said A. The A ∈⁻ Γ shorthand captures the disjunctive possibilites.
 
    _∈⁻_ : Type → Ctx → Set
-   A ∈⁻ Γ = ((A true) ∈ Γ)
-        + (∃ λ p → ∃ λ B → (A ≡ □ p B) × ((p said B) ∈ Γ))
-        + (∃ λ p → ∃ λ B → (A ≡ ■ p B) × ((p implied B) ∈ Γ))
+   _∈⁻_ A Γ = ((A true) ∈ Γ)
+        + ((∃ λ p → ∃ λ B → (A ≡ □ p B) × ((p said B) ∈ Γ))
+        + (∃ λ p → ∃ λ B → (A ≡ ■ p B) × ((p implied B) ∈ Γ)))
 
    S⁻ : ∀{J Γ A} → A ∈⁻ Γ → A ∈⁻ (J :: Γ)
    S⁻ (Inl x) = Inl (S x)

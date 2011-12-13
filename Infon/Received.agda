@@ -8,8 +8,9 @@ open import Infon.Core
 open import Infon.NatDeduction
 open import Infon.ReceivedCtx
 
-module Infon.Received (Prin : Set; 
-             _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module Infon.Received 
+   (Prin : Set)
+   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE Prin _≡?_
    open NAT-DEDUCTION Prin _≡?_

@@ -7,9 +7,9 @@ open import Infon.Core
 
 module Primal.SequentCore where
 
-module SEQUENT-CORE (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
+   open CORE _≡?_
 
    ---------------------------------
    -- Judgmental Full Infon Logic --

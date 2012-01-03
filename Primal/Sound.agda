@@ -8,12 +8,12 @@ import Primal.Sequent
 
 module Primal.Sound where
 
-module SOUND (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SOUND {Prin : Set} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open Infon.Sequent.SEQUENT Prin _≡?_ 
+   open CORE _≡?_
+   open Infon.Sequent.SEQUENT _≡?_ 
       hiding (cut ; cut' ; cut□ ; cut□' ; cut■ ; cut■')
-   open Primal.Sequent.SEQUENT Prin _≡?_ 
+   open Primal.Sequent.SEQUENT _≡?_ 
       hiding (cut ; cut' ; cut□ ; cut□' ; cut■ ; cut■' ; Seq)
       renaming (wk to wkp ; wk' to wkp' ; _⇒_ to _⇒'_ ; m→ to m→' ; →m to →m')
 

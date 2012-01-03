@@ -8,10 +8,10 @@ open import Primal.SequentCore
 
 module Primal.SequentCut where
 
-module SEQUENT-CUT (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SEQUENT-CUT {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open SEQUENT-CORE Prin _≡?_
+   open CORE _≡?_
+   open SEQUENT-CORE _≡?_
 
    -----------------------
    -- Cut admissibility --

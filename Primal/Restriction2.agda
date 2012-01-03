@@ -7,11 +7,11 @@ import Primal.NormalForms
 
 module Primal.Restriction2 where
 
-module RESTRICTION (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module RESTRICTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open Infon.NormalForms.NORMAL-FORMS Prin _≡?_ 
-   open Primal.NormalForms.NORMAL-FORMS Prin _≡?_ 
+   open CORE _≡?_
+   open Infon.NormalForms.NORMAL-FORMS _≡?_ 
+   open Primal.NormalForms.NORMAL-FORMS _≡?_ 
       renaming (_⊢_verif to _⊢_verif' ; _⊢_use to _⊢_use' 
                 ; wkN to wkN' ; wkR to wkR')
 

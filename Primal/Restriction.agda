@@ -8,13 +8,13 @@ open import Primal.Sound
 
 module Primal.Restriction where
 
-module RESTRICTION (Prin : Set; _≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module RESTRICTION {Prin : Set} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open SOUND Prin _≡?_
-   open Infon.Sequent.SEQUENT Prin _≡?_ 
+   open CORE _≡?_
+   open SOUND _≡?_
+   open Infon.Sequent.SEQUENT _≡?_ 
       hiding (cut□ ; cut□' ; cut■ ; cut■')
-   open Primal.Sequent.SEQUENT Prin _≡?_ 
+   open Primal.Sequent.SEQUENT _≡?_ 
       hiding (cut□ ; cut□' ; cut■ ; cut■')
       renaming (cut to cutp ; cut' to cutp'
                 ; wk to wkp ; wk' to wkp' ; _⇒_ to _⇒'_ 

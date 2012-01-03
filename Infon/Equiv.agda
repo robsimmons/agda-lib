@@ -8,14 +8,12 @@ open import Infon.NormalForms
 
 module Infon.Equiv where
 
-module EQUIV 
-   (Prin : Set) 
-   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module EQUIV {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open NAT-DEDUCTION Prin _≡?_ renaming (wk to wkND ; _⊢_ to _⊢_true)
-   open SEQUENT Prin _≡?_ renaming (wk' to wkS)
-   open NORMAL-FORMS Prin _≡?_ 
+   open CORE _≡?_
+   open NAT-DEDUCTION _≡?_ renaming (wk to wkND ; _⊢_ to _⊢_true)
+   open SEQUENT _≡?_ renaming (wk' to wkS)
+   open NORMAL-FORMS _≡?_ 
 
    nd→seq : ∀{Γ A} → Γ ⊢ A true → Γ ⇒ A
    nd→seq (hyp x) = ident x

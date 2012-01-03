@@ -8,13 +8,11 @@ open import Infon.SequentCut
 
 module Infon.Sequent where
 
-module SEQUENT 
-   (Prin : Set) 
-   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module SEQUENT {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open SEQUENT-CORE Prin _≡?_ public
-   open SEQUENT-CUT Prin _≡?_ public
+   open CORE _≡?_
+   open SEQUENT-CORE _≡?_ public
+   open SEQUENT-CUT _≡?_ public
 
    cut' : ∀{Γ A C} → Γ ⇒ A → (A true) :: Γ ⇒ C → Γ ⇒ C
    cut' D E = cut (→m D) (→m E)

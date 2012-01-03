@@ -5,9 +5,7 @@ open import Infon.Judgments
 
 module Infon.Core where
 
-module CORE 
-   (Prin : Set)
-   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    data Type : Set where
       ⊤ : Type

@@ -1,7 +1,7 @@
 -- Normal forms for natural deduction in Primal Infon Logic
 -- Robert J. Simmons
 
-open import Prelude
+open import Prelude hiding (⊤)
 open import Infon.Core
 
 module Primal.NormalForms where
@@ -21,6 +21,7 @@ module NORMAL-FORMS {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
          ↓↑ : ∀{A} 
             → (D : Γ ⊢ A use)
             → Γ ⊢ A verif
+         ⊤I : Γ ⊢ ⊤ verif
          ⊃I : ∀{A B}
             → (D : Γ ⊢ B verif)
             → Γ ⊢ A ⊃ B verif
@@ -61,6 +62,7 @@ module NORMAL-FORMS {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    mutual 
       wkN : ∀{Γ Γ' A} → Γ ⊆ Γ' → Γ ⊢ A verif → Γ' ⊢ A verif
       wkN θ (↓↑ D) = ↓↑ (wkR θ D)
+      wkN θ ⊤I = ⊤I
       wkN θ (⊃I D) = ⊃I (wkN θ D)
       wkN θ (∧I D E) = ∧I (wkN θ D) (wkN θ E)
       wkN θ (□I D) = □I (wkN (congr○ θ) D)
@@ -80,6 +82,7 @@ module NORMAL-FORMS {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
          → Γ' ++ (A true) :: Γ ⊢ C verif
          → Γ' ++ Γ ⊢ C verif
       substRN Γ' D (↓↑ E) = ↓↑ (substRR Γ' D E)
+      substRN Γ' D ⊤I = ⊤I
       substRN Γ' D (⊃I E) = ⊃I (substRN Γ' D E)
       substRN Γ' D (∧I E₁ E₂) = 
          ∧I (substRN Γ' D E₁) (substRN Γ' D E₂)

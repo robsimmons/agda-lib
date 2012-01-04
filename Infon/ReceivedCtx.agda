@@ -7,12 +7,10 @@ open import Infon.NatDeduction
 
 module Infon.ReceivedCtx where
 
-module RECEIVED-CTX 
-   (Prin : Set) 
-   (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module RECEIVED-CTX {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
-   open CORE Prin _≡?_
-   open NAT-DEDUCTION Prin _≡?_
+   open CORE _≡?_
+   open NAT-DEDUCTION _≡?_
 
     -- In the non-judgmental logic, a context is just a list of types
 

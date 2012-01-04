@@ -5,10 +5,10 @@
 
 open import Prelude hiding (⊤)
 open import Infon.Core
-open import Infon.NatDeduction
+open import Primal.NatDeduction
 open import Infon.ReceivedCtx
 
-module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
+module Primal.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    open CORE _≡?_
    open NAT-DEDUCTION _≡?_
@@ -83,8 +83,8 @@ module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) whe
          → (x : A ∈ Δ) 
          → Δ ⊢' A
       ⊤I : Δ ⊢' ⊤
-      ⊃I : ∀{A B}
-         → (D : A :: Δ ⊢' B)
+      ⊃IW : ∀{A B}
+         → (D : Δ ⊢' B)
          → Δ ⊢' A ⊃ B
       ⊃E : ∀{A B} 
          → (D : Δ ⊢' A ⊃ B)
@@ -106,17 +106,22 @@ module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) whe
       ■I : ∀{A p} 
          → (D : Δ ●' p ⊢' A)
          → Δ ⊢' ■ p A
+      Trans : ∀{A B}
+         → (D : Δ ⊢' A)
+         → (E : (A :: Δ) ⊢' B)
+         → Δ ⊢' B
 
    wk' : ∀{Δ Δ' A} → Δ ⊆ Δ' → Δ ⊢' A → Δ' ⊢' A
    wk' θ (hyp x) = hyp (θ x)
    wk' θ ⊤I = ⊤I
-   wk' θ (⊃I D) = ⊃I (wk' (sub-cons-congr θ) D)
+   wk' θ (⊃IW D) = ⊃IW (wk' θ D)
    wk' θ (⊃E D E) = ⊃E (wk' θ D) (wk' θ E)
    wk' θ (∧I D E) = ∧I (wk' θ D) (wk' θ E)
    wk' θ (∧E₁ D) = ∧E₁ (wk' θ D)
    wk' θ (∧E₂ D) = ∧E₂ (wk' θ D)
    wk' θ (□I D) = □I (wk' (congrR○ θ) D)
    wk' θ (■I D) = ■I (wk' (congrR● θ) D)
+   wk' θ (Trans D E) = Trans (wk' θ D) (wk' (sub-cons-congr θ) E)
 
 
 
@@ -167,15 +172,15 @@ module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) whe
    recon→orig : ∀{Γ A} → Γ ⊢ A → Γ ⁻ ⊢' A
    recon→orig (hyp x) = hyp (pull x)
    recon→orig ⊤I = ⊤I
-   recon→orig (⊃I D) = ⊃I (recon→orig D)
+   recon→orig (⊃I D) = ⊃IW (recon→orig D)
    recon→orig (⊃E D E) = ⊃E (recon→orig D) (recon→orig E)
    recon→orig (∧I D E) = ∧I (recon→orig D) (recon→orig E)
    recon→orig (∧E₁ D) = ∧E₁ (recon→orig D)
    recon→orig (∧E₂ D) = ∧E₂ (recon→orig D)
    recon→orig {Γ} (□I D) = □I (wk' (○⁻ Γ) (recon→orig D))
-   recon→orig (□E D E) = ⊃E (⊃I (recon→orig E)) (recon→orig D)
+   recon→orig (□E D E) = Trans (recon→orig D) (recon→orig E) 
    recon→orig {Γ} (■I D) = ■I (wk' (●⁻ Γ) (recon→orig D))
-   recon→orig (■E D E) = ⊃E (⊃I (recon→orig E)) (recon→orig D)
+   recon→orig (■E D E) = Trans (recon→orig D) (recon→orig E) 
 
    -- It is more complex to show that provability in the received system
    -- implies provability in the original system. The critical move is that,
@@ -283,7 +288,7 @@ module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) whe
    ... | Inr (Inl (p , A , Refl , x')) = □I (hyp (pull○ x'))
    ... | Inr (Inr (p , A , Refl , x')) = ■I (hyp (pull●' x'))
    orig→recon θ ⊤I = ⊤I
-   orig→recon θ (⊃I D) = ⊃I (orig→recon (sub-cons-congr θ) D)
+   orig→recon θ (⊃IW D) = ⊃I (orig→recon θ D)
    orig→recon θ (⊃E D E) = ⊃E (orig→recon θ D) (orig→recon θ E)
    orig→recon θ (∧I D E) = ∧I (orig→recon θ D) (orig→recon θ E)
    orig→recon θ (∧E₁ D) = ∧E₁ (orig→recon θ D)
@@ -303,4 +308,7 @@ module Infon.Received {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) whe
 
       D₂ : Γ ⊢ ■ p A
       D₂ = left● {Γ} {[]} {[]} D₁
+
+   orig→recon θ (Trans D E) = 
+      subst [] (orig→recon θ D) (orig→recon (sub-cons-congr θ) E)
 

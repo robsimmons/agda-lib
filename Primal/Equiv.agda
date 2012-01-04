@@ -17,6 +17,7 @@ module EQUIV {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    nd→seq : ∀{Γ A} → Γ ⊢ A true → Γ ⇒ A
    nd→seq (hyp x) = init x
+   nd→seq ⊤I = ⊤R
    nd→seq (⊃I D) = ⊃R (nd→seq D)
    nd→seq (⊃E D E) = cut' (nd→seq D) (⊃L Z (wkS sub-wken (nd→seq E)) (init Z))
    nd→seq (∧I D E) = ∧R (nd→seq D) (nd→seq E)
@@ -29,6 +30,7 @@ module EQUIV {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    
    seq→nf : ∀{Γ A} → Γ ⇒ A → Γ ⊢ A verif
    seq→nf (init x) = ↓↑ (hyp x)
+   seq→nf ⊤R = ⊤I
    seq→nf (⊃R D) = ⊃I (seq→nf D)
    seq→nf (⊃L x D E) = substRN [] (⊃E (hyp x) (seq→nf D)) (seq→nf E)
    seq→nf (∧R D E) = ∧I (seq→nf D) (seq→nf E)
@@ -42,6 +44,7 @@ module EQUIV {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    mutual
       verif→nd : ∀{Γ A} → Γ ⊢ A verif → Γ ⊢ A true
       verif→nd (↓↑ D) = use→nd D
+      verif→nd ⊤I = ⊤I
       verif→nd (⊃I D) = ⊃I (verif→nd D)
       verif→nd (∧I D E) = ∧I (verif→nd D) (verif→nd E)
       verif→nd (□I D) = □I (verif→nd D)

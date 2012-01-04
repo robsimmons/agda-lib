@@ -2,7 +2,7 @@
 -- Core: presentation of the calculus and the "easy" lemmas
 -- Robert J. Simmons
 
-open import Prelude
+open import Prelude hiding (⊤)
 open import Infon.Core
 
 module Primal.SequentCore where
@@ -20,6 +20,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
       init : ∀{A}
          → (x : (A true) ∈ Γ)
          → Γ ⇒ A
+      ⊤R : Γ ⇒ ⊤
       ⊃R : ∀{A B}
          → (D : Γ ⇒ B)
          → Γ ⇒ A ⊃ B
@@ -64,6 +65,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    -- seq captures the shape of sequents
    data seq : Set where
       init : seq
+      ⊤R : seq
       ⊃R : (d : seq) → seq 
       ⊃L : (d e : seq) → seq
       ∧R : (d e : seq) → seq
@@ -79,6 +81,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
       init : ∀{A}
          → (x : (A true) ∈ Γ)
          → Seq Γ init A
+      ⊤R : Seq Γ ⊤R ⊤
       ⊃R : ∀{A B d}
          → (D : Seq Γ d B)
          → Seq Γ (⊃R d) (A ⊃ B)
@@ -117,6 +120,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    -- Metric erasure
    m→ : ∀{Γ d A} → Seq Γ d A → Γ ⇒ A
    m→ (init x) = init x
+   m→ ⊤R = ⊤R
    m→ (⊃R D) = ⊃R (m→ D)
    m→ (⊃L x D E) = ⊃L x (m→ D) (m→ E)
    m→ (∧R D E) = ∧R (m→ D) (m→ E)
@@ -130,6 +134,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    -- Metric calculation
    m : ∀{Γ A} → Γ ⇒ A → seq
    m (init x) = init
+   m ⊤R = ⊤R
    m (⊃R D) = ⊃R (m D)
    m (⊃L x D E) = ⊃L (m D) (m E)
    m (∧R D E) = ∧R (m D) (m E)
@@ -143,6 +148,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
    -- Metric embedding
    →m : ∀{Γ A} (D : Γ ⇒ A) → Seq Γ (m D) A
    →m (init x) = init x
+   →m ⊤R = ⊤R
    →m (⊃R D) = ⊃R (→m D)
    →m (⊃L x D E) = ⊃L x (→m D) (→m E)
    →m (∧R D E) = ∧R (→m D) (→m E)
@@ -161,6 +167,7 @@ module SEQUENT-CORE {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
    wk : ∀{Γ Γ' d A} → Γ ⊆ Γ' → Seq Γ d A → Seq Γ' d A
    wk θ (init x) = init (θ x)
+   wk θ ⊤R = ⊤R
    wk θ (⊃R D) = ⊃R (wk θ D)
    wk θ (⊃L x D E) = ⊃L (θ x) (wk θ D) (wk (sub-cons-congr θ) E)
    wk θ (∧R D E) = ∧R (wk θ D) (wk θ E)

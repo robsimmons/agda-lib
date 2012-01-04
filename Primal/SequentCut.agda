@@ -51,6 +51,7 @@ module SEQUENT-CUT {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
 
       -- Right commutative cuts
       cut D (init (S x)) = init x
+      cut D ⊤R = ⊤R
       cut D (⊃R E) = ⊃R (cut D E) 
       cut D (⊃L (S x) E₁ E₂) = 
          ⊃L x (cut D E₁) (cut (wk sub-wken D) (wk sub-exch E₂))
@@ -71,6 +72,7 @@ module SEQUENT-CUT {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
          → Seq ((p said A) :: Γ) e C 
          → Γ ⇒ C
       cut□ D (init (S x)) = init x
+      cut□ D ⊤R = ⊤R
       cut□ D (⊃R E) = ⊃R (cut□ D E)
       cut□ D (⊃L (S x) E₁ E₂) = ⊃L x (cut□ D E₁) (cut□ D (wk sub-exch E₂))
       cut□ D (∧R E₁ E₂) = ∧R (cut□ D E₁) (cut□ D E₂)
@@ -96,6 +98,7 @@ module SEQUENT-CUT {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) where
          → Seq ((p implied A) :: Γ) e C 
          → Γ ⇒ C
       cut■ D (init (S x)) = init x
+      cut■ D ⊤R = ⊤R
       cut■ D (⊃R E) = ⊃R (cut■ D E)
       cut■ D (⊃L (S x) E₁ E₂) = ⊃L x (cut■ D E₁) (cut■ D (wk sub-exch E₂))
       cut■ D (∧R E₁ E₂) = ∧R (cut■ D E₁) (cut■ D E₂)

@@ -1,7 +1,7 @@
 -- Natural Deduction for Primal Infon Logic
 -- Robert J. Simmons
 
-open import Prelude
+open import Prelude hiding (⊤)
 open import Infon.Core
 
 module Primal.NatDeduction where
@@ -19,6 +19,7 @@ module NAT-DEDUCTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) wher
       hyp : ∀{A} 
          → (x : (A true) ∈ Γ) 
          → Γ ⊢ A
+      ⊤I : Γ ⊢ ⊤
       ⊃I : ∀{A B}
          → (D : Γ ⊢ B)
          → Γ ⊢ A ⊃ B
@@ -59,6 +60,7 @@ module NAT-DEDUCTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) wher
 
    wk : ∀{Γ Γ' A} → Γ ⊆ Γ' → Γ ⊢ A → Γ' ⊢ A
    wk θ (hyp x) = hyp (θ x)
+   wk θ ⊤I = ⊤I
    wk θ (⊃I D) = ⊃I (wk θ D)
    wk θ (⊃E D E) = ⊃E (wk θ D) (wk θ E)
    wk θ (∧I D E) = ∧I (wk θ D) (wk θ E)
@@ -83,6 +85,7 @@ module NAT-DEDUCTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) wher
    -- Variable cases
    subst [] D (hyp Z) = D
    subst [] D (hyp (S x)) = hyp x
+   subst Γ' D ⊤I = ⊤I
    subst (._ :: Γ') D (hyp Z) = hyp Z
    subst (_ :: Γ') D (hyp (S n)) = wk sub-cons (subst Γ' D (hyp n))
 
@@ -117,6 +120,7 @@ module NAT-DEDUCTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) wher
       lem (_ :: Γ) (S x) = S (lem Γ x)
 
    -- Structural cases
+   subst□ Γ' D ⊤I = ⊤I
    subst□ Γ' D (⊃I E) = ⊃I (subst□ Γ' D E)
    subst□ Γ' D (⊃E E₁ E₂) = ⊃E (subst□ Γ' D E₁) (subst□ Γ' D E₂)
    subst□ Γ' D (∧I E₁ E₂) = ∧I (subst□ Γ' D E₁) (subst□ Γ' D E₂)
@@ -179,6 +183,7 @@ module NAT-DEDUCTION {Prin} (_≡?_ : (p q : Prin) → Decidable (p ≡ q)) wher
       lem (_ :: Γ) (S x) = S (lem Γ x)
 
    -- Structural cases
+   subst■ Γ' D ⊤I = ⊤I
    subst■ Γ' D (⊃I E) = ⊃I (subst■ Γ' D E)
    subst■ Γ' D (⊃E E₁ E₂) = ⊃E (subst■ Γ' D E₁) (subst■ Γ' D E₂)
    subst■ Γ' D (∧I E₁ E₂) = ∧I (subst■ Γ' D E₁) (subst■ Γ' D E₂)

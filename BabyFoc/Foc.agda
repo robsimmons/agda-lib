@@ -52,11 +52,25 @@ Reg ⊥ stable = Unit
 Reg (A ∨ B) stable = Unit
 Reg ⊤ stable = Unit
 
-data Value (א Γ : Ctx) : Type → Set
-data Term (א Γ : Ctx) : Conc → Set
-data Spine (א Γ : Ctx) : Type → Conc → Set
+data SeqForm : Set where
+  Rfoc : Type → SeqForm
+  Inv : Conc → SeqForm
+  Lfoc : Type → Conc → SeqForm
 
-data Value א Γ where
+data Exp (א Γ : Ctx) : SeqForm → Set
+
+Value : (א Γ : Ctx) → Type → Set
+Value א Γ A = Exp א Γ (Rfoc A)
+
+Term : (א Γ : Ctx) → Conc → Set
+Term א Γ U = Exp א Γ (Inv U)
+
+Spine : (א Γ : Ctx) → Type → Conc → Set
+Spine א Γ A U = Exp א Γ (Lfoc A U)
+
+data Exp א Γ where
+
+  -- Values
   hyp⁺ : ∀{A}
     (v : A ∈ א)
     → Value א Γ A
@@ -74,8 +88,8 @@ data Value א Γ where
     (V : Value א Γ B)
     → Value א Γ (A ∨ B)
   ⊤R : Value א Γ ⊤
-  
-data Term א Γ where
+
+  -- Terms
   foc : ∀{A U} 
     (pf₁ : U stable)
     (x : A ∈ Γ)
@@ -102,7 +116,7 @@ data Term א Γ where
     (N : Term א (A :: Γ) (Reg B))
     → Term א Γ (Reg (A ⊃ B))
 
-data Spine א Γ where
+  -- Spines
   hyp⁻ : ∀{A}
     → Spine א Γ A (Abs A)
   pL : ∀{Q}

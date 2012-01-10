@@ -60,7 +60,7 @@ split-append {xs = x :: xs} Z = Inl Z
 split-append {xs = x :: xs} (S n) = case _ (split-append n) (Inl o S) Inr
 
 module SET where
-   open MEMBERSHIP.SET List In public
+   open MEMBERSHIP.SET {List} {In} public
    
    sub-cons : ∀{a} {A : Set a} {x : A} {xs : List A} → Sub xs (x :: xs)
    sub-cons = S
@@ -139,13 +139,13 @@ module SET where
       (λ n → sub-cons-cong ID.refl f n) , (λ n → sub-cons-cong ID.refl g n)
 
 module BAG where
-   open MEMBERSHIP.BAG List In public
+   open MEMBERSHIP.BAG {List} {In} public
 
 module ANY where
-   open MEMBERSHIP.ANY List In public
+   open MEMBERSHIP.ANY {List} {In} public
 
 module ALL where
-   open MEMBERSHIP.ALL List In public
+   open MEMBERSHIP.ALL {List} {In} public
 
    nil : ∀{a} {A : Set a} {P : A → Set a}
       → All P []
@@ -159,4 +159,4 @@ module ALL where
    cons px pxs (S n) = pxs n    
 
 
-open MEMBERSHIP List In public using (Any ; All)
+open MEMBERSHIP {List} {In} public using (Any ; All)

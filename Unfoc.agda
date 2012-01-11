@@ -72,6 +72,7 @@ denil (Nil D) = D
 decons : ∀{Γ Ψ A B} → SInv Γ (B :: Ψ) A → SInv (B :: Γ) Ψ A
 decons (Cons D) = D
 
+
 -- Weakening
 
 wk : ∀{Γ Γ' A} → Γ ⊆ Γ' → Γ ⊢ A → Γ' ⊢ A
@@ -110,6 +111,7 @@ wk-prop3 (A' :: Γ') (S n) with wk-prop3 Γ' n
 ... | Z = Z
 ... | (S Z) = S Z
 ... | (S (S n')) = S (S (S n'))
+
 
 -- Erasure
 
@@ -153,7 +155,8 @@ unerasex {_ :: _} pf (S x) with unerasex (λ x' → pf (S x')) x
 ... | Inl (_ , x' , refl) = Inl (_ , S x' , refl)
 ... | Inr (_ , x' , refl) = Inr (_ , S x' , refl)
 
--- Defocalization
+
+-- De-focalization
 
 defocV : ∀{Γ A} → Value [] Γ A → eraseΓ Γ ⊢ eraseA A
 defocN : ∀{Γ Ω A} → Term [] Γ Ω (Reg A) → SInv (eraseΓ Γ) (eraseΓ Ω) (eraseA A)
@@ -214,6 +217,7 @@ defocSp (⊃L V Sp) =
     (wk LIST.SET.sub-wkex (defocSp Sp))
 defocSp (∧⁻L₁ Sp) = ∧L₁ Z (wk LIST.SET.sub-wkex (defocSp Sp))
 defocSp (∧⁻L₂ Sp) = ∧L₂ Z (wk LIST.SET.sub-wkex (defocSp Sp))
+
 
 -- Focalization
 
@@ -301,14 +305,19 @@ foc {C} {Γ} pf (∨L x D₁ D₂) with unerasex pf x
   lem {⊤⁻} () D₁ D₂
   lem {A' ∧⁻ B} () D₁ D₂
 
-foc {↑ ⊤⁺} pf ⊤R = {!!}
-foc {↑ (A ∧⁺ B)} pf (∧R D₁ D₂) = {!!}
-foc {A ⊃ B} pf (⊃R D) = {!!}
+foc {↑ ⊤⁺} pf ⊤R = u⊤⁺R
+
 foc {⊤⁻} pf ⊤R = {!!}
+
+foc {↑ (A ∧⁺ B)} pf (∧R D₁ D₂) = u∧⁺R (foc pf D₁) (foc pf D₂)
+
 foc {A ∧⁻ B} pf (∧R D₁ D₂) = {!!}
 
-
-
 foc {A} pf (∧L₁ x D) = {!!}
+
 foc {A} pf (∧L₂ x D) = {!!}
+
+foc {A ⊃ B} pf (⊃R D) = u⊃R (foc (LIST.ALL.cons <> pf) D)
+
+
 foc {A} pf (⊃L x D₁ D₂) = {!!}

@@ -177,3 +177,5 @@ wk' ρ θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk' ρ θ Sp)
 wk : ∀{א Γ Γ' Form} → Γ ⊆ Γ' → Exp א Γ Form → Exp א Γ' Form
 wk = wk' (λ x → x)
 
+fwk : ∀{א א' Γ Form} → א ⊆ א' → Exp א Γ Form → Exp א' Γ Form
+fwk ρ = wk' ρ (λ x → x) 

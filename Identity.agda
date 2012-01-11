@@ -1,3 +1,4 @@
+
 open import Prelude hiding (⊥; ⊤)
 open import Foc
 

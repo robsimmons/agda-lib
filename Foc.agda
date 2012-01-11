@@ -1,3 +1,4 @@
+
 open import Prelude hiding (⊥)
 
 module Foc where
@@ -24,7 +25,7 @@ data Type : Polarity → Set where
 
 Ctx = List (Type ⁺)
 
-_⊆_ : Ctx → Ctx → Set
+_⊆_ : ∀{A} → List A → List A → Set
 _⊆_ = LIST.SET.Sub
 
 

@@ -58,7 +58,7 @@ fsubSp⁻ pf Sp (⊃L V Sp') = ⊃L V (fsubSp⁻ pf Sp Sp')
 -- Identity expansion
 
 expand⁺ : ∀{A א Γ Ω U} → Term (A :: א) Γ Ω U → Term א Γ (A :: Ω) U
-expand⁻ : ∀{A א Γ Ω} → Term א Γ Ω (Abs A) → Term א Γ Ω (Reg A)
+expand⁻ : ∀{A א Γ} → Term א Γ [] (Abs A) → Term א Γ [] (Reg A)
 
 expand⁺ {a Q .⁺} N = L <> (fsub⁺ (pR Z) (wk LIST.SET.sub-wken N))
 expand⁺ {↓ A} N = 

@@ -99,9 +99,9 @@ data Exp א Γ where
   ↑R : ∀{A} 
     (V : Value א Γ A)
     → Term א Γ [] (Reg (↑ A))
-  ⊃R : ∀{A B Ω} 
-    (N : Term א Γ (A :: Ω) (Reg B))
-    → Term א Γ Ω (Reg (A ⊃ B))
+  ⊃R : ∀{A B} 
+    (N : Term א Γ [ A ] (Reg B))
+    → Term א Γ [] (Reg (A ⊃ B))
   L : ∀{A Ω U}
     (pf⁺ : A stable⁺)
     (N : Term א (A :: Γ) Ω U)

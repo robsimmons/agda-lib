@@ -1,4 +1,4 @@
-open import Prelude hiding (⊥; ⊤)
+open import Prelude hiding (⊥)
 
 module Foc where
 
@@ -14,10 +14,13 @@ data Type : Polarity → Set where
   ↓ : (A : Type ⁻) → Type ⁺
   ⊥ : Type ⁺
   _∨_ : (A B : Type ⁺) → Type ⁺
-  ⊤ : Type ⁺
+  ⊤⁺ : Type ⁺
+  _∧⁺_ : (A B : Type ⁺) → Type ⁺
   --
   ↑ : (A : Type ⁺) → Type ⁻
   _⊃_ : (A : Type ⁺) (B : Type ⁻) → Type ⁻
+  ⊤⁻ : Type ⁻
+  _∧⁻_ : (A B : Type ⁻) → Type ⁻
 
 Ctx = List (Type ⁺)
 
@@ -37,6 +40,8 @@ Abs A stable⁻ = Unit
 Reg (a Q .⁻) stable⁻ = Unit
 Reg (↑ A) stable⁻ = Unit
 Reg (A ⊃ B) stable⁻ = Void
+Reg ⊤⁻ stable⁻ = Void
+Reg (A ∧⁻ B) stable⁻ = Void
 
 _stable⁺ : Type ⁺ → Set
 a Q .⁺ stable⁺ = Unit
@@ -79,9 +84,17 @@ data Exp א Γ where
   ∨R₂ : ∀{A B}
     (V : Value א Γ B)
     → Value א Γ (A ∨ B)
-  ⊤R : Value א Γ ⊤
+  ⊤⁺R : Value א Γ ⊤⁺
+  ∧⁺R : ∀{A B}
+    (V₁ : Value א Γ A)
+    (V₂ : Value א Γ B)
+    → Value א Γ (A ∧⁺ B)
 
   -- Terms
+  L : ∀{A Ω U}
+    (pf⁺ : A stable⁺)
+    (N : Term א (A :: Γ) Ω U)
+    → Term א Γ (A :: Ω) U
   ↓L : ∀{A U} 
     (pf⁻ : U stable⁻)
     (x : (↓ A) ∈ Γ)
@@ -93,19 +106,23 @@ data Exp א Γ where
     (N₁ : Term א Γ (A :: Ω) U)
     (N₂ : Term א Γ (B :: Ω) U)
     → Term א Γ (A ∨ B :: Ω) U
-  ⊤L : ∀{U Ω}
+  ⊤⁺L : ∀{U Ω}
     (N : Term א Γ Ω U)
-    → Term א Γ (⊤ :: Ω) U
+    → Term א Γ (⊤⁺ :: Ω) U
+  ∧⁺L : ∀{U Ω A B}
+    (N : Term א Γ (A :: B :: Ω) U)
+    → Term א Γ (A ∧⁺ B :: Ω) U
   ↑R : ∀{A} 
     (V : Value א Γ A)
     → Term א Γ [] (Reg (↑ A))
   ⊃R : ∀{A B} 
     (N : Term א Γ [ A ] (Reg B))
     → Term א Γ [] (Reg (A ⊃ B))
-  L : ∀{A Ω U}
-    (pf⁺ : A stable⁺)
-    (N : Term א (A :: Γ) Ω U)
-    → Term א Γ (A :: Ω) U
+  ⊤⁻R : Term א Γ [] (Reg ⊤⁻)
+  ∧⁻R : ∀{A B}
+    (N₁ : Term א Γ [] (Reg A))
+    (N₂ : Term א Γ [] (Reg B))
+    → Term א Γ [] (Reg (A ∧⁻ B))
 
   -- Spines
   hyp⁻ : ∀{A}
@@ -119,6 +136,12 @@ data Exp א Γ where
     (V : Value א Γ A)
     (Sp : Spine א Γ B U)
     → Spine א Γ (A ⊃ B) U
+  ∧⁻L₁ : ∀{A B U}
+    (Sp : Spine א Γ A U)
+    → Spine א Γ (A ∧⁻ B) U
+  ∧⁻L₂ : ∀{A B U}
+    (Sp : Spine א Γ B U)
+    → Spine א Γ (A ∧⁻ B) U
 
 
 -- Weakening
@@ -130,20 +153,26 @@ wk' ρ θ (pR x) = pR (θ x)
 wk' ρ θ (↓R N) = ↓R (wk' ρ θ N)
 wk' ρ θ (∨R₁ V) = ∨R₁ (wk' ρ θ V)
 wk' ρ θ (∨R₂ V) = ∨R₂ (wk' ρ θ V)
-wk' ρ θ ⊤R = ⊤R
+wk' ρ θ ⊤⁺R = ⊤⁺R
+wk' ρ θ (∧⁺R V₁ V₂) = ∧⁺R (wk' ρ θ V₁) (wk' ρ θ V₂)
 
+wk' ρ θ (L pf N) = L pf (wk' ρ (LIST.SET.sub-cons-congr θ) N)
 wk' ρ θ (↓L pf₁ x Sp) = ↓L pf₁ (θ x) (wk' ρ θ Sp)
 wk' ρ θ ⊥L = ⊥L
 wk' ρ θ (∨L N₁ N₂) = ∨L (wk' ρ θ N₁) (wk' ρ θ N₂)
-wk' ρ θ (⊤L N) = ⊤L (wk' ρ θ N)
+wk' ρ θ (⊤⁺L N) = ⊤⁺L (wk' ρ θ N)
+wk' ρ θ (∧⁺L N) = ∧⁺L (wk' ρ θ N)
 wk' ρ θ (↑R V) = ↑R (wk' ρ θ V)
 wk' ρ θ (⊃R N) = ⊃R (wk' ρ θ N)
-wk' ρ θ (L pf N) = L pf (wk' ρ (LIST.SET.sub-cons-congr θ) N)
+wk' ρ θ ⊤⁻R = ⊤⁻R
+wk' ρ θ (∧⁻R N₁ N₂) = ∧⁻R (wk' ρ θ N₁) (wk' ρ θ N₂)
 
 wk' ρ θ hyp⁻ = hyp⁻
 wk' ρ θ pL = pL
 wk' ρ θ (↑L N) = ↑L (wk' ρ θ N)
 wk' ρ θ (⊃L V Sp) = ⊃L (wk' ρ θ V) (wk' ρ θ Sp)
+wk' ρ θ (∧⁻L₁ Sp) = ∧⁻L₁ (wk' ρ θ Sp)
+wk' ρ θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk' ρ θ Sp)
 
 wk : ∀{א Γ Γ' Form} → Γ ⊆ Γ' → Exp א Γ Form → Exp א Γ' Form
 wk = wk' (λ x → x)

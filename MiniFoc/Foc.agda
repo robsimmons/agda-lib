@@ -32,16 +32,22 @@ data Conc : Set where
   Abs : (A : Type ⁻) → Conc
   Reg : (A : Type ⁻) → Conc
 
-_stable : Conc → Set
-Abs A stable = Unit
-Reg (a Q .⁻) stable = Unit
-Reg (↑ A) stable = Unit
-Reg (A ⊃ B) stable = Void
+_stable⁻ : Conc → Set
+Abs A stable⁻ = Unit
+Reg (a Q .⁻) stable⁻ = Unit
+Reg (↑ A) stable⁻ = Unit
+Reg (A ⊃ B) stable⁻ = Void
 
+_stable⁺ : Type ⁺ → Set
+a Q .⁺ stable⁺ = Unit
+↓ A stable⁺ = Unit
+⊥ stable⁺ = Void
+(A ∨ B) stable⁺ = Void
+⊤ stable⁺ = Void
 
 data SeqForm : Set where
   Rfoc : Type ⁺ → SeqForm
-  Inv : Conc → SeqForm
+  Inv : Ctx → Conc → SeqForm
   Lfoc : Type ⁻ → Conc → SeqForm
 
 data Exp (א Γ : Ctx) : SeqForm → Set
@@ -49,8 +55,8 @@ data Exp (א Γ : Ctx) : SeqForm → Set
 Value : (א Γ : Ctx) → Type ⁺ → Set
 Value א Γ A = Exp א Γ (Rfoc A)
 
-Term : (א Γ : Ctx) → Conc → Set
-Term א Γ U = Exp א Γ (Inv U)
+Term : (א Γ : Ctx) → Ctx → Conc → Set
+Term א Γ Ω U = Exp א Γ (Inv Ω U)
 
 Spine : (א Γ : Ctx) → Type ⁻ → Conc → Set
 Spine א Γ A U = Exp א Γ (Lfoc A U)
@@ -65,7 +71,7 @@ data Exp א Γ where
     (x : (a Q ⁺) ∈ Γ)
     → Value א Γ (a Q ⁺) 
   ↓R : ∀{A}
-    (N : Term א Γ (Reg A))
+    (N : Term א Γ [] (Reg A))
     → Value א Γ (↓ A)
   ∨R₁ : ∀{A B}
     (V : Value א Γ A)
@@ -77,28 +83,29 @@ data Exp א Γ where
 
   -- Terms
   ↓L : ∀{A U} 
-    (pf₁ : U stable)
+    (pf⁻ : U stable⁻)
     (x : (↓ A) ∈ Γ)
     (Sp : Spine א Γ A U)
-    → Term א Γ U
-  ⊥L : ∀{U}
-    (x : ⊥ ∈ Γ)
-    → Term א Γ U
-  ∨L : ∀{A B U}
-    (x : A ∨ B ∈ Γ)
-    (N₁ : Term א (A :: Γ) U)
-    (N₂ : Term א (B :: Γ) U)
-    → Term א Γ U
-  ⊤L : ∀{U}
-    (x : ⊤ ∈ Γ)
-    (N : Term א Γ U)
-    → Term א Γ U
+    → Term א Γ [] U
+  ⊥L : ∀{U Ω}
+    → Term א Γ (⊥ :: Ω) U
+  ∨L : ∀{A B Ω U}
+    (N₁ : Term א Γ (A :: Ω) U)
+    (N₂ : Term א Γ (B :: Ω) U)
+    → Term א Γ (A ∨ B :: Ω) U
+  ⊤L : ∀{U Ω}
+    (N : Term א Γ Ω U)
+    → Term א Γ (⊤ :: Ω) U
   ↑R : ∀{A} 
     (V : Value א Γ A)
-    → Term א Γ (Reg (↑ A))
-  ⊃R : ∀{A B} 
-    (N : Term א (A :: Γ) (Reg B))
-    → Term א Γ (Reg (A ⊃ B))
+    → Term א Γ [] (Reg (↑ A))
+  ⊃R : ∀{A B Ω} 
+    (N : Term א Γ (A :: Ω) (Reg B))
+    → Term א Γ Ω (Reg (A ⊃ B))
+  L : ∀{A Ω U}
+    (pf⁺ : A stable⁺)
+    (N : Term א (A :: Γ) Ω U)
+    → Term א Γ (A :: Ω) U
 
   -- Spines
   hyp⁻ : ∀{A}
@@ -106,7 +113,7 @@ data Exp א Γ where
   pL : ∀{Q}
     → Spine א Γ (a Q ⁻) (Reg (a Q ⁻))
   ↑L : ∀{A U}
-    (N : Term א (A :: Γ) U)
+    (N : Term א Γ [ A ] U)
     → Spine א Γ (↑ A) U
   ⊃L : ∀{A B U}
     (V : Value א Γ A)
@@ -126,17 +133,16 @@ wk' ρ θ (∨R₂ V) = ∨R₂ (wk' ρ θ V)
 wk' ρ θ ⊤R = ⊤R
 
 wk' ρ θ (↓L pf₁ x Sp) = ↓L pf₁ (θ x) (wk' ρ θ Sp)
-wk' ρ θ (⊥L x) = ⊥L (θ x)
-wk' ρ θ (∨L x N₁ N₂) = 
-  ∨L (θ x) (wk' ρ (LIST.SET.sub-cons-congr θ) N₁) 
-    (wk' ρ (LIST.SET.sub-cons-congr θ) N₂)
-wk' ρ θ (⊤L x N) = ⊤L (θ x) (wk' ρ θ N)
+wk' ρ θ ⊥L = ⊥L
+wk' ρ θ (∨L N₁ N₂) = ∨L (wk' ρ θ N₁) (wk' ρ θ N₂)
+wk' ρ θ (⊤L N) = ⊤L (wk' ρ θ N)
 wk' ρ θ (↑R V) = ↑R (wk' ρ θ V)
-wk' ρ θ (⊃R N) = ⊃R (wk' ρ (LIST.SET.sub-cons-congr θ) N)
+wk' ρ θ (⊃R N) = ⊃R (wk' ρ θ N)
+wk' ρ θ (L pf N) = L pf (wk' ρ (LIST.SET.sub-cons-congr θ) N)
 
 wk' ρ θ hyp⁻ = hyp⁻
 wk' ρ θ pL = pL
-wk' ρ θ (↑L N) = ↑L (wk' ρ (LIST.SET.sub-cons-congr θ) N)
+wk' ρ θ (↑L N) = ↑L (wk' ρ θ N)
 wk' ρ θ (⊃L V Sp) = ⊃L (wk' ρ θ V) (wk' ρ θ Sp)
 
 wk : ∀{א Γ Γ' Form} → Γ ⊆ Γ' → Exp א Γ Form → Exp א Γ' Form

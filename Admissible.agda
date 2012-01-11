@@ -45,6 +45,42 @@ u∨L N₁ N₂ =
   Nid = ∨L (expand⁺ (↑R (∨R₁ (↓R (↑R (hyp⁺ Z)))))) 
           (expand⁺ (↑R (∨R₂ (↓R (↑R (hyp⁺ Z)))))) 
 
+-- Positive conjunction
+
+u⊤⁺R : ∀{Γ} → Γ ⊢ ↑ ⊤⁺
+u⊤⁺R = ↑R ⊤⁺R
+
+u⊤⁺L : ∀{Γ C} → Γ ⊢ C → (↓↑ ⊤⁺ :: Γ) ⊢ C
+u⊤⁺L N₁ = un↑↓ (↓L <> Z (↑L (⊤⁺L (↑R (↓R (wk LIST.SET.sub-wken N₁)))))) 
+
+u∧⁺R : ∀{Γ A B} → Γ ⊢ ↑ A → Γ ⊢ ↑ B → Γ ⊢ ↑ (A ∧⁺ B)
+u∧⁺R N₁ N₂ = 
+  rsubstN [] N₂
+    (subst⁻ <> (wk LIST.SET.sub-wken N₁) 
+      (↑L (expand⁺ (↓L <> Z (↑L (expand⁺ (↑R (∧⁺R (hyp⁺ (S Z)) (hyp⁺ Z)))))))))
+
+u∧⁺L : ∀{Γ A B C} → (↓↑ B :: ↓↑ A :: Γ) ⊢ C → (↓↑ (A ∧⁺ B) :: Γ) ⊢ C
+u∧⁺L N₁ = 
+  un↑↓ (↓L <> Z (↑L (lsubstN (_ :: []) <> Nid 
+                      (∧⁺L (L <> (L <> (↑R (↓R N₁))))))))
+ where 
+  Nid = ∧⁺L (expand⁺
+              (expand⁺ (↑R (∧⁺R (↓R (↑R (hyp⁺ (S Z)))) (↓R (↑R (hyp⁺ Z)))))))
+
+-- Implication
+
+u⊃R : ∀{Γ A B} → (↓↑ A :: Γ) ⊢ B → Γ ⊢ (A ⊃ B)
+u⊃R N₁ = rsubstN [] (⊃R (L <> N₁)) 
+           (⊃R (expand⁺ (expand⁻ (↓L <> Z (⊃L (↓R (↑R (hyp⁺ Z))) hyp⁻)))))
+
+u⊃L : ∀{Γ A B C} → Γ ⊢ ↑ A → (↓ B :: Γ) ⊢ C → (↓ (A ⊃ B) :: Γ) ⊢ C
+u⊃L N₁ N₂ = un↑↓ (subst⁻ <> (subst⁻ <> (wk LIST.SET.sub-wken N₁) (↑L Nid))
+                   (↑L (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₂))))))
+ where
+  Nid = expand⁺ (↑R (↓R (expand⁻ (↓L <> Z (⊃L (hyp⁺ Z) hyp⁻)))))
+
+-- Negative conjunction
+
 -- Shift removal
 
 u↑↓L : ∀{Γ A C} → ((↓ A) :: Γ) ⊢ C → (↓ (↑ (↓ A)) :: Γ) ⊢ C

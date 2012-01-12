@@ -1,5 +1,5 @@
 This is a version of the 
-[http://arxiv.org/abs/1109.6273 structural focalization] development, which I 
+[[http://arxiv.org/abs/1109.6273 structural focalization]] development, which I 
 had previously played out [http://twelf.org/wiki/Focusing in Twelf], played
 out in Agda. Here are the parts.
 

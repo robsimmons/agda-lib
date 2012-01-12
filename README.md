@@ -1,6 +1,6 @@
 This is a version of the 
-[[http://arxiv.org/abs/1109.6273 structural focalization]] development, which I 
-had previously played out [http://twelf.org/wiki/Focusing in Twelf], played
+(structural focalization)[http://arxiv.org/abs/1109.6273] development, which I 
+had previously played out (in Twelf)[http://twelf.org/wiki/Focusing], played
 out in Agda. Here are the parts.
 
  - Foc.agda - focused sequent calculus, weakening (Section 2)

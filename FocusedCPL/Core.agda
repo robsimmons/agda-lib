@@ -19,13 +19,29 @@ data Polarity : Set where
 data Type : Polarity → Set where
   a : (Q : String) (⁼ : Polarity) → Type ⁼
   --
-  ↑ : (A : Type ⁺) → Type ⁻
+  ↓ : (A : Type ⁻) → Type ⁺
   ⊥ : Type ⁺
   ◇ : (A : Type ⁻) → Type ⁺
   □ : (A : Type ⁻) → Type ⁺
   --
-  ↓ : (A : Type ⁻) → Type ⁺
+  ↑ : (A : Type ⁺) → Type ⁻
   _⊃_ : (A : Type ⁺) (B : Type ⁻) → Type ⁻
+
+data Conc : Set where
+  Reg : (A : Type ⁻) → Conc
+  -- XXX IDENTITY
+
+_stable⁻ : Conc → Set
+Reg (a Q .⁻) stable⁻ = Unit
+Reg (↑ A) stable⁻ = Unit
+Reg (A ⊃ B) stable⁻ = Void
+
+_stable⁺ : Type ⁺ → Set
+a Q .⁺ stable⁺ = Unit
+↓ A stable⁺ = Unit
+⊥ stable⁺ = Void
+◇ A stable⁺ = Void
+□ A stable⁺ = Void
 
 module CORE (UWF : UpwardsWellFounded) where
   open TRANS-UWF UWF
@@ -42,22 +58,6 @@ module CORE (UWF : UpwardsWellFounded) where
       (w : W)
       (ω : wc ≺* w)
       → ICtx wc
-
-  data Conc : Set where
-    Reg : (A : Type ⁻) → Conc
-    -- XXX IDENTITY
-
-  _stable⁻ : Conc → Set
-  Reg (a Q .⁻) stable⁻ = Unit
-  Reg (↑ A) stable⁻ = Unit
-  Reg (A ⊃ B) stable⁻ = Void
-
-  _stable⁺ : Type ⁺ → Set
-  a Q .⁺ stable⁺ = Unit
-  ↓ A stable⁺ = Unit
-  ⊥ stable⁺ = Void
-  ◇ A stable⁺ = Void
-  □ A stable⁺ = Void
 
   -- Sequent calculus
   data SeqForm (wc : W) : Set where 
@@ -113,6 +113,9 @@ module CORE (UWF : UpwardsWellFounded) where
     □L : ∀{A U wh ωh}
       (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg A)) → Term א Γ wc · U)
       → Term א Γ wc (I (□ A) wh ωh) U
+    ↑R : ∀{A}
+      (V₁ : Value א Γ wc A)
+      → Term א Γ wc · (Reg (↑ A))
     ⊃R : ∀{A B ωh}
       (N₁ : Term א Γ wc (I A wc ωh) (Reg B))
       → Term א Γ wc · (Reg (A ⊃ B))
@@ -124,4 +127,7 @@ module CORE (UWF : UpwardsWellFounded) where
     ↑L : ∀{A U wh ωh}
       (N₁ : Term א Γ wc (I A wh ωh) U)
       → Spine א Γ wh (↑ A) wc ωh U
-      
+    ⊃L : ∀{A B U wh ωh}
+      (V₁ : Value א Γ wh A)
+      (Sp₂ : Spine א Γ wh B wc ωh U)
+      → Spine א Γ wh (A ⊃ B) wc ωh U

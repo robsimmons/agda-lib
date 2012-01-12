@@ -1,7 +1,8 @@
 This is a version of the 
 [structural focalization](http://arxiv.org/abs/1109.6273) development, which I 
 had previously played out [in Twelf](http://twelf.org/wiki/Focusing), played
-out in Agda. Here are the parts.
+out in Agda. Here are the parts, which mostly correspond to sections in the
+paper.
 
  - Foc.agda - focused sequent calculus, weakening (Section 2)
  - Cut.agda - cut admissibility (Section 3)

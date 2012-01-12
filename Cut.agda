@@ -24,30 +24,30 @@ subst⁻ : ∀{Γ A C}
   → Term [] Γ [] (Reg C)
 
 rsubstV : ∀{Γ A C} (Γ' : Ctx)
-  → Term [] Γ [] (Reg A)
+  → Term [] (Γ' ++ Γ) [] (Reg A)
   → Value [] (Γ' ++ (↓ A) :: Γ) C
   → Value [] (Γ' ++ Γ) C
 
 rsubstN : ∀{Γ A Ω C} (Γ' : Ctx)
-  → Term [] Γ [] (Reg A)
+  → Term [] (Γ' ++ Γ) [] (Reg A)
   → Term [] (Γ' ++ (↓ A) :: Γ) Ω (Reg C)
   → Term [] (Γ' ++ Γ) Ω (Reg C)
 
 rsubstSp : ∀{Γ A B C} (Γ' : Ctx)
-  → Term [] Γ [] (Reg A)
+  → Term [] (Γ' ++ Γ) [] (Reg A)
   → Spine [] (Γ' ++ (↓ A) :: Γ) B (Reg C)
   → Spine [] (Γ' ++ Γ) B (Reg C)
 
 lsubstN : ∀{Γ C Ω A} (Γ' : Ctx)
   → (Reg C) stable⁻
   → Term [] (Γ' ++ Γ) Ω (Reg (↑ A))
-  → Term [] Γ [ A ] (Reg C)
+  → Term [] (Γ' ++ Γ) [ A ] (Reg C)
   → Term [] (Γ' ++ Γ) Ω (Reg C)
 
 lsubstSp : ∀{Γ C B A} (Γ' : Ctx)
   → (Reg C) stable⁻
   → Spine [] (Γ' ++ Γ) B (Reg (↑ A))
-  → Term [] Γ [ A ] (Reg C)
+  → Term [] (Γ' ++ Γ) [ A ] (Reg C)
   → Spine [] (Γ' ++ Γ) B (Reg C)
 
 subst⁺ (hyp⁺ ()) N
@@ -83,10 +83,10 @@ rsubstV Γ' N (∨R₂ V) = ∨R₂ (rsubstV Γ' N V)
 rsubstV Γ' N ⊤⁺R = ⊤⁺R
 rsubstV Γ' N (∧⁺R V₁ V₂) = ∧⁺R (rsubstV Γ' N V₁) (rsubstV Γ' N V₂)
 
-rsubstN Γ' N (L pf⁺ N') = L pf⁺ (rsubstN (_ :: Γ') N N')
+rsubstN Γ' N (L pf⁺ N') = L pf⁺ (rsubstN (_ :: Γ') (wk LIST.SET.sub-wken N) N')
 rsubstN Γ' N (↓L pf⁻ x Sp) with fromctx Γ' x
 ... | Inl Refl = 
-  subst⁻ pf⁻ (wk (LIST.SET.sub-appendl _ Γ') N) (rsubstSp Γ' N Sp)
+  subst⁻ pf⁻ N (rsubstSp Γ' N Sp)
 ... | Inr x' = ↓L pf⁻ x' (rsubstSp Γ' N Sp)
 rsubstN Γ' N ⊥L = ⊥L
 rsubstN Γ' N (∨L N₁ N₂) = ∨L (rsubstN Γ' N N₁) (rsubstN Γ' N N₂)
@@ -103,13 +103,14 @@ rsubstSp Γ' N (⊃L V Sp) = ⊃L (rsubstV Γ' N V) (rsubstSp Γ' N Sp)
 rsubstSp Γ' N (∧⁻L₁ Sp) = ∧⁻L₁ (rsubstSp Γ' N Sp)
 rsubstSp Γ' N (∧⁻L₂ Sp) = ∧⁻L₂ (rsubstSp Γ' N Sp)
 
-lsubstN Γ' pf (L pf⁺ N') N = L pf⁺ (lsubstN (_ :: Γ') pf N' N)
+lsubstN Γ' pf (L pf⁺ N') N = 
+  L pf⁺ (lsubstN (_ :: Γ') pf N' (wk LIST.SET.sub-wken N))
 lsubstN Γ' pf (↓L pf⁻ x Sp) N = ↓L pf x (lsubstSp Γ' pf Sp N)
 lsubstN Γ' pf ⊥L N = ⊥L
 lsubstN Γ' pf (∨L N₁ N₂) N = ∨L (lsubstN Γ' pf N₁ N) (lsubstN Γ' pf N₂ N)
 lsubstN Γ' pf (⊤⁺L N') N = ⊤⁺L (lsubstN Γ' pf N' N)
 lsubstN Γ' pf (∧⁺L N') N = ∧⁺L (lsubstN Γ' pf N' N)
-lsubstN Γ' pf (↑R V) N = subst⁺ V (wk (LIST.SET.sub-appendl _ Γ') N)
+lsubstN Γ' pf (↑R V) N = subst⁺ V N
 
 lsubstSp Γ' pf (↑L N') N = ↑L (lsubstN Γ' pf N' N)
 lsubstSp Γ' pf (⊃L V Sp) N = ⊃L V (lsubstSp Γ' pf Sp N)

@@ -2,6 +2,8 @@
 open import Prelude hiding (⊥; ⊤)
 open import Foc hiding (Ctx; wk') renaming (wk to wk')
 open import Admissible hiding (_⊢_)
+import Identity
+import Cut
 
 module Unfoc where
 
@@ -226,11 +228,11 @@ atom-lem Refl = Refl
 
 foc : ∀{A Γ} → Γ stableΓ → (eraseΓ Γ) ⊢ (eraseA A) → Term [] Γ [] (Reg A) 
 
-foc {a Q .⁻} pf (init x) with unerasex pf x 
+foc {a Q .⁻} {Γ} pf (init x) with unerasex pf x 
 ... | Inr (_ , x' , ())
 ... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl)
  where
-  lem : ∀{B Γ} → (a Q ⁻ ≡ eraseA B) 
+  lem : ∀{B} → (a Q ⁻ ≡ eraseA B) 
     → Term [] (↓ B :: Γ) [] (Reg (a Q ⁻))
   lem {a .Q .⁻} Refl = uinit⁻
   lem {↑ (a Q' .⁺)} refl' with atom-lem refl'
@@ -244,11 +246,11 @@ foc {a Q .⁻} pf (init x) with unerasex pf x
   lem {⊤⁻} ()
   lem {A ∧⁻ B} ()
 
-foc {↑ (a Q .⁺)} pf (init x) with unerasex pf x
+foc {↑ (a Q .⁺)} {Γ} pf (init x) with unerasex pf x
 ... | Inr (._ , x' , Refl) = uinit⁺₂ x'
 ... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl)
  where
-  lem : ∀{B Γ} → (a Q ⁺ ≡ eraseA B)
+  lem : ∀{B} → (a Q ⁺ ≡ eraseA B)
     → Term [] (↓ B :: Γ) [] (Reg (↑ (a Q ⁺)))
   lem {a Q' .⁻} refl' with atom-lem refl'
   ... | ()
@@ -264,11 +266,11 @@ foc {↑ (a Q .⁺)} pf (init x) with unerasex pf x
 
 foc {↑ (↓ A)} pf D = u↑↓R (foc {A} pf D) 
 
-foc {A} pf (⊥L x) with unerasex pf x
+foc {C} {Γ} pf (⊥L x) with unerasex pf x
 ... | Inr (_ , x' , ()) 
 ... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl)
  where
-  lem : ∀{B Γ C} → (⊥ ≡ eraseA B)
+  lem : ∀{B} → (⊥ ≡ eraseA B)
     → Term [] (↓ B :: Γ) [] (Reg C)
   lem {a Q .⁻} ()
   lem {↑ (a Q .⁺)} ()
@@ -289,7 +291,7 @@ foc {C} {Γ} pf (∨L x D₁ D₂) with unerasex pf x
 ... | Inr (_ , x' , ())
 ... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl D₁ D₂)
  where
-  lem : ∀{B A₁ A₂ C} → (A₁ ∨ A₂ ≡ eraseA B)
+  lem : ∀{B A₁ A₂} → (A₁ ∨ A₂ ≡ eraseA B)
     → (A₁ :: eraseΓ Γ) ⊢ eraseA C
     → (A₂ :: eraseΓ Γ) ⊢ eraseA C
     → Term [] (↓ B :: Γ) [] (Reg C)
@@ -307,17 +309,139 @@ foc {C} {Γ} pf (∨L x D₁ D₂) with unerasex pf x
 
 foc {↑ ⊤⁺} pf ⊤R = u⊤⁺R
 
-foc {⊤⁻} pf ⊤R = {!!}
+foc {⊤⁻} pf ⊤R = u⊤⁻R
 
 foc {↑ (A ∧⁺ B)} pf (∧R D₁ D₂) = u∧⁺R (foc pf D₁) (foc pf D₂)
 
-foc {A ∧⁻ B} pf (∧R D₁ D₂) = {!!}
+foc {A ∧⁻ B} pf (∧R D₁ D₂) = ∧⁻R (foc pf D₁) (foc pf D₂)
 
-foc {A} pf (∧L₁ x D) = {!!}
+foc {C} {Γ} pf (∧L₁ x D) with unerasex pf x
+... | Inr (_ , x' , ())
+... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl D)
+ where
+  lem : ∀{B A₁ A₂} → (A₁ ∧ A₂ ≡ eraseA B)
+    → (A₁ :: eraseΓ Γ) ⊢ eraseA C
+    → Term [] (↓ B :: Γ) [] (Reg C)
+  lem {a Q .⁻} () D
+  lem {↑ (a Q .⁺)} () D
+  lem {↑ (↓ A)} refl' D = u↑↓L (lem refl' D)
+  lem {↑ ⊥} () D 
+  lem {↑ (A ∨ B)} () D
+  lem {↑ ⊤⁺} () D 
+  lem {↑ (A ∧⁺ B)} Refl D = 
+    u∧⁺L (wk' LIST.SET.sub-wken (foc (LIST.ALL.cons <> pf) D))
+  lem {A ⊃ B} () D
+  lem {⊤⁻} () D
+  lem {A ∧⁻ B} Refl D = u∧⁻L₁ (foc (LIST.ALL.cons <> pf) D)
 
-foc {A} pf (∧L₂ x D) = {!!}
+foc {C} {Γ} pf (∧L₂ x D) with unerasex pf x
+... | Inr (_ , x' , ())
+... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl D)
+ where
+  lem : ∀{B A₁ A₂} → (A₁ ∧ A₂ ≡ eraseA B)
+    → (A₂ :: eraseΓ Γ) ⊢ eraseA C
+    → Term [] (↓ B :: Γ) [] (Reg C)
+  lem {a Q .⁻} () D
+  lem {↑ (a Q .⁺)} () D
+  lem {↑ (↓ A)} refl' D = u↑↓L (lem refl' D)
+  lem {↑ ⊥} () D 
+  lem {↑ (A ∨ B)} () D
+  lem {↑ ⊤⁺} () D 
+  lem {↑ (A ∧⁺ B)} Refl D = 
+    u∧⁺L (wk' LIST.SET.sub-wkex (foc (LIST.ALL.cons <> pf) D))
+  lem {A ⊃ B} () D
+  lem {⊤⁻} () D
+  lem {A ∧⁻ B} Refl D = u∧⁻L₂ (foc (LIST.ALL.cons <> pf) D)
 
 foc {A ⊃ B} pf (⊃R D) = u⊃R (foc (LIST.ALL.cons <> pf) D)
 
+foc {C} {Γ} pf (⊃L x D₁ D₂) with unerasex pf x
+... | Inr (_ , x' , ())
+... | Inl (_ , x' , refl) = wk' (LIST.SET.sub-cntr x') (lem refl D₁ D₂)
+ where
+  lem : ∀{B A₁ A₂} → (A₁ ⊃ A₂ ≡ eraseA B)
+    → eraseΓ Γ ⊢ A₁
+    → (A₂ :: eraseΓ Γ) ⊢ eraseA C
+    → Term [] (↓ B :: Γ) [] (Reg C)
+  lem {a Q .⁻} () D₁ D₂
+  lem {↑ (a Q .⁺)} () D₁ D₂
+  lem {↑ (↓ A)} refl' D₁ D₂ = u↑↓L (lem refl' D₁ D₂)
+  lem {↑ ⊥} () D₁ D₂ 
+  lem {↑ (A ∨ B)} () D₁ D₂
+  lem {↑ ⊤⁺} () D₁ D₂ 
+  lem {↑ (A ∧⁺ B)} () D₁ D₂
+  lem {A ⊃ B} Refl D₁ D₂ = u⊃L (foc pf D₁) (foc (LIST.ALL.cons <> pf) D₂)
+  lem {⊤⁻} () D₁ D₂ 
+  lem {A ∧⁻ B} () D₁ D₂
 
-foc {A} pf (⊃L x D₁ D₂) = {!!}
+
+-- Partial inverse of erasure
+
+placeA : Propo → Type ⁻
+placeA (a Q ⁺) = ↑ (a Q ⁺)
+placeA (a Q ⁻) = a Q ⁻
+placeA ⊥ = ↑ ⊥
+placeA (A ∨ B) = ↑ (↓ (placeA A) ∨ ↓ (placeA B))
+placeA ⊤ = ⊤⁻
+placeA (A ∧ B) = placeA A ∧⁻ placeA B
+placeA (A ⊃ B) = ↓ (placeA A) ⊃ placeA B 
+
+eqA : (A : Propo) → A ≡ eraseA (placeA A)
+eqA (a Q ⁺) = refl
+eqA (a Q ⁻) = refl
+eqA ⊥ = refl
+eqA (A ∨ B) = lem (eqA A) (eqA B)
+ where
+  lem : ∀{A A' B B'} → A ≡ A' → B ≡ B' → Id {_} {Propo} (A ∨ B) (A' ∨ B')
+  lem Refl Refl = refl
+eqA ⊤ = refl
+eqA (A ∧ B) = lem (eqA A) (eqA B)
+ where
+  lem : ∀{A A' B B'} → A ≡ A' → B ≡ B' → Id {_} {Propo} (A ∧ B) (A' ∧ B')
+  lem Refl Refl = refl
+eqA (A ⊃ B) = lem (eqA A) (eqA B)
+ where
+  lem : ∀{A A' B B'} → A ≡ A' → B ≡ B' → Id {_} {Propo} (A ⊃ B) (A' ⊃ B')
+  lem Refl Refl = refl
+
+placeΓ : Ctx → List (Type ⁺)
+placeΓ [] = []
+placeΓ (A :: Γ) = ↓ (placeA A) :: placeΓ Γ
+
+eqΓ : (Γ : Ctx) → Γ ≡ eraseΓ (placeΓ Γ)
+eqΓ [] = refl
+eqΓ (A :: Γ) = lem (eqA A) (eqΓ Γ)
+ where
+  lem : ∀{A A' Γ Γ'} → A ≡ A' → Γ ≡ Γ' → Id {_} {Ctx} (A :: Γ) (A' :: Γ')
+  lem Refl Refl = refl
+
+place-stable : (Γ : Ctx) → (placeΓ Γ) stableΓ
+place-stable [] ()
+place-stable (A :: Γ) Z = <>
+place-stable (A :: Γ) (S x) = place-stable Γ x
+
+
+-- Corollaries of focalization
+
+convert : ∀{A A' Γ Γ'} → Γ ≡ Γ' → A ≡ A' → Γ ⊢ A → Γ' ⊢ A'
+convert Refl Refl D = D
+
+cut : ∀{A C Γ} → Γ ⊢ A → (A :: Γ) ⊢ C → Γ ⊢ C
+cut {A} {C} {Γ} D E = convert (symm (eqΓ Γ)) (symm (eqA C)) F
+ where
+  N : Term [] (placeΓ Γ) [] (Reg (placeA C))
+  N = Cut.rsubstN [] 
+        (foc (place-stable Γ) (convert (eqΓ Γ) (eqA A) D))
+        (foc (place-stable (A :: Γ)) (convert (eqΓ (A :: Γ)) (eqA C) E))
+ 
+  F : eraseΓ (placeΓ Γ) ⊢ eraseA (placeA C)
+  F = denil (defocN N)
+
+identity : ∀{A Γ} → (A :: Γ) ⊢ A
+identity {A} {Γ} = convert (symm (eqΓ (A :: Γ))) (symm (eqA A)) D
+ where
+  N : Term [] (placeΓ (A :: Γ)) [] (Reg (placeA A))
+  N = Identity.expand⁻ (↓L <> Z hyp⁻)
+
+  D : eraseΓ (placeΓ (A :: Γ)) ⊢ eraseA (placeA A)
+  D = denil (defocN N)

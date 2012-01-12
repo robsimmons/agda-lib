@@ -81,6 +81,18 @@ u⊃L N₁ N₂ = un↑↓ (subst⁻ <> (subst⁻ <> (wk LIST.SET.sub-wken N₁)
 
 -- Negative conjunction
 
+u⊤⁻R : ∀{Γ} → Γ ⊢ ⊤⁻
+u⊤⁻R = ⊤⁻R
+
+u∧⁻R : ∀{Γ A B} → Γ ⊢ A → Γ ⊢ B → Γ ⊢ (A ∧⁻ B)
+u∧⁻R N₁ N₂ = ∧⁻R N₁ N₂
+
+u∧⁻L₁ : ∀{Γ A B C} → (↓ A :: Γ) ⊢ C → (↓ (A ∧⁻ B) :: Γ) ⊢ C
+u∧⁻L₁ N₁ = rsubstN [] (expand⁻ (↓L <> Z (∧⁻L₁ hyp⁻))) (wk LIST.SET.sub-wkex N₁)
+
+u∧⁻L₂ : ∀{Γ A B C} → (↓ B :: Γ) ⊢ C → (↓ (A ∧⁻ B) :: Γ) ⊢ C
+u∧⁻L₂ N₂ = rsubstN [] (expand⁻ (↓L <> Z (∧⁻L₂ hyp⁻))) (wk LIST.SET.sub-wkex N₂)
+
 -- Shift removal
 
 u↑↓L : ∀{Γ A C} → ((↓ A) :: Γ) ⊢ C → (↓ (↑ (↓ A)) :: Γ) ⊢ C

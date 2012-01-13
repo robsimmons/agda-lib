@@ -63,6 +63,7 @@ module CORE (UWF : UpwardsWellFounded) where
     Rfoc : (A : Type ⁺) → SeqForm wc
     Inv : (Ω : ICtx) (U : Conc) → SeqForm wc
     Lfoc : (w : W) (A : Type ⁻) (U : Conc) → SeqForm wc
+    Use : (A : Type ⁻) → SeqForm wc
 
   data Exp (א : FCtx) (Γ : MCtx) (wc : W) : SeqForm wc → Set
 
@@ -74,6 +75,9 @@ module CORE (UWF : UpwardsWellFounded) where
 
   Spine : FCtx → MCtx → (w : W) → Type ⁻ → (wc : W) → Conc → Set
   Spine א Γ w A wc U = Exp א Γ wc (Lfoc w A U) 
+
+  Atomic : FCtx → MCtx → (wc : W) → Type ⁻ → Set
+  Atomic א Γ wc A = Exp א Γ wc (Use A)
 
   data Exp א Γ wc where
 
@@ -121,8 +125,8 @@ module CORE (UWF : UpwardsWellFounded) where
     
     -- Spines
     -- XXX INVERSION
-    pL : ∀{A}
-      → Spine א Γ wc A wc (Reg A)
+    pL : ∀{Q}
+      → Spine א Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
     ↑L : ∀{A U wh}
       (N₁ : Term א Γ wc (I A wh) U)
       → Spine א Γ wh (↑ A) wc U
@@ -130,3 +134,15 @@ module CORE (UWF : UpwardsWellFounded) where
       (V₁ : Value א Γ wh A)
       (Sp₂ : Spine א Γ wh B wc U)
       → Spine א Γ wh (A ⊃ B) wc U
+
+    -- Atomic terms
+    ↓E : ∀{A}
+      (x : ↓ A at wc ∈ Γ)
+      → Atomic א Γ wc A
+    Cut : ∀{A} 
+      (N : Term א Γ wc · (Reg A))
+      → Atomic א Γ wc A
+    ⊃E : ∀{A B}
+      (R : Atomic א Γ wc (A ⊃ B))
+      (V : Value א Γ wc A)
+      → Atomic א Γ wc B

@@ -111,5 +111,10 @@ module SEQUENT-CUT (UWF : UpwardsWellFounded) where
   rsubstN wc ih Γ' N (↑R V₁) = ↑R (rsubstV wc ih Γ' N V₁)
   rsubstN wc ih Γ' N (⊃R N₁) = ⊃R (rsubstN wc ih Γ' N N₁)
 
-  rsubstSp wc ih Γ' N Sp = {!!}
+  rsubstSp wc ih Γ' N pL = pL
+  rsubstSp wc ih Γ' N (↑L N₁) = ↑L (rsubstN wc ih Γ' N N₁)
+  rsubstSp wc ih Γ' N (⊃L {ωh = ≺*≡} V₁ Sp₂) = 
+    ⊃L (rsubstV wc ih Γ' N V₁) (rsubstSp wc ih Γ' N Sp₂)
+  rsubstSp wc ih Γ' N (⊃L {ωh = ≺*+ ωh} V₁ Sp₂) = 
+    ⊃L {! CUT: N V₁!} (rsubstSp wc ih Γ' N Sp₂)
 

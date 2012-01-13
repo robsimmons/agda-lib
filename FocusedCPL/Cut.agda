@@ -1,4 +1,3 @@
--- {-# OPTIONS --no-termination-check #-}
 
 open import Prelude hiding (⊥; [_])
 open import Accessibility.Inductive
@@ -79,14 +78,6 @@ module SEQUENT-CUT (UWF : UpwardsWellFounded) where
     → Spine [] (Γ' ++ Γ) wh B w (Reg (↑ A))
     → Term [] (Γ' ++ Γ) wc (I A w) (Reg C)
     → Spine [] (Γ' ++ Γ) wh B wc (Reg C)
-
-  -- subst⁺ = {!!}
-  -- subst⁻ = {!!}
-  -- rsubstV = {!!}
-  -- rsubstN = {!!}
-  -- rsubstSp = {!!}
-  -- lsubstN = {!!}
-  -- lsubstSp = {!!}  
 
   subst⁺ wc ih ω (pR x) (L pf⁺ N₁) = XXX-HOLE "easy: contraction on N₁"
   subst⁺ wc ih ω (↓R N₁) (L pf⁺ N₁')  = rsubstN wc ih [] N₁ N₁'

@@ -121,8 +121,8 @@ module CORE (UWF : UpwardsWellFounded) where
     
     -- Spines
     -- XXX INVERSION
-    pL : ∀{Q}
-      → Spine א Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
+    pL : ∀{A}
+      → Spine א Γ wc A wc (Reg A)
     ↑L : ∀{A U wh}
       (N₁ : Term א Γ wc (I A wh) U)
       → Spine א Γ wh (↑ A) wc U

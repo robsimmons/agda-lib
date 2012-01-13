@@ -51,30 +51,29 @@ module CORE (UWF : UpwardsWellFounded) where
   FCtx = List Unit -- XXX IDENTITY
   MCtx = IList (Type ⁺)
 
-  data ICtx (wc : W) : Set where
-    · : ICtx wc
+  data ICtx : Set where
+    · : ICtx
     I : 
       (A : Type ⁺)
       (w : W)
-      (ω : wc ≺* w)
-      → ICtx wc
+      → ICtx 
 
   -- Sequent calculus
   data SeqForm (wc : W) : Set where 
     Rfoc : (A : Type ⁺) → SeqForm wc
-    Inv : (Ω : ICtx wc) (U : Conc) → SeqForm wc
-    Lfoc : (w : W) (A : Type ⁻) (U : Conc) (ω : wc ≺* w) → SeqForm wc
+    Inv : (Ω : ICtx) (U : Conc) → SeqForm wc
+    Lfoc : (w : W) (A : Type ⁻) (U : Conc) → SeqForm wc
 
   data Exp (א : FCtx) (Γ : MCtx) (wc : W) : SeqForm wc → Set
 
   Value : FCtx → MCtx → (wc : W) → Type ⁺ → Set
   Value א Γ wc A = Exp א Γ wc (Rfoc A)
 
-  Term : FCtx → MCtx → (wc : W) → ICtx wc → Conc → Set
+  Term : FCtx → MCtx → (wc : W) → ICtx → Conc → Set
   Term א Γ wc Ω U = Exp א Γ wc (Inv Ω U)
 
-  Spine : FCtx → MCtx → (w : W) → Type ⁻ → (wc : W) → wc ≺* w → Conc → Set
-  Spine א Γ w A wc ω U = Exp א Γ wc (Lfoc w A U ω) 
+  Spine : FCtx → MCtx → (w : W) → Type ⁻ → (wc : W) → Conc → Set
+  Spine א Γ w A wc U = Exp א Γ wc (Lfoc w A U) 
 
   data Exp א Γ wc where
 
@@ -95,39 +94,39 @@ module CORE (UWF : UpwardsWellFounded) where
       → Value א Γ wc (□ A)
 
     -- Terms
-    L : ∀{A U wh ωh}
+    L : ∀{A U wh}
       (pf⁺ : A stable⁺)
       (N₁ : Term א (A at wh :: Γ) wc · U)
-      → Term א Γ wc (I A wh ωh) U
+      → Term א Γ wc (I A wh) U
     ↓L : ∀{A U wh}
       (pf⁻ : U stable⁻)
       (ωh : wc ≺* wh)
       (x : ↓ A at wh ∈ Γ)
-      (Sp : Spine א Γ wh A wc ωh U)
+      (Sp : Spine א Γ wh A wc U)
       → Term א Γ wc · U
-    ⊥L : ∀{U wh ωh}
-      → Term א Γ wc (I ⊥ wh ωh) U
-    ◇L : ∀{A U wh ωh}
+    ⊥L : ∀{U wh}
+      → Term א Γ wc (I ⊥ wh) U
+    ◇L : ∀{A U wh}
       (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term א Γ w · (Reg A)) → Term א Γ wc · U)
-      → Term א Γ wc (I (◇ A) wh ωh) U
-    □L : ∀{A U wh ωh}
+      → Term א Γ wc (I (◇ A) wh) U
+    □L : ∀{A U wh}
       (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg A)) → Term א Γ wc · U)
-      → Term א Γ wc (I (□ A) wh ωh) U
+      → Term א Γ wc (I (□ A) wh) U
     ↑R : ∀{A}
       (V₁ : Value א Γ wc A)
       → Term א Γ wc · (Reg (↑ A))
-    ⊃R : ∀{A B ωh}
-      (N₁ : Term א Γ wc (I A wc ωh) (Reg B))
+    ⊃R : ∀{A B}
+      (N₁ : Term א Γ wc (I A wc) (Reg B))
       → Term א Γ wc · (Reg (A ⊃ B))
     
     -- Spines
     -- XXX INVERSION
-    pL : ∀{Q ωh}
-      → Spine א Γ wc (a Q ⁻) wc ωh (Reg (a Q ⁻))
-    ↑L : ∀{A U wh ωh}
-      (N₁ : Term א Γ wc (I A wh ωh) U)
-      → Spine א Γ wh (↑ A) wc ωh U
-    ⊃L : ∀{A B U wh ωh}
+    pL : ∀{Q}
+      → Spine א Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
+    ↑L : ∀{A U wh}
+      (N₁ : Term א Γ wc (I A wh) U)
+      → Spine א Γ wh (↑ A) wc U
+    ⊃L : ∀{A B U wh}
       (V₁ : Value א Γ wh A)
-      (Sp₂ : Spine א Γ wh B wc ωh U)
-      → Spine א Γ wh (A ⊃ B) wc ωh U
+      (Sp₂ : Spine א Γ wh B wc U)
+      → Spine א Γ wh (A ⊃ B) wc U

@@ -70,6 +70,11 @@ module ILIST (UWF : UpwardsWellFounded) where
    ... | Inl iN' = Inl (S iN')
    ... | Inr ω = Inr ω
 
+   ⊆at/sub : ∀{A Γ w}{Δ : IList A}
+      → LIST.SET.Sub Δ Γ
+      → Δ ⊆ Γ at w
+   ⊆at/sub sub iN = Inl (sub iN) 
+
    ⊆at/irrev : ∀{A Γ Δ w w'}{x : A} 
       → w ⊀ w' 
       → Δ ⊆ Γ at w 
@@ -148,6 +153,17 @@ module ILIST (UWF : UpwardsWellFounded) where
       → Δ ⊆ ((x at w) :: Γ) to w
    ⊆to/wken (st sub sub≺) = 
       st (⊆at/wken sub) (λ ω' → ⊆at/irrev (≺+⊀ ω') (sub≺ ω'))
+
+   ⊆to/equiv : ∀{A Γ w}{Δ : IList A}
+      → LIST.SET.Sub Δ Γ
+      → LIST.SET.Sub Γ Δ
+      → Δ ⊆ Γ to w
+   ⊆to/equiv sub1 sub2 = st (⊆at/sub sub1) (λ x → ⊆at/sub sub2)
+
+   ⊆to/cntr : ∀{A Γ w w'}{x : A}
+      → (x at w) ∈ Γ
+      → ((x at w) :: Γ) ⊆ Γ to w'
+   ⊆to/cntr x = ⊆to/equiv (LIST.SET.sub-cntr x) LIST.SET.sub-wken
 
    ⊆to/stenirrev : ∀{A Γ Δ w w'}{x : A}
       → w ⊀ w'

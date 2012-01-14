@@ -98,7 +98,7 @@ module SEQUENT-CUT (wc : W) (ih : (wc' : W) → wc ≺+ wc' → P wc') where
   lsubstN : PlsubstN wc
   lsubstSp : PlsubstSp wc
 
-  subst⁺ ω (pR x) (L pf⁺ N₁) = wkN <> {!x!} · N₁
+  subst⁺ ω (pR x) (L pf⁺ N₁) = wkN <> (⊆to/cntr x) · N₁
   subst⁺ ω (↓R N₁) (L pf⁺ N₁')  = rsubstN [] N₁ N₁' ·
   subst⁺ ω (◇R wh N₁) (L () N₁')
   subst⁺ ω (◇R wh N₁) (◇L N₁') = N₁' wh N₁

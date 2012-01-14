@@ -78,9 +78,6 @@ module SEQUENT (UWF : UpwardsWellFounded) where
   Spine : FCtx → MCtx → (w : W) → Type ⁻ → (wc : W) → Conc → Set
   Spine א Γ w A wc U = Exp א Γ wc (Lfoc w A U) 
 
-  Atomic : FCtx → MCtx → (wc : W) → Type ⁻ → Set
-  Atomic א Γ wc A = Exp א Γ wc (Use A)
-
   data Exp א Γ wc where
 
     -- Values
@@ -137,15 +134,4 @@ module SEQUENT (UWF : UpwardsWellFounded) where
       (Sp₂ : Spine א Γ wh B wc U)
       → Spine א Γ wh (A ⊃ B) wc U
 
-    -- Atomic terms
-    ↓E : ∀{A}
-      (x : ↓ A at wc ∈ Γ)
-      → Atomic א Γ wc A
-    Cut : ∀{A} 
-      (N : Term א Γ wc · (Reg A))
-      → Atomic א Γ wc A
-    ⊃E : ∀{A B}
-      (R : Atomic א Γ wc (A ⊃ B))
-      (V : Value א Γ wc A)
-      → Atomic א Γ wc B
 

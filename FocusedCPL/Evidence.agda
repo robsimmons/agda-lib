@@ -10,7 +10,21 @@ module EVIDENCE (UWF : UpwardsWellFounded) where
 
   open TRANS-UWF UWF
   open ILIST UWF
-  open CORE UWF
+  open SEQUENT UWF
+
+  data Atomic (א : FCtx) (Γ : MCtx) (wc : W) : Type ⁻ → Set where
+
+    ↓E : ∀{A}
+      (x : ↓ A at wc ∈ Γ)
+      → Atomic א Γ wc A
+    Cut : ∀{A} 
+      (N : Term א Γ wc · (Reg A))
+      → Atomic א Γ wc A
+    ⊃E : ∀{A B}
+      (R : Atomic א Γ wc (A ⊃ B))
+      (V : Value א Γ wc A)
+      → Atomic א Γ wc B
+
 
   data EvidenceA (Γ : MCtx) (wc : W) : Type ⁻ → W → Set where
     E≡ : ∀{A} → EvidenceA Γ wc A wc

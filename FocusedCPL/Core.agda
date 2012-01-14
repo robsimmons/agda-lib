@@ -12,6 +12,8 @@ open import Accessibility.IndexedList
 
 module FocusedCPL.Core where
 
+-- Types
+
 data Polarity : Set where
   ⁻ : Polarity
   ⁺ : Polarity
@@ -43,7 +45,7 @@ a Q .⁺ stable⁺ = Unit
 ◇ A stable⁺ = Void
 □ A stable⁺ = Void
 
-module CORE (UWF : UpwardsWellFounded) where
+module SEQUENT (UWF : UpwardsWellFounded) where
   open TRANS-UWF UWF
   open ILIST UWF
 
@@ -90,7 +92,7 @@ module CORE (UWF : UpwardsWellFounded) where
       (N₁ : Term א Γ wc · (Reg A))
       → Value א Γ wc (↓ A)
     ◇R : ∀{A w}
-      (wh : wc ≺ w)
+      (ω : wc ≺ w)
       (N₁ : Term א Γ w · (Reg A))
       → Value א Γ wc (◇ A)
     □R : ∀{A}
@@ -146,3 +148,4 @@ module CORE (UWF : UpwardsWellFounded) where
       (R : Atomic א Γ wc (A ⊃ B))
       (V : Value א Γ wc A)
       → Atomic א Γ wc B
+

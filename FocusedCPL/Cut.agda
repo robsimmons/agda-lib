@@ -1,4 +1,4 @@
--- {-# OPTIONS --no-termination-check #-}
+{-# OPTIONS --no-termination-check #-}
 
 open import Prelude hiding (⊥; [_])
 open import Accessibility.Inductive
@@ -25,14 +25,7 @@ module SEQUENT-CUT (UWF : UpwardsWellFounded) where
   ... | Inl Refl = Inl Refl
   ... | Inr x' = Inr (S x')  
 
-  Evidence : MCtx → MCtx → Set
-  Evidence Γ Γ' = 
-    LIST.All (λ Item → Term [] Γ (prjw Item) · (Reg (↑ (prjx Item)))) Γ'
-
   postulate XXX-HOLE : {A : Set} → String → A
-
-  P : W → Set
-  P _ = Unit
 
   subst⁺ : (wc : W) → ((wc' : W) → wc ≺+ wc' → P wc') → ∀{Γ w A C}
     → wc ≺* w
@@ -101,14 +94,15 @@ module SEQUENT-CUT (UWF : UpwardsWellFounded) where
   subst⁻ wc ih pf ω (↑R V₁) (↑L N₁) = subst⁺ wc ih ω V₁ N₁
   subst⁻ wc ih pf ω (⊃R N₁) (⊃L V₁ Sp₂) with ω
   ... | ≺*≡ = subst⁻ wc ih pf ω (subst⁺ wc ih ω V₁ N₁) Sp₂
-  ... | ≺*+ ω' = subst⁻ wc ih pf ω (XXX-HOLE "RCUT: V₁ N₁") Sp₂ 
+  ... | ≺*+ ω' = subst⁻ wc ih pf ω (P.subst⁺ (ih _ ω') V₁ N₁) Sp₂ 
 
   rsubstV wc ih Γ' N (pR x) with fromctx Γ' x
   ... | Inl ()
   ... | Inr x' = pR x'
   rsubstV wc ih Γ' N (↓R N₁) = ↓R (rsubstN wc ih Γ' N N₁ ·)
-  rsubstV wc ih Γ' N (CORE.◇R wh N₁) = ◇R wh (XXX-HOLE "RCUT: N N₁")
-  rsubstV wc ih Γ' N (CORE.□R N₁) = □R λ ω' → XXX-HOLE "RCUT: N N₁"
+  rsubstV wc ih Γ' N (CORE.◇R ω N₁) = ◇R ω (P.rsubstN (ih _ (≺+0 ω)) Γ' N N₁)
+  rsubstV wc ih Γ' N (CORE.□R N₁) = 
+    □R λ ω' → P.rsubstN (ih _ (≺+0 ω')) Γ' N (N₁ ω')
 
   rsubstN wc ih Γ' N (L pf⁺ N₁) ed = 
     L pf⁺ (rsubstN wc ih (_ :: Γ')
@@ -132,8 +126,8 @@ module SEQUENT-CUT (UWF : UpwardsWellFounded) where
     ⊃L (rsubstV wc ih Γ' N V₁) 
       (rsubstSp wc ih Γ' ωh N Sp₂ (appE ed (rsubstV wc ih Γ' N V₁)))
   ... | ≺*+ ωh'  =
-    ⊃L (XXX-HOLE "CUT: N V₁") 
-      (rsubstSp wc ih Γ' ωh N Sp₂ (appE ed (XXX-HOLE "CUT: N V₁")))
+    ⊃L (P.rsubstV (ih _ ωh') Γ' N V₁)
+      (rsubstSp wc ih Γ' ωh N Sp₂ (appE ed (P.rsubstV (ih _ ωh') Γ' N V₁)))
 
   lsubstN wc ih Γ' pf ω (L pf⁺ N₁) N' ed = 
     L pf⁺ (lsubstN wc ih (_ :: Γ') pf ω N₁ 

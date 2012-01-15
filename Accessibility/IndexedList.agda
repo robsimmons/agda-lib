@@ -190,6 +190,13 @@ module ILIST (UWF : UpwardsWellFounded) where
       → ((x at w') :: Δ) ⊆ ((x at w') :: Γ) to w
    ⊆to/both (st sub sub≺) = st (⊆at/both sub) (λ ω → ⊆at/both (sub≺ ω))
  
+   ⊆to/append-congr : ∀{A Δ Γ w}
+      (Γ' : IList A)
+      → Δ ⊆ Γ to w
+      → (Γ' ++ Δ) ⊆ (Γ' ++ Γ) to w
+   ⊆to/append-congr [] sub = sub
+   ⊆to/append-congr (x :: xs) sub = ⊆to/both (⊆to/append-congr xs sub)
+
    ⊆to/trans : ∀{A w}{Γ Δ Ψ : IList A}
       → Γ ⊆ Δ to w 
       → Δ ⊆ Ψ to w 

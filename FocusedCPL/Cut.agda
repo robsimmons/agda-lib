@@ -8,12 +8,13 @@ open import FocusedCPL.IH
 open import FocusedCPL.Evidence
 open import FocusedCPL.Weakening
 
-module FocusedCPL.Cut (UWF : UpwardsWellFounded) where
+module FocusedCPL.Cut (UWF : UpwardsWellFounded)
+  (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
 
 open TRANS-UWF UWF
 open ILIST UWF
 open SEQUENT UWF
-open EVIDENCE UWF
+open EVIDENCE UWF dec≺
 open IH UWF
 open WEAKENING UWF
 
@@ -45,6 +46,7 @@ Psubst⁻ wc = ∀{Γ w A C}
 PrsubstV : W → Set
 PrsubstV wc = ∀{Γ w A C}
     (Γ' : MCtx)
+    → wc ≺* w
     → Term [] (Γ' ++ Γ) w · (Reg A)
     → Value [] (Γ' ++ ↓ A at w :: Γ) wc C
     → Value [] (Γ' ++ Γ) wc C
@@ -52,6 +54,7 @@ PrsubstV wc = ∀{Γ w A C}
 PrsubstN : W → Set
 PrsubstN wc = ∀{Γ w A C Ω} 
     (Γ' : MCtx)
+    → wc ≺* w
     → Term [] (Γ' ++ Γ) w · (Reg A)
     → Term [] (Γ' ++ ↓ A at w :: Γ) wc Ω (Reg C)
     → EvidenceΩ (Γ' ++ Γ) wc Ω 
@@ -60,6 +63,7 @@ PrsubstN wc = ∀{Γ w A C Ω}
 PrsubstSp : W → Set
 PrsubstSp wc = ∀{Γ w wh A B C} 
     (Γ' : MCtx)
+    → wc ≺* w
     → wc ≺* wh
     → Term [] (Γ' ++ Γ) w · (Reg A)
     → Spine [] (Γ' ++ ↓ A at w :: Γ) wh B wc (Reg C)
@@ -87,9 +91,6 @@ PlsubstSp wc = ∀{Γ w A B C wh}
     → Spine [] (Γ' ++ Γ) wh B wc (Reg C)
 
 module SEQUENT-CUT (wc : W) (ih : (wc' : W) → wc ≺+ wc' → P wc') where
-
-  postulate XXX-HOLE : {A : Set} → String → A
-
   subst⁺ : Psubst⁺ wc
   subst⁻ : Psubst⁻ wc
   rsubstV : PrsubstV wc
@@ -99,7 +100,7 @@ module SEQUENT-CUT (wc : W) (ih : (wc' : W) → wc ≺+ wc' → P wc') where
   lsubstSp : PlsubstSp wc
 
   subst⁺ ω (pR x) (L pf⁺ N₁) = wkN <> (⊆to/cntr x) · N₁
-  subst⁺ ω (↓R N₁) (L pf⁺ N₁')  = rsubstN [] N₁ N₁' ·
+  subst⁺ ω (↓R N₁) (L pf⁺ N₁')  = rsubstN [] ω N₁ N₁' ·
   subst⁺ ω (◇R wh N₁) (L () N₁')
   subst⁺ ω (◇R wh N₁) (◇L N₁') = N₁' wh N₁
   subst⁺ ω (□R N₁) (L () N₁')
@@ -114,39 +115,38 @@ module SEQUENT-CUT (wc : W) (ih : (wc' : W) → wc ≺+ wc' → P wc') where
   ... | ≺*≡ = subst⁻ pf ω (subst⁺ ω V₁ N₁) Sp₂
   ... | ≺*+ ω' = subst⁻ pf ω (P.subst⁺ (ih _ ω') V₁ N₁) Sp₂ 
 
-  rsubstV Γ' N (pR x) with fromctx Γ' x
+  rsubstV Γ' ω N (pR x) with fromctx Γ' x
   ... | Inl ()
   ... | Inr x' = pR x'
-  rsubstV Γ' N (↓R N₁) = ↓R (rsubstN Γ' N N₁ ·)
-  rsubstV Γ' N (◇R ω N₁) = ◇R ω (P.rsubstN (ih _ (≺+0 ω)) Γ' N N₁)
-  rsubstV Γ' N (□R N₁) = □R λ ω' → P.rsubstN (ih _ (≺+0 ω')) Γ' N (N₁ ω')
+  rsubstV Γ' ω N (↓R N₁) = ↓R (rsubstN Γ' ω N N₁ ·)
+  rsubstV Γ' ω N (◇R ω' N₁) = ◇R ω' (P.rsubstN (ih _ (≺+0 ω')) Γ' N N₁)
+  rsubstV Γ' ω N (□R N₁) = □R λ ω' → P.rsubstN (ih _ (≺+0 ω')) Γ' N (N₁ ω')
 
-  rsubstN Γ' N (L pf⁺ N₁) ed = 
-    L pf⁺ (rsubstN (_ :: Γ')
-            (XXX-HOLE "WEAKEN WITH EVIDENCE 'ed': N") N₁ ·)
-  rsubstN Γ' N (↓L pf⁻ ωh x Sp) ed with fromctx Γ' x
-  ... | Inl Refl = subst⁻ pf⁻ ωh N (rsubstSp Γ' ωh N Sp (cutE N ωh))
-  ... | Inr x' = ↓L pf⁻ ωh x' (rsubstSp Γ' ωh N Sp (varE x' ωh))
-  rsubstN Γ' N ⊥L ed = ⊥L
-  rsubstN Γ' N (◇L N₁) ed = 
-    ◇L λ ω' N₀ → rsubstN Γ' N (N₁ ω' (XXX-HOLE "DECUT: N₀")) ·
-  rsubstN Γ' N (□L N₁) ed = 
-    □L λ N₀ → rsubstN Γ' N (N₁ λ ω' → XXX-HOLE "DECUT: N₀ ω'") ·
-  rsubstN Γ' N (↑R V₁) ed = ↑R (rsubstV Γ' N V₁)
-  rsubstN Γ' N (⊃R N₁) ed = ⊃R (rsubstN Γ' N N₁ I≡)
+  rsubstN Γ' ω N (L pf⁺ N₁) ed = 
+    L pf⁺ (rsubstN (_ :: Γ') ω (ed-wkN₁ ω ed N) N₁ ·)
+  rsubstN Γ' ω N (↓L pf⁻ ωh x Sp) ed with fromctx Γ' x
+  ... | Inl Refl = subst⁻ pf⁻ ωh N (rsubstSp Γ' ω ωh N Sp (cutE N ωh))
+  ... | Inr x' = ↓L pf⁻ ωh x' (rsubstSp Γ' ω ωh N Sp (varE x' ωh))
+  rsubstN Γ' ω N ⊥L ed = ⊥L
+  rsubstN Γ' ω N (◇L N₁) ed = 
+    ◇L λ ω' N₀ → rsubstN Γ' ω N (N₁ ω' {! XXX-HOLE "DECUT: N₀"!}) ·
+  rsubstN Γ' ω N (□L N₁) ed = 
+    □L λ N₀ → rsubstN Γ' ω N (N₁ λ ω' → {! XXX-HOLE "DECUT: N₀ ω'"!}) ·
+  rsubstN Γ' ω N (↑R V₁) ed = ↑R (rsubstV Γ' ω N V₁)
+  rsubstN Γ' ω N (⊃R N₁) ed = ⊃R (rsubstN Γ' ω N N₁ I≡)
 
-  rsubstSp Γ' ωh N pL ed = pL
-  rsubstSp Γ' ωh N (↑L N₁) ed = ↑L (rsubstN Γ' N N₁ (atmE ed))
-  rsubstSp Γ' ωh N (⊃L V₁ Sp₂) ed with ωh 
+  rsubstSp Γ' ω ωh N pL ed = pL
+  rsubstSp Γ' ω ωh N (↑L N₁) ed = ↑L (rsubstN Γ' ω N N₁ (atmE ed))
+  rsubstSp Γ' ω ωh N (⊃L V₁ Sp₂) ed with ωh 
   ... | ≺*≡ = 
-    ⊃L (rsubstV Γ' N V₁) (rsubstSp Γ' ωh N Sp₂ (appE ed (rsubstV Γ' N V₁)))
+    ⊃L (rsubstV Γ' ω N V₁) 
+      (rsubstSp Γ' ω ωh N Sp₂ (appE ed (rsubstV Γ' ω N V₁)))
   ... | ≺*+ ωh'  =
     ⊃L (P.rsubstV (ih _ ωh') Γ' N V₁)
-      (rsubstSp Γ' ωh N Sp₂ (appE ed (P.rsubstV (ih _ ωh') Γ' N V₁)))
+      (rsubstSp Γ' ω ωh N Sp₂ (appE ed (P.rsubstV (ih _ ωh') Γ' N V₁)))
 
   lsubstN Γ' pf ω (L pf⁺ N₁) N' ed = 
-    L pf⁺ (lsubstN (_ :: Γ') pf ω N₁ 
-            (XXX-HOLE "WEAKEN WITH EVIDENCE 'ed': N'") ·)
+    L pf⁺ (lsubstN (_ :: Γ') pf ω N₁ (ed-wkN₂ ω ed N') ·)
   lsubstN Γ' pf ω (↓L pf⁻ ωh x Sp) N' ed = 
     ↓L pf (≺*trans ω ωh) x 
       (lsubstSp Γ' pf ω Sp N' (varE x (≺*trans ω ωh)))

@@ -102,9 +102,9 @@ module SEQUENT (UWF : UpwardsWellFounded) where
       (ω : wc ≺ w)
       (N₁ : Term א Γ w · (Reg A))
       → Value א Γ wc (◇ A)
-    □R : ∀{A}
-      (N₁ : ∀{w} (ω : wc ≺ w) → Term א Γ w · (Reg A))
-      → Value א Γ wc (□ A)
+--  □R : ∀{A}
+--    (N₁ : ∀{w} (ω : wc ≺ w) → Term א Γ w · (Reg A))
+--    → Value א Γ wc (□ A)
 
     -- Terms
     L : ∀{A U wh}
@@ -122,9 +122,9 @@ module SEQUENT (UWF : UpwardsWellFounded) where
     ◇L : ∀{A U wh}
       (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term א Γ w · (Reg A)) → Term א Γ wc · U)
       → Term א Γ wc (I (◇ A) wh) U
-    □L : ∀{A U wh}
-      (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg A)) → Term א Γ wc · U)
-      → Term א Γ wc (I (□ A) wh) U
+--  □L : ∀{A U wh}
+--    (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg A)) → Term א Γ wc · U)
+--    → Term א Γ wc (I (□ A) wh) U
     ↑R : ∀{A}
       (V₁ : Value א Γ wc A)
       → Term א Γ wc · (Reg (↑ A))

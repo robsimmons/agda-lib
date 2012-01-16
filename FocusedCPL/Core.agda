@@ -53,6 +53,16 @@ module SEQUENT (UWF : UpwardsWellFounded) where
   FCtx = List Unit -- XXX IDENTITY
   MCtx = IList (Type ⁺)
 
+  fromctx : ∀{A w Item Γ} (Γ' : MCtx) 
+    → Item ∈ (Γ' ++ (A at w) :: Γ) 
+    → (Item ≡ (A at w)) + (Item ∈ (Γ' ++ Γ))
+  fromctx [] Z = Inl Refl 
+  fromctx [] (S x) = Inr x
+  fromctx (A :: Γ') Z = Inr Z
+  fromctx (A :: Γ') (S x) with fromctx Γ' x
+  ... | Inl Refl = Inl Refl
+  ... | Inr x' = Inr (S x')  
+
   data ICtx : Set where
     · : ICtx
     I : 

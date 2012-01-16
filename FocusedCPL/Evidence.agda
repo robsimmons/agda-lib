@@ -137,8 +137,6 @@ module EVIDENCE (UWF : UpwardsWellFounded)
   ed≺* ≺*≡ edΓ = edΓ
   ed≺* (≺*+ ω) edΓ = ed≺+ ω edΓ
 
-  postulate XXX-HOLE : {A : Set} → String → A
-
   sub-append-swap : {A : Set} 
     (xs ys zs : List A)
     → LIST.SET.Sub (xs ++ (ys ++ zs)) (ys ++ (xs ++ zs))
@@ -149,6 +147,7 @@ module EVIDENCE (UWF : UpwardsWellFounded)
   ... | Inl n'' = LIST.SET.sub-appendr ys (xs ++ zs) n''
   ... | Inr n'' = LIST.SET.sub-appendl (xs ++ zs) ys
                     (LIST.SET.sub-appendl zs xs n'')
+
 
 {-
   sub-append-swap₂ : {A : Set} → ∀{zs y} 
@@ -168,79 +167,6 @@ module EVIDENCE (UWF : UpwardsWellFounded)
   deN (I+ ω R) N = {!!}
 -}
 
-  edV : ∀{Γ' Γ A wc w C}
-    → Evidence Γ wc Γ' (A at w) 
-    → Value [] (Γ' ++ Γ) wc C
-    → Value [] (Γ' ++ (A at w) :: Γ) wc C
-
-  edN : ∀{Γ' Γ A Ω wc w C b} 
-    → Evidence Γ wc Γ' (A at w) 
-    → EvidenceΩ (Γ' ++ Γ) wc Ω b
-    → Term [] (Γ' ++ Γ) wc Ω (Reg C)
-    → Term [] (Γ' ++ (A at w) :: Γ) wc Ω (Reg C)
- 
-  edSp : ∀{Γ' Γ A B C wc wh w b}
-    → Evidence Γ wc Γ' (A at w) 
-    → EvidenceA (Γ' ++ Γ) wc B wh b
-    → Spine [] (Γ' ++ Γ) wh B wc (Reg C)
-    → Spine [] (Γ' ++ (A at w) :: Γ) wh B wc (Reg C)
-
-  edV {Γ'} edΓ (pR x) = pR (LIST.SET.sub-append-congr Γ' LIST.SET.sub-wken x)
-  edV edΓ (↓R N₁) = ↓R (edN edΓ ·t N₁)
-  edV edΓ (◇R ω N₁) = ◇R ω (edN (ed≺ ω edΓ) ·t N₁)
-  edV edΓ (□R N₁) = □R λ ω → edN (ed≺ ω edΓ) ·t (N₁ ω)
-
-  edN edΓ I≡ (L pf⁺ N₁) = L pf⁺ (edN (C⊀ (nrefl+ _ _ refl) edΓ) ·t N₁)
-  edN edΓ (I+ ω R) (L pf⁺ N₁) = L pf⁺ (edN (C+ ω R edΓ) ·t N₁)
-  edN {Γ'} edΓ ed (↓L pf⁻ ωh x Sp) = 
-    ↓L pf⁻ ωh (LIST.SET.sub-append-congr Γ' LIST.SET.sub-wken x) 
-      (edSp edΓ (varE {b = True} x ωh) Sp)
-  edN edΓ ed ⊥L = ⊥L
-  edN edΓ ed (◇L N₁) = 
-    ◇L λ ω N₀ → edN edΓ ·t (N₁ ω {! XXX-HOLE "I BELIEVE I CAN DO THIS" !})
-  edN edΓ ed (□L N₁) = 
-    □L λ N₀ → edN edΓ ·t (N₁ λ ω → XXX-HOLE "I BELIEVE I CAN DO THIS")
-  edN edΓ ed (↑R V₁) = ↑R (edV edΓ V₁)
-  edN edΓ ed (⊃R N₁) = ⊃R (edN {b = True} edΓ I≡ N₁) 
-
-  edSp edΓ ed pL = pL
-  edSp edΓ ed (↑L N₁) = ↑L (edN edΓ (atmE ed) N₁)
-  edSp edΓ ed (⊃L V₁ Sp₂) = 
-    ⊃L (edV (ed≺* (evidenceA≺ ed) edΓ) V₁) (edSp edΓ (appE ed V₁) Sp₂)
-
-  ed-wkN₁ : ∀{w wh wc Γ C b} {B : Type ⁺}
-    → wc ≺* w
-    → EvidenceΩ Γ wc (I B wh) b
-    → Term [] Γ w · (Reg C)
-    → Term [] ((B at wh) :: Γ) w · (Reg C)
-  ed-wkN₁ {w} {wh} ω ed N with dec≺ w wh 
-  ed-wkN₁ ω ed N | Inr ωh =
-    wkN <> (⊆to/wkenirrev ωh (⊆to/refl _)) · N
-  ed-wkN₁ ω ed N | Inl ≺*≡ = 
-    wkN <> (⊆to/wken (⊆to/refl _)) · N
-  ed-wkN₁ ω I≡ N | Inl (≺*+ ωh) = abort (≺+⊀ ωh ω)
-  ed-wkN₁ ω (I+ _ R) N | Inl (≺*+ ωh) = edN (N+ ωh R) ·t N
-
-  decut : ∀{w w' Γ A B}
-    (Γ' : MCtx)
-    → Term [] (Γ' ++ Γ) w · (Reg A)
-    → Term [] (Γ' ++ Γ) w' · (Reg B)
-    → Term [] (Γ' ++ (↓ A at w) :: Γ) w' · (Reg B)
-  decut {w} {w'} Γ' N N₀ with dec≺ w' w
-  decut Γ' N N₀ | Inr ω = 
-    wkN <> 
-      (⊆to/trans (⊆to/wkenirrev ω (⊆to/refl _)) 
-        (⊆to/equiv (sub-append-swap [ _ ] Γ' _) (sub-append-swap Γ' [ _ ] _))) 
-      · N₀
-  decut Γ' N N₀ | Inl ≺*≡ = 
-    wkN <> 
-      (⊆to/trans (⊆to/wken (⊆to/refl _)) 
-        (⊆to/equiv (sub-append-swap [ _ ] Γ' _) (sub-append-swap Γ' [ _ ] _))) 
-      · N₀
-  decut Γ' N N₀ | Inl (≺*+ ω) = 
-    wkN <> 
-      (⊆to/equiv (sub-append-swap [ _ ] Γ' _) (sub-append-swap Γ' [ _ ] _))
-      · (edN (N+ ω (Cut (↑R (↓R N)))) ·t N₀)
 
 
 

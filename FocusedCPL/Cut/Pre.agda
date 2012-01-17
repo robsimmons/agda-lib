@@ -3,8 +3,6 @@
 -- Robert J. Simmons, Bernardo Toninho
 
 -- Before the main cut proof
-  -- Removing an assumption given evidence
-  -- Ugly evidence 
 
 open import Prelude hiding (⊥)
 open import Accessibility.Inductive

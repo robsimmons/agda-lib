@@ -118,7 +118,7 @@ module IH (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
     rsubstSp : PrsubstSp wc
     --
     lsubstN : PlsubstN wc
-    substSp : PlsubstSp wc
+    lsubstSp : PlsubstSp wc
     --
     decutV : PdecutV wc
     decutN : PdecutN wc

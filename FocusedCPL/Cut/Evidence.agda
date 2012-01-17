@@ -109,6 +109,7 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
       → Evidence Γ wc [] (A at w)      
     N+ : ∀{w A b} → 
       (ω : wc ≺+ w)
+      (pf⁺ : A stable⁺)
       (R : Atomic [] Γ w (↑ A) b)
       → Evidence Γ wc [] (A at w)
     C⊀ : ∀{w A Γ' Item}
@@ -117,23 +118,33 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
       → Evidence Γ wc ((A at w) :: Γ') Item
     C+ : ∀{w A Γ' Item b}
       (ω : wc ≺+ w)
+      (pf⁺ : A stable⁺)
       (R : Atomic [] (Γ' ++ Γ) w (↑ A) b)
       (edΓ : Evidence Γ wc Γ' Item) 
       → Evidence Γ wc ((A at w) :: Γ') Item
 
+  ed-stable : ∀{Γ w Γ' A w'}
+    → w ≺+ w'
+    → Evidence Γ w Γ' (A at w')
+    → A stable⁺
+  ed-stable ω (N⊀ ω') = abort (ω' ω)
+  ed-stable ω (N+ ω' pf⁺ R) = pf⁺
+  ed-stable ω (C⊀ ω' edΓ) = ed-stable ω edΓ
+  ed-stable ω (C+ ω' pf⁺ R edΓ) = ed-stable ω edΓ
+ 
   ed≺ : ∀{w w' Γ Γ' Item} 
     → w ≺ w'
     → Evidence Γ w Γ' Item 
     → Evidence Γ w' Γ' Item
   ed≺ ω (N⊀ ω') = N⊀ (ω' o ≺+S ω)
-  ed≺ {w} {w'} ω (N+ {wn} _ R) with dec≺ w' wn
-  ed≺ ω (N+ _ R) | Inl ≺*≡ = N⊀ (nrefl+ _ _ refl)
-  ... | Inl (≺*+ ω') = N+ ω' R
+  ed≺ {w} {w'} ω (N+ {wn} _ pf⁺ R) with dec≺ w' wn
+  ed≺ ω (N+ _ _ R) | Inl ≺*≡ = N⊀ (nrefl+ _ _ refl)
+  ... | Inl (≺*+ ω') = N+ ω' pf⁺ R
   ... | Inr ω' = N⊀ (ω' o ≺*+)
   ed≺ ω (C⊀ ω' edΓ) = C⊀ (ω' o ≺+S ω) (ed≺ ω edΓ)
-  ed≺ {w} {w'} ω (C+ {wn} _ R edΓ) with dec≺ w' wn
-  ed≺ ω (C+ ω' R edΓ) | Inl ≺*≡ = C⊀ (nrefl+ _ _ refl) (ed≺ ω edΓ)
-  ... | Inl (≺*+ ω') = C+ ω' R (ed≺ ω edΓ)
+  ed≺ {w} {w'} ω (C+ {wn} _ pf⁺ R edΓ) with dec≺ w' wn
+  ed≺ ω (C+ ω' _ R edΓ) | Inl ≺*≡ = C⊀ (nrefl+ _ _ refl) (ed≺ ω edΓ)
+  ... | Inl (≺*+ ω') = C+ ω' pf⁺ R (ed≺ ω edΓ)
   ... | Inr ω' = C⊀ (ω' o ≺*+) (ed≺ ω edΓ)
 
   ed≺+ : ∀{w w' Γ Γ' Item} 

@@ -62,7 +62,7 @@ module MAIN-STEP
   rsubstV Γ' ω N (□R N₁) = □R λ ω' → ih-rsubstN (≺+0 ω') Γ' N (N₁ ω')
 
   rsubstN Γ' ω N (L pf⁺ N₁) ed = 
-    L pf⁺ (rsubstN (_ :: Γ') ω (weaken-with-evidence-r ω ed N) N₁ ·t)
+    L pf⁺ (rsubstN (_ :: Γ') ω (weaken-with-evidence-r pf⁺ ω ed N) N₁ ·t)
   rsubstN Γ' ω N (↓L pf⁻ ωh x Sp) ed with fromctx Γ' x
   ... | Inl Refl = subst⁻ pf⁻ ωh N (rsubstSp Γ' ω N Sp (cutE N ωh))
   ... | Inr x' = ↓L pf⁻ ωh x' (rsubstSp Γ' ω N Sp (varE x' ωh))

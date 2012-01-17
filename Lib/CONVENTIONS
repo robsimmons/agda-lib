@@ -6,9 +6,9 @@ The goal of this library is to be small and simple for people who primarily
 use Agda to reason about things using pattern-matching and reflexive equality.
 
 * HASKELL-ISH SYNTAX
-  - Constructors and types are capitalized (Nat, S, Z)
+  - Constructors and types are capitalized (Nat, S, Z).
   - Type families are capitialized as well (even if they are functions that
-    compute Sets, such as "Leq", "Lt", or "Maybe")
+    compute Sets, such as "Leq", "Lt", or "Maybe").
   - Functions are entirely lowercase; the minus sign "-" is used as a separator
     ("s-cong"). 
   - Modules are UPPERCASE ("NAT", "LIST", "MAYBE"). 
@@ -30,19 +30,25 @@ use Agda to reason about things using pattern-matching and reflexive equality.
 One of the beautiful but aggrivating parts of the Agda Standard Library, from 
 one outsider's perspective at least, is that it's very difficult to get a handle
 on where definitions "bottom out" - definitions are very rich and very deep and
-basically all over the place. While it may 
+basically all over the place. While it may be helpful to do things this way for
+the goal of writing the most general code, it makes it very difficult to 
+understand how any one thing works, and sometimes generality interferes with
+nice, neat pattern matching. This libarary tries to have things bottom out very
+quickly, and there are only a few simple patterns (such as MEMBERSHIP) that are
+designed to be instantiated in multiple ways.
 
 * LIMITED AND UNIFORM USE OF UNICODE 
 Unicode runs rampant in the standard library, and it means that its sometimes 
 hard to even know how to write code without using "CTRL-u CTRL-x =," which is
-a keybinding I personally can never remember. The standard library 
+a keybinding I personally can never remember. This standard libary uses unicode
+only sparingly, and *always* defines both a unicode and a non-unicode way of
+writing things.
 
+In general, a non-unicode name should be used for the "fundamental" definition
+of a type or term, and the unicode version (if any) should be an abbreviation, 
+since the fundamental name will be one type reconstruction reports back to the
+user. There are some exceptions; here is how to write them Agda-mode:
 
-While some fundamental (like products, 
-sums, truth, falsehood, and identity) are defined in their unicodey versions,
-only things that are morally types use unicode, and 
-
-  - The follo
   - Σ - \sigma
   - ∀ - \forall
   - ∃ - \exists

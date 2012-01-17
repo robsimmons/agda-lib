@@ -4,7 +4,7 @@
 
 -- Identity expansion
 
-open import Prelude hiding (⊥; [_])
+open import Prelude hiding (⊥)
 open import Accessibility.Inductive
 open import Accessibility.IndexedList
 open import FocusedCPL.Core

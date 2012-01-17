@@ -4,22 +4,75 @@
 
 -- Equivalence of sequent calculus and natural deduction
 
-module DetetheredCPL.Equiv where
-open import Prelude
+open import Prelude hiding (⊥)
 open import Accessibility.Inductive
 open import Accessibility.IndexedList
-open import DetetheredCPL.Core
+open import DetetheredCPL.Core renaming (Type to UType)
 open import DetetheredCPL.NatDeduction
-open import DetetheredCPL.Sequent
+open import FocusedCPL.Core
+open import FocusedCPL.Weakening
+open import FocusedCPL.Cut
+open import FocusedCPL.Identity
+-- open import DetetheredCPL.Sequent
+
+module DetetheredCPL.Equiv where
 
 module EQUIV 
-   (UWF : UpwardsWellFounded)
-   (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
-   open TRANS-UWF UWF
-   open ILIST UWF
-   open CORE UWF
-   open NAT-DEDUCTION UWF
-   open SEQUENT UWF dec≺
+  (UWF : UpwardsWellFounded)
+  (dec≺ : (w w' : _) → Decidable (TRANS-UWF._≺*_ UWF w w')) where
+  open TRANS-UWF UWF
+  open ILIST UWF
+  open CORE UWF renaming (MCtx to UMCtx)
+  open NAT-DEDUCTION UWF
+  open SEQUENT UWF
+  open WEAKENING UWF
+  open CUT UWF
+  open IDENTITY UWF
+
+  eraseA : ∀{⁼} → Type ⁼ → UType
+  eraseA {⁼} (a Q .⁼) = a Q -- ERROR!!!
+  eraseA (↓ A) = eraseA A
+  eraseA ⊥ = ⊥
+  eraseA (◇ A) = ◇ (eraseA A)
+  eraseA (□ A) = □ (eraseA A)
+  eraseA (↑ A) = eraseA A
+  eraseA (A ⊃ B) = eraseA A ⊃ eraseA B
+
+  eraseΩ : ICtx → UMCtx
+  eraseΩ · = []
+  eraseΩ (I A w) = [ eraseA A at w ]
+
+  eraseΓ : MCtx → UMCtx
+  eraseΓ [] = []
+  eraseΓ ((A at w) :: Γ) = (eraseA A at w) :: eraseΓ Γ
+
+  PdefocN : W → Set
+  PdefocN wc = ∀{Γ Ω A}
+    → wc ≺' Ω
+    → Term [] Γ wc Ω (Reg A)
+    → (eraseΩ Ω ++ eraseΓ Γ) ⊢ eraseA A [ wc ]
+
+  record Pequiv (wc : W) : Set where
+   field
+    defocN : Unit -- PdefocN wc
+
+  module EQUIV-LEM (wc : W) (ih : (wc' : W) → wc ≺+ wc' → Pequiv wc') where
+
+    defocN : PdefocN wc
+
+
+    defocN ω (L pf⁺ N₁) = {!!}
+    defocN ω (↓L pf⁻ ωh x Sp) = {!!}
+    defocN (I ω) ⊥L = ⊥E ω (hyp Z)
+    defocN (I ω) (◇L N₁) = ◇E ω (hyp Z) 
+      λ ω' D₀ → {! defocN · (N₁ ω' {!!}) !}
+    defocN (I ω) (□L N₁) = □E ω (hyp Z) λ D₀ → {!!}
+    defocN ω (↑R V₁) = {!!}
+    defocN ω (⊃R N₁) = {!!}
+  
+   -- open SEQUENT UWF dec≺
+
+{-
 
    -- Equivalence of natural deduction and sequent calculus
    -- Things are set up such that we have to prove both at once
@@ -29,6 +82,8 @@ module EQUIV
       × (∀{Γ A} → Γ ⇒ A [ w ] → Γ ⊢ A [ w ]))
 
    -- Given the induction hypothesis, natural deduction implies sequent
+   
+
    nd→seq' : (w : W) → ((w' : W) → w ≺+ w' → equivP w')
               → ∀{Γ A} → Γ ⊢ A [ w ] → Γ ⇒ A [ w ]
    nd→seq' w ih (hyp iN) = ident iN
@@ -89,3 +144,5 @@ module EQUIV
 
    seq→nd : ∀{Γ A w} → Γ ⇒ A [ w ] → Γ ⊢ A [ w ]
    seq→nd = snd (nd⇆seq _)
+
+-}

@@ -10,13 +10,12 @@ open import Accessibility.Inductive
 open import Accessibility.IndexedList
 open import FocusedCPL.Core 
 open import FocusedCPL.Weakening
-import FocusedCPL.Cut.Evidence
+open import FocusedCPL.Atomic
 import FocusedCPL.Cut.IH
 import FocusedCPL.Cut.Pre
 
 module FocusedCPL.Cut.Main (UWF : UpwardsWellFounded) where
 open TRANS-UWF UWF
-open FocusedCPL.Cut.Evidence UWF
 open FocusedCPL.Cut.IH UWF
 open FocusedCPL.Cut.Pre UWF
 
@@ -26,7 +25,7 @@ module MAIN-STEP
   open ILIST UWF
   open SEQUENT UWF
   open WEAKENING UWF
-  open EVIDENCE dec≺
+  open ATOMIC UWF
   open IH dec≺
   open PRE-STEP dec≺ wc ih
   
@@ -45,6 +44,9 @@ module MAIN-STEP
   subst⁺ ω (□R N₁) (L () N₁')
   subst⁺ ω (□R N₁) (□L N₁') = N₁' (λ ω → N₁ ω)
 
+  --subst⁻ pf ω (↓L pf⁻ ωh x Sp) SEQUENT.hyp⁻ = {!!}
+  --subst⁻ pf ω (↑R V₁) SEQUENT.hyp⁻ = {!!}
+  --subst⁻ pf ω (⊃R N₁) SEQUENT.hyp⁻ = {!!}
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) pL = ↓L pf⁻ ωh x Sp
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) (↑L N₁) = 
     ↓L pf (≺*trans ω ωh) x (lsubstSp [] pf ω Sp N₁ (varE x (≺*trans ω ωh)))
@@ -74,6 +76,7 @@ module MAIN-STEP
   rsubstN Γ' ω N (↑R V₁) ed = ↑R (rsubstV Γ' ω N V₁)
   rsubstN Γ' ω N (⊃R N₁) ed = ⊃R (rsubstN Γ' ω N N₁ I≡)
 
+  --rsubstSp Γ' ω N hyp⁻ ed = hyp⁻
   rsubstSp Γ' ω N pL ed = pL
   rsubstSp Γ' ω N (↑L N₁) ed = ↑L (rsubstN Γ' ω N N₁ (atmE ed))
   rsubstSp Γ' ω N (⊃L V₁ Sp₂) ed with (evidenceA≺ ed) 

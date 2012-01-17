@@ -1,14 +1,21 @@
+-- Constructive Provability Logic
+-- Focused variant
+-- Robert J. Simmons, Bernardo Toninho
+
+-- Pseudo-atomic terms, which are used in the intermediate proofs as evidence
+-- for provability the provability of premises at accessible worlds when 
+-- crawling over spines and terms.
 
 open import Prelude hiding (⊥)
 open import Accessibility.Inductive
 open import Accessibility.IndexedList
-open import FocusedCPL.Core 
+open import FocusedCPL.Core
 open import FocusedCPL.Weakening
 
-module FocusedCPL.Cut.Evidence (UWF : UpwardsWellFounded) where
-open TRANS-UWF UWF
+module FocusedCPL.Atomic where
 
-module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
+module ATOMIC (UWF : UpwardsWellFounded) where
+  open TRANS-UWF UWF 
   open ILIST UWF
   open SEQUENT UWF
   open WEAKENING UWF
@@ -26,7 +33,7 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
       → Atomic א Γ wc B b
 
   -- The boolean flag is a graceless mechanism, but the point is that, if you 
-  -- commit yourself to not using cut, there's a trivial "unwind" 
+  -- commit yourself to not using cut, there's a trivial "unwind" pseudo-cut. 
 
   unwind : ∀{א Γ A U w wc}
     → U stable⁻
@@ -122,108 +129,3 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
       (R : Atomic [] (Γ' ++ Γ) w (↑ A) b)
       (edΓ : Evidence Γ wc Γ' Item) 
       → Evidence Γ wc ((A at w) :: Γ') Item
-
-  ed-stable : ∀{Γ w Γ' A w'}
-    → w ≺+ w'
-    → Evidence Γ w Γ' (A at w')
-    → A stable⁺
-  ed-stable ω (N⊀ ω') = abort (ω' ω)
-  ed-stable ω (N+ ω' pf⁺ R) = pf⁺
-  ed-stable ω (C⊀ ω' edΓ) = ed-stable ω edΓ
-  ed-stable ω (C+ ω' pf⁺ R edΓ) = ed-stable ω edΓ
- 
-  ed≺ : ∀{w w' Γ Γ' Item} 
-    → w ≺ w'
-    → Evidence Γ w Γ' Item 
-    → Evidence Γ w' Γ' Item
-  ed≺ ω (N⊀ ω') = N⊀ (ω' o ≺+S ω)
-  ed≺ {w} {w'} ω (N+ {wn} _ pf⁺ R) with dec≺ w' wn
-  ed≺ ω (N+ _ _ R) | Inl ≺*≡ = N⊀ (nrefl+ _ _ refl)
-  ... | Inl (≺*+ ω') = N+ ω' pf⁺ R
-  ... | Inr ω' = N⊀ (ω' o ≺*+)
-  ed≺ ω (C⊀ ω' edΓ) = C⊀ (ω' o ≺+S ω) (ed≺ ω edΓ)
-  ed≺ {w} {w'} ω (C+ {wn} _ pf⁺ R edΓ) with dec≺ w' wn
-  ed≺ ω (C+ ω' _ R edΓ) | Inl ≺*≡ = C⊀ (nrefl+ _ _ refl) (ed≺ ω edΓ)
-  ... | Inl (≺*+ ω') = C+ ω' pf⁺ R (ed≺ ω edΓ)
-  ... | Inr ω' = C⊀ (ω' o ≺*+) (ed≺ ω edΓ)
-
-  ed≺+ : ∀{w w' Γ Γ' Item} 
-    → w ≺+ w'
-    → Evidence Γ w Γ' Item 
-    → Evidence Γ w' Γ' Item
-  ed≺+ (≺+0 ω) edΓ = ed≺ ω edΓ
-  ed≺+ (≺+S ω ω') edΓ = ed≺+ ω' (ed≺ ω edΓ) 
-
-  ed≺* : ∀{w w' Γ Γ' Item} 
-    → w ≺* w'
-    → Evidence Γ w Γ' Item 
-    → Evidence Γ w' Γ' Item
-  ed≺* ≺*≡ edΓ = edΓ
-  ed≺* (≺*+ ω) edΓ = ed≺+ ω edΓ
-
-
-
-{-
-  sub-append-swap₂ : {A : Set} → ∀{zs y} 
-    (xs : List A)
-    → LIST.SET.Sub (xs ++ (y :: zs)) (y :: (xs ++ zs))
-  sub-append-swap₁ [] ys n = n
-  sub-append-swap₁ xs [] n = n
-  sub-append-swap₁ xs (x :: ys) n = 
-    S (sub-append-swap₁ xs ys {!!}) -}
-
-{-
-  deN : ∀{Γ A w wc C}
-    → EvidenceΩ Γ wc (I A w)
-    → Term [] ((A at w) :: Γ) wc · C
-    → Term [] Γ wc · C
-  deN I≡ N = {!!}
-  deN (I+ ω R) N = {!!}
--}
-
-
-
-
-{-
-with dec≺ w wh
-  ed-wkN₂ ω (I+ ω' R) N | Inr ωh =  "WHOO"
-  ed-wkN₂ ω (I+ ω' R) N | Inl ωh =  "WHOO" -}
-
-  
---  Evidence Γ :
-{-
-  edN : 
-    → (Γ' : Ctx)
-    → 
--}
-
-{-
-with dec≺ w wh 
-  ed-wkN₂ ω ed ed' N | Inr ωh =
-    wkN <> (⊆to/wkenirrev ωh (⊆to/refl _)) (evidence≺ ed') N
-  ed-wkN₂ ω ed ed' N | Inl ≺*≡ = 
-    wkN <> (⊆to/wken (⊆to/refl _)) (evidence≺ ed') N
-  ed-wkN₂ ω I≡ ed' N | Inl (≺*+ ωh) = abort (≺+⊀ ωh ω)
-  ed-wkN₂ ω (I+ _ R) ed' N | Inl (≺*+ ωh) = 
--}
-  -- Note - we can now prove this after cut.
-
-{-
-  ed-wkN+ : ∀{Γ Ω wc w A C} (Γ' : MCtx)
-    → wc ≺+ w
-    → Atomic [] Γ w (↑ A)
-    → Term [] (Γ' ++ Γ) wc Ω (Reg C)
-    → wc ≺' Ω
-    → Term [] (Γ' ++ (A at w) :: Γ) wc Ω (Reg C)  
-
-  ed-wkN+ ω R N = {!N!}
-
-  ed-wkN : ∀{Γ Ω wc w A C} (Γ' : MCtx)
-    → EvidenceΩ Γ wc (I A w)
-    → Term [] (Γ' ++ Γ) wc Ω (Reg C)
-    → wc ≺' Ω
-    → Term [] (Γ' ++ (A at w) :: Γ) wc Ω (Reg C)  
-  ed-wkN Γ' I≡ N ed =
-    wkN <> (⊆to/append-congr Γ' (⊆to/wken (⊆to/refl _))) ed N
-  ed-wkN Γ' (I+ ω R) N ed = {!!}
--}

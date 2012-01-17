@@ -8,16 +8,15 @@ open import Prelude hiding (⊥; [_])
 open import Accessibility.Inductive
 open import Accessibility.IndexedList
 open import FocusedCPL.Core
-import FocusedCPL.Cut.Evidence
+open import FocusedCPL.Atomic
 
 module FocusedCPL.Cut.IH (UWF : UpwardsWellFounded) where
 open TRANS-UWF UWF 
-open FocusedCPL.Cut.Evidence UWF
 
 module IH (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
   open ILIST UWF
   open SEQUENT UWF
-  open EVIDENCE dec≺
+  open ATOMIC UWF
 
   -- Principal cuts
 
@@ -95,18 +94,18 @@ module IH (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
     → Value [] (Γ' ++ (A at w) :: Γ) wc C
 
   PdecutN : W → Set
-  PdecutN wc = ∀{Γ' Γ A Ω w C b} 
+  PdecutN wc = ∀{Γ' Γ A Ω w U b} 
     → Evidence Γ wc Γ' (A at w) 
     → EvidenceΩ (Γ' ++ Γ) wc Ω b
-    → Term [] (Γ' ++ Γ) wc Ω (Reg C)
-    → Term [] (Γ' ++ (A at w) :: Γ) wc Ω (Reg C)
+    → Term [] (Γ' ++ Γ) wc Ω U
+    → Term [] (Γ' ++ (A at w) :: Γ) wc Ω U
  
   PdecutSp : W → Set
-  PdecutSp wc = ∀{Γ' Γ A B C wh w b}
+  PdecutSp wc = ∀{Γ' Γ A B U wh w b}
     → Evidence Γ wc Γ' (A at w) 
     → EvidenceA (Γ' ++ Γ) wc B wh b
-    → Spine [] (Γ' ++ Γ) wh B wc (Reg C)
-    → Spine [] (Γ' ++ (A at w) :: Γ) wh B wc (Reg C)
+    → Spine [] (Γ' ++ Γ) wh B wc U
+    → Spine [] (Γ' ++ (A at w) :: Γ) wh B wc U
 
   record P (wc : W) : Set where
    field 

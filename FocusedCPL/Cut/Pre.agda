@@ -9,12 +9,11 @@ open import Accessibility.Inductive
 open import Accessibility.IndexedList
 open import FocusedCPL.Core
 open import FocusedCPL.Weakening
-import FocusedCPL.Cut.Evidence
+open import FocusedCPL.Atomic
 import FocusedCPL.Cut.IH
 
 module FocusedCPL.Cut.Pre (UWF : UpwardsWellFounded) where
 open TRANS-UWF UWF
-open FocusedCPL.Cut.Evidence UWF
 open FocusedCPL.Cut.IH UWF
 
 module PRE-STEP 
@@ -23,8 +22,50 @@ module PRE-STEP
   open ILIST UWF
   open SEQUENT UWF
   open WEAKENING UWF
-  open EVIDENCE dec≺
+  open ATOMIC UWF
   open IH dec≺
+
+  -- 
+
+  ed-stable : ∀{Γ w Γ' A w'}
+    → w ≺+ w'
+    → Evidence Γ w Γ' (A at w')
+    → A stable⁺
+  ed-stable ω (N⊀ ω') = abort (ω' ω)
+  ed-stable ω (N+ ω' pf⁺ R) = pf⁺
+  ed-stable ω (C⊀ ω' edΓ) = ed-stable ω edΓ
+  ed-stable ω (C+ ω' pf⁺ R edΓ) = ed-stable ω edΓ
+ 
+  ed≺ : ∀{w w' Γ Γ' Item} 
+    → w ≺ w'
+    → Evidence Γ w Γ' Item 
+    → Evidence Γ w' Γ' Item
+  ed≺ ω (N⊀ ω') = N⊀ (ω' o ≺+S ω)
+  ed≺ {w} {w'} ω (N+ {wn} _ pf⁺ R) with dec≺ w' wn
+  ed≺ ω (N+ _ _ R) | Inl ≺*≡ = N⊀ (nrefl+ _ _ refl)
+  ... | Inl (≺*+ ω') = N+ ω' pf⁺ R
+  ... | Inr ω' = N⊀ (ω' o ≺*+)
+  ed≺ ω (C⊀ ω' edΓ) = C⊀ (ω' o ≺+S ω) (ed≺ ω edΓ)
+  ed≺ {w} {w'} ω (C+ {wn} _ pf⁺ R edΓ) with dec≺ w' wn
+  ed≺ ω (C+ ω' _ R edΓ) | Inl ≺*≡ = C⊀ (nrefl+ _ _ refl) (ed≺ ω edΓ)
+  ... | Inl (≺*+ ω') = C+ ω' pf⁺ R (ed≺ ω edΓ)
+  ... | Inr ω' = C⊀ (ω' o ≺*+) (ed≺ ω edΓ)
+
+  ed≺+ : ∀{w w' Γ Γ' Item} 
+    → w ≺+ w'
+    → Evidence Γ w Γ' Item 
+    → Evidence Γ w' Γ' Item
+  ed≺+ (≺+0 ω) edΓ = ed≺ ω edΓ
+  ed≺+ (≺+S ω ω') edΓ = ed≺+ ω' (ed≺ ω edΓ) 
+
+  ed≺* : ∀{w w' Γ Γ' Item} 
+    → w ≺* w'
+    → Evidence Γ w Γ' Item 
+    → Evidence Γ w' Γ' Item
+  ed≺* ≺*≡ edΓ = edΓ
+  ed≺* (≺*+ ω) edΓ = ed≺+ ω edΓ
+
+  -- 
 
   unwind' : ∀{Γ A C w w' b} 
     → wc ≺+ w
@@ -116,6 +157,7 @@ module PRE-STEP
   decutN edΓ ed (↑R V₁) = ↑R (decutV edΓ V₁)
   decutN edΓ ed (⊃R N₁) = ⊃R (decutN {b = True} edΓ I≡ N₁) 
 
+  decutSp edΓ ed hyp⁻ = hyp⁻
   decutSp edΓ ed pL = pL
   decutSp edΓ ed (↑L N₁) = ↑L (decutN edΓ (atmE ed) N₁)
   decutSp edΓ E≡ (⊃L V₁ Sp₂) = 

@@ -197,6 +197,24 @@ module ILIST (UWF : UpwardsWellFounded) where
    ⊆to/append-congr [] sub = sub
    ⊆to/append-congr (x :: xs) sub = ⊆to/both (⊆to/append-congr xs sub)
 
+   --- XXX Stdlib
+   sub-append-swap : {A : Set} 
+      (xs ys zs : List A)
+      → LIST.SET.Sub (xs ++ (ys ++ zs)) (ys ++ (xs ++ zs))
+   sub-append-swap xs ys zs n with LIST.split-append {xs = xs} n
+   ... | Inl n' = LIST.SET.sub-appendl (xs ++ zs) ys
+                    (LIST.SET.sub-appendr xs zs n')
+   ... | Inr n' with LIST.split-append {xs = ys} n' 
+   ... | Inl n'' = LIST.SET.sub-appendr ys (xs ++ zs) n''
+   ... | Inr n'' = LIST.SET.sub-appendl (xs ++ zs) ys
+                     (LIST.SET.sub-appendl zs xs n'')
+
+   ⊆to/append-swap : ∀{A Γ'' w}
+      → (Γ Γ' : IList A)
+      → (Γ ++ (Γ' ++ Γ'')) ⊆ (Γ' ++ (Γ ++ Γ'')) to w
+   ⊆to/append-swap Γ Γ' =
+      ⊆to/equiv (sub-append-swap Γ Γ' _) (sub-append-swap Γ' Γ _) 
+
    ⊆to/trans : ∀{A w}{Γ Δ Ψ : IList A}
       → Γ ⊆ Δ to w 
       → Δ ⊆ Ψ to w 

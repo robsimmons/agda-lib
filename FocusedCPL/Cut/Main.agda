@@ -1,3 +1,8 @@
+-- Constructive Provability Logic
+-- Focused variant
+-- Robert J. Simmons, Bernardo Toninho
+
+-- Main cut proof
 {-# OPTIONS --no-termination-check #-}
 
 open import Prelude hiding (⊥)
@@ -25,9 +30,6 @@ module MAIN-STEP
   open IH dec≺
   open PRE-STEP dec≺ wc ih
   
-
-  -- Main theorem
-
   subst⁺ : Psubst⁺ wc
   subst⁻ : Psubst⁻ wc
   rsubstV : PrsubstV wc
@@ -40,8 +42,8 @@ module MAIN-STEP
   subst⁺ ω (↓R N₁) (L pf⁺ N₁')  = rsubstN [] ω N₁ N₁' ·t
   subst⁺ ω (◇R wh N₁) (L () N₁')
   subst⁺ ω (◇R wh N₁) (◇L N₁') = N₁' wh N₁
---subst⁺ ω (□R N₁) (L () N₁')
---subst⁺ ω (□R N₁) (□L N₁') = N₁' (λ ω → N₁ ω)
+  subst⁺ ω (□R N₁) (L () N₁')
+  subst⁺ ω (□R N₁) (□L N₁') = N₁' (λ ω → N₁ ω)
 
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) pL = ↓L pf⁻ ωh x Sp
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) (↑L N₁) = 
@@ -57,7 +59,7 @@ module MAIN-STEP
   ... | Inr x' = pR x'
   rsubstV Γ' ω N (↓R N₁) = ↓R (rsubstN Γ' ω N N₁ ·t)
   rsubstV Γ' ω N (◇R ω' N₁) = ◇R ω' (ih-rsubstN (≺+0 ω') Γ' N N₁)
---rsubstV Γ' ω N (□R N₁) = □R λ ω' → ih-rsubstN (≺+0 ω') Γ' N (N₁ ω')
+  rsubstV Γ' ω N (□R N₁) = □R λ ω' → ih-rsubstN (≺+0 ω') Γ' N (N₁ ω')
 
   rsubstN Γ' ω N (L pf⁺ N₁) ed = 
     L pf⁺ (rsubstN (_ :: Γ') ω (weaken-with-evidence-r ω ed N) N₁ ·t)
@@ -67,8 +69,8 @@ module MAIN-STEP
   rsubstN Γ' ω N ⊥L ed = ⊥L
   rsubstN Γ' ω N (◇L N₁) ed = 
     ◇L λ ω' N₀ → rsubstN Γ' ω N (N₁ ω' (decut Γ' ed ω' N N₀)) ·t
---rsubstN Γ' ω N (□L N₁) ed = 
---  □L λ N₀ → rsubstN Γ' ω N (N₁ λ ω' → decut Γ' ed ω' N (N₀ ω')) ·t
+  rsubstN Γ' ω N (□L N₁) ed = 
+    □L λ N₀ → rsubstN Γ' ω N (N₁ λ ω' → decut Γ' ed ω' N (N₀ ω')) ·t
   rsubstN Γ' ω N (↑R V₁) ed = ↑R (rsubstV Γ' ω N V₁)
   rsubstN Γ' ω N (⊃R N₁) ed = ⊃R (rsubstN Γ' ω N N₁ I≡)
 
@@ -91,8 +93,8 @@ module MAIN-STEP
   lsubstN Γ' pf ω ⊥L N' ed = ⊥L
   lsubstN Γ' pf ω (◇L N₁) N' ed = 
     ◇L λ ω' N₀ → lsubstN Γ' pf ω (N₁ ω' N₀) N' ·f
---lsubstN Γ' pf ω (□L N₁) N' ed = 
---  □L λ N₀ → lsubstN Γ' pf ω (N₁ λ ω' → N₀ ω') N' ·f
+  lsubstN Γ' pf ω (□L N₁) N' ed = 
+    □L λ N₀ → lsubstN Γ' pf ω (N₁ λ ω' → N₀ ω') N' ·f
   lsubstN Γ' pf ω (↑R V₁) N' ed = subst⁺ ω V₁ N'
 
   lsubstSp Γ' pf ω (↑L N₁) N' ed = ↑L (lsubstN Γ' pf ω N₁ N' (atmE ed))

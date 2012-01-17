@@ -37,6 +37,21 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
   unwind pf ω (↓E x) Sp = ↓L pf ω x Sp
   unwind pf ω (⊃E R V) Sp = unwind pf ω R (⊃L V Sp) 
 
+  subset : ∀{א Γ w A b}
+    → Atomic א Γ w A b
+    → Atomic א Γ w A True
+  subset (↓E x) = ↓E x
+  subset (Cut N) = Cut N
+  subset (⊃E R V) = ⊃E (subset R) V
+
+  wkR : ∀{א Γ Γ' wc A b}
+    → Γ ⊆ Γ' to wc
+    → Atomic א Γ wc A b
+    → Atomic א Γ' wc A b
+  wkR θ (↓E x) = ↓E (⊆to/now θ x)
+  wkR θ (Cut N) = Cut (wkN <> θ · N)
+  wkR θ (⊃E R V) = ⊃E (wkR θ R) (wkV <> θ V)
+
   data EvidenceA (Γ : MCtx) (wc : W) : Type ⁻ → W → Bool → Set where
     E≡ : ∀{A b} → EvidenceA Γ wc A wc b
     E+ : ∀{A w b}
@@ -135,16 +150,6 @@ module EVIDENCE (dec≺ : (w w' : _) → Decidable (w ≺* w')) where
   ed≺* ≺*≡ edΓ = edΓ
   ed≺* (≺*+ ω) edΓ = ed≺+ ω edΓ
 
-  sub-append-swap : {A : Set} 
-    (xs ys zs : List A)
-    → LIST.SET.Sub (xs ++ (ys ++ zs)) (ys ++ (xs ++ zs))
-  sub-append-swap xs ys zs n with LIST.split-append {xs = xs} n
-  ... | Inl n' = LIST.SET.sub-appendl (xs ++ zs) ys
-                   (LIST.SET.sub-appendr xs zs n')
-  ... | Inr n' with LIST.split-append {xs = ys} n' 
-  ... | Inl n'' = LIST.SET.sub-appendr ys (xs ++ zs) n''
-  ... | Inr n'' = LIST.SET.sub-appendl (xs ++ zs) ys
-                    (LIST.SET.sub-appendl zs xs n'')
 
 
 {-

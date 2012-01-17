@@ -60,7 +60,7 @@ module WEAKENING (UWF : UpwardsWellFounded) where
     wkV ρ θ (pR x) = pR (⊆to/now θ x)
     wkV ρ θ (↓R N₁) = ↓R (wkN ρ θ · N₁)
     wkV ρ θ (◇R ω N₁) = ◇R ω (Pwk.N (ih _ (≺+0 ω)) ρ (⊆to/≺ ω θ) · N₁)
---  wkV ρ θ (□R N₁) = □R λ ω → Pwk.N (ih _ (≺+0 ω)) ρ (⊆to/≺ ω θ) · (N₁ ω)
+    wkV ρ θ (□R N₁) = □R λ ω → Pwk.N (ih _ (≺+0 ω)) ρ (⊆to/≺ ω θ) · (N₁ ω)
 
     wkN ρ θ ω (L pf⁺ N₁) = L pf⁺ (wkN ρ (⊆to/both θ) · N₁)
     wkN ρ θ ω (↓L pf⁻ ωh x Sp) = 
@@ -69,10 +69,10 @@ module WEAKENING (UWF : UpwardsWellFounded) where
     wkN ρ θ (I ω) (◇L N₁) = 
       ◇L λ ω' N₀ → wkN ρ θ · 
         (N₁ ω' (Pwk.N (ih _ (≺*S' ω ω')) ρ (⊆to/≺+' (≺*S' ω ω') θ) · N₀)) 
---  wkN ρ θ (I ω) (□L N₁) = 
---    □L λ N₀ → wkN ρ θ · 
---      (N₁ λ ω' → 
---        Pwk.N (ih _ (≺*S' ω ω')) ρ (⊆to/≺+' (≺*S' ω ω') θ) · (N₀ ω'))
+    wkN ρ θ (I ω) (□L N₁) = 
+      □L λ N₀ → wkN ρ θ · 
+        (N₁ λ ω' → 
+          Pwk.N (ih _ (≺*S' ω ω')) ρ (⊆to/≺+' (≺*S' ω ω') θ) · (N₀ ω'))
     wkN ρ θ ω (↑R V₁) = ↑R (wkV ρ θ V₁)
     wkN ρ θ ω (⊃R N₁) = ⊃R (wkN ρ θ (I ≺*≡) N₁)
 

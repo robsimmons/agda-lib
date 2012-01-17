@@ -75,9 +75,20 @@ module PRE-STEP
     → Evidence Γ wc Γ' (A at w)
     → Term [] (Γ' ++ A at w :: Γ) w' · (Reg C)
     → Term [] (Γ' ++ Γ) w' · (Reg C)
-  re-cut-evidence {Γ' = Γ'} ω+ ω* pf⁻ ed N = 
-    unwind' ω+ ω* {!!} (carry-evidence ω+ ω* ed) 
-      (↑L (L {!!} (wkN <> (⊆to/append-swap Γ' [ _ ]) · N))) 
+  re-cut-evidence {Γ' = Γ'} {A = a Q .⁺} ω+ ω* pf⁻ ed N = 
+    unwind' ω+ ω* pf⁻ (carry-evidence ω+ ω* ed) 
+      (↑L (L <> (wkN <> (⊆to/append-swap Γ' [ _ ]) · N))) 
+  re-cut-evidence {Γ' = Γ'} {A = ↓ A} ω+ ω* pf⁻ ed N = 
+    unwind' ω+ ω* pf⁻ (carry-evidence ω+ ω* ed) 
+      (↑L (L <> (wkN <> (⊆to/append-swap Γ' [ _ ]) · N))) 
+  re-cut-evidence {Γ' = Γ'} {A = ⊥} ω+ ω* pf⁻ ed N = 
+    unwind' ω+ ω* pf⁻ (carry-evidence ω+ ω* ed) (↑L ⊥L)
+  re-cut-evidence {Γ' = Γ'} {A = ◇ A} ω+ ω* pf⁻ ed N = 
+    unwind' ω+ ω* pf⁻ (carry-evidence ω+ ω* ed) 
+      (↑L (◇L (λ ω N₀ → {!N!})))
+  re-cut-evidence {Γ' = Γ'} {A = □ A} ω+ ω* pf⁻ ed N = {!!}
+
+--    
    -- carry-evidence ω+ ω* ed
 
   re-cut-evidence' : ∀{w w' Γ Γ' A B b wh C}
@@ -111,9 +122,9 @@ module PRE-STEP
       (decutSp edΓ (varE {b = True} x ωh) Sp)
   decutN edΓ ed ⊥L = ⊥L
   decutN edΓ ed (◇L N₁) = 
-    ◇L λ ω N₀ → decutN edΓ ·t (N₁ ω (re-cut-evidence' ed ω {!!} edΓ N₀))
+    ◇L λ ω N₀ → decutN edΓ ·t (N₁ ω (re-cut-evidence' ed ω <> edΓ N₀))
   decutN edΓ ed (□L N₁) = 
-    □L λ N₀ → decutN edΓ ·t (N₁ λ ω → (re-cut-evidence' ed ω {!!} edΓ (N₀ ω)))
+    □L λ N₀ → decutN edΓ ·t (N₁ λ ω → (re-cut-evidence' ed ω <> edΓ (N₀ ω)))
   decutN edΓ ed (↑R V₁) = ↑R (decutV edΓ V₁)
   decutN edΓ ed (⊃R N₁) = ⊃R (decutN {b = True} edΓ I≡ N₁) 
 

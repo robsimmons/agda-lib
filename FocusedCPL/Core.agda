@@ -23,8 +23,8 @@ data Type : Polarity → Set where
   --
   ↓ : (A : Type ⁻) → Type ⁺
   ⊥ : Type ⁺
-  ◇ : (A : Type ⁻) → Type ⁺
-  □ : (A : Type ⁻) → Type ⁺
+  ◇ : (A : Type ⁺) → Type ⁺
+  □ : (A : Type ⁺) → Type ⁺
   --
   ↑ : (A : Type ⁺) → Type ⁻
   _⊃_ : (A : Type ⁺) (B : Type ⁻) → Type ⁻
@@ -100,10 +100,10 @@ module SEQUENT (UWF : UpwardsWellFounded) where
       → Value א Γ wc (↓ A)
     ◇R : ∀{A w}
       (ω : wc ≺ w)
-      (N₁ : Term א Γ w · (Reg A))
+      (N₁ : Term א Γ w · (Reg (↑ A)))
       → Value א Γ wc (◇ A)
     □R : ∀{A}
-      (N₁ : ∀{w} (ω : wc ≺ w) → Term א Γ w · (Reg A))
+      (N₁ : ∀{w} (ω : wc ≺ w) → Term א Γ w · (Reg (↑ A)))
       → Value א Γ wc (□ A)
 
     -- Terms
@@ -120,10 +120,12 @@ module SEQUENT (UWF : UpwardsWellFounded) where
     ⊥L : ∀{U wh}
       → Term א Γ wc (I ⊥ wh) U
     ◇L : ∀{A U wh}
-      (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term א Γ w · (Reg A)) → Term א Γ wc · U)
+      (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term א Γ w · (Reg (↑ A)))
+        → Term א Γ wc · U)
       → Term א Γ wc (I (◇ A) wh) U
     □L : ∀{A U wh}
-      (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg A)) → Term א Γ wc · U)
+      (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg (↑ A)))
+        → Term א Γ wc · U)
       → Term א Γ wc (I (□ A) wh) U
     ↑R : ∀{A}
       (V₁ : Value א Γ wc A)

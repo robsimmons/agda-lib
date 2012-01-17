@@ -31,9 +31,10 @@ data Type : Polarity → Set where
 
 data Conc : Set where
   Reg : (A : Type ⁻) → Conc
-  -- XXX IDENTITY
+  Abs : (A : Type ⁻) → Conc
 
 _stable⁻ : Conc → Set
+Abs A stable⁻ = Unit
 Reg (a Q .⁻) stable⁻ = Unit
 Reg (↑ A) stable⁻ = Unit
 Reg (A ⊃ B) stable⁻ = Void
@@ -135,7 +136,8 @@ module SEQUENT (UWF : UpwardsWellFounded) where
       → Term א Γ wc · (Reg (A ⊃ B))
     
     -- Spines
-    -- XXX INVERSION
+    hyp⁻ : ∀{A} 
+      → Spine א Γ wc A wc (Abs A)
     pL : ∀{Q}
       → Spine א Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
     ↑L : ∀{A U wh}

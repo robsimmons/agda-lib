@@ -76,6 +76,7 @@ module WEAKENING (UWF : UpwardsWellFounded) where
     wkN ρ θ ω (↑R V₁) = ↑R (wkV ρ θ V₁)
     wkN ρ θ ω (⊃R N₁) = ⊃R (wkN ρ θ (I ≺*≡) N₁)
 
+    wkSp ρ θ ω hyp⁻ = hyp⁻
     wkSp ρ θ ω pL = pL
     wkSp ρ θ ω (↑L N₁) = ↑L (wkN ρ θ (I ω) N₁)
     wkSp ρ θ ω (⊃L V₁ Sp₂) with ω

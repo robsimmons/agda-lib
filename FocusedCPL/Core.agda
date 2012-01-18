@@ -14,10 +14,6 @@ module FocusedCPL.Core where
 
 -- Types
 
-data Polarity : Set where
-  ⁻ : Polarity
-  ⁺ : Polarity
-
 data Type : Polarity → Set where
   a : (Q : String) (⁼ : Polarity) → Type ⁼
   --

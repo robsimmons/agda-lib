@@ -17,7 +17,7 @@ open import Accessibility.IndexedList
 -- Types/Propositions
 infixr 10 _⊃_
 data Type : Set where
-   a   : (N : String) → Type
+   a   : (N : String) (⁼ : Polarity) → Type
    ⊥   : Type
    _⊃_ : (A B : Type) → Type
    ◇   : (A : Type) → Type

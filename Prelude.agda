@@ -26,3 +26,9 @@ module Prelude where
 
   {- Coinduction -}
   open import Lib.Coinduction public
+
+  -- Addition for Structural Focalization type stuff
+  data Polarity : Set where
+    ⁻ : Polarity
+    ⁺ : Polarity
+

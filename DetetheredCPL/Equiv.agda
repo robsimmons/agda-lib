@@ -68,19 +68,18 @@ module EQUIV
     → eraseΓ Γ ⊢ eraseA A [ wc ]
 
   PdefocN : W → Set
-  PdefocN wc = ∀{Γ Ω A}
+  PdefocN wc = ∀{Γ A}
     → Γ stableΓ
-    → wc ≺' Ω
-    → Term [] Γ wc Ω (Reg A)
-    → (eraseΩ Ω ++ eraseΓ Γ) ⊢ eraseA A [ wc ]
+    → Term [] Γ wc · (Reg A)
+    → eraseΓ Γ ⊢ eraseA A [ wc ]
 
   PdefocSp : W → Set
   PdefocSp wc = ∀{Γ B A wh}
     → Γ stableΓ
     → wc ≺* wh
+    → eraseΓ Γ ⊢ eraseA B [ wh ]
     → Spine [] Γ wh B wc (Reg A)
-    → (eraseA B at wh :: eraseΓ Γ) ⊢ eraseA A [ wc ]
-
+    → eraseΓ Γ ⊢ eraseA A [ wc ]
 
   record Pequiv (wc : W) : Set where
    field
@@ -96,32 +95,50 @@ module EQUIV
     defocSp : PdefocSp wc
 
     defocV pf (pR x) = hyp (erasex x)
-    defocV pf (↓R N₁) = defocN pf · N₁
-    defocV pf (◇R ω N₁) = ◇I ω (Pequiv.defocN (ih _ (≺+0 ω)) pf · N₁)
-    defocV pf (□R N₁) = □I λ ω → Pequiv.defocN (ih _ (≺+0 ω)) pf · (N₁ ω)
+    defocV pf (↓R N₁) = defocN pf N₁
+    defocV pf (◇R ω N₁) = ◇I ω (Pequiv.defocN (ih _ (≺+0 ω)) pf N₁)
+    defocV pf (□R N₁) = □I λ ω → Pequiv.defocN (ih _ (≺+0 ω)) pf (N₁ ω)
 
-    defocN pf ω (L pf⁺ N₁) = defocN (LIST.ALL.cons pf⁺ pf) · N₁
-    defocN pf ω (↓L pf⁻ ωh x Sp) = 
-      subst ωh (hyp (erasex x)) (defocSp pf ωh Sp)
-    defocN pf (I ω) ⊥L = ⊥E ω (hyp Z)
-    defocN pf (I ω) (◇L N₁) = ◇E ω (hyp Z) 
-      λ ω' D₀ → ssubst (⊆pr/xtndR ⊆pr/refl 
-                          (◇I ω' (WK-N.wkN 
-                                    (⊆to/stenirrev (≺⊀ ω') (⊆to/refl _)) 
-                                    D₀))) 
-                   (defocN pf · (N₁ ω' {!D₀!}))
-    defocN pf (I ω) (□L N₁) = □E ω (hyp Z) λ D₀ → {!!}
-    defocN pf ω (↑R V₁) = defocV pf V₁
-    defocN pf ω (⊃R N₁) = ⊃I (defocN pf (I ≺*≡) N₁)
-  
-    defocSp pf ω pL = hyp (erasex Z)
-    defocSp pf ω (↑L N₁) = defocN pf (I ω) N₁
-    defocSp pf ω (⊃L V₁ Sp₂) with ω
+    defocN pf (↓L pf⁻ ωh x Sp) = defocSp pf ωh (hyp (erasex x)) Sp
+    defocN pf (↑R V₁) = defocV pf V₁
+    defocN pf (⊃R (L pf⁺ N₁)) = ⊃I (defocN (LIST.ALL.cons pf⁺ pf) N₁)
+    defocN pf (⊃R ⊥L) = ⊃I (⊥E ≺*≡ (hyp Z))
+    defocN pf (⊃R (◇L N₁)) =
+      ⊃I (◇E ≺*≡ (hyp Z)
+           λ ω D₀ →
+             WK-N.wkN wken
+               (defocN pf
+                 (N₁ ω 
+                   (Pequiv.foc (ih _ (≺+0 ω)) pf (WK-N.wkN (wkto ω) D₀)))))
+    defocN pf (⊃R (□L N₁)) = 
+      ⊃I (□E ≺*≡ (hyp Z) 
+           λ D₀ → 
+             WK-N.wkN wken 
+               (defocN pf 
+                 (N₁ λ ω → 
+                       Pequiv.foc (ih _ (≺+0 ω)) pf 
+                         (WK-N.wkN (wkto ω) (D₀ ω)))))
+ 
+    defocSp pf ω R pL = R 
+    defocSp pf ω R (↑L (L pf⁺ N₁)) = 
+      subst ω R (defocN (LIST.ALL.cons pf⁺ pf) N₁)
+    defocSp pf ω R (↑L ⊥L) = ⊥E ω R
+    defocSp pf ω R (↑L (◇L N₁)) = 
+      ◇E ω R
+        λ ω' D₀ → defocN pf (N₁ ω' (Pequiv.foc (ih _ (≺*S' ω ω')) pf D₀))
+    defocSp pf ω R (↑L (□L N₁)) = 
+      □E ω R 
+        λ D₀ → defocN pf (N₁ λ ω' → Pequiv.foc (ih _ (≺*S' ω ω')) pf (D₀ ω'))
+    defocSp pf ω R (⊃L V₁ Sp₂) with ω
+    ... | ≺*≡ = defocSp pf ω (⊃E R (defocV pf V₁)) Sp₂ 
+    ... | ≺*+ ω' = 
+      defocSp pf ω (⊃E R (Pequiv.defocV (ih _ ω') pf V₁)) Sp₂ 
+{- with ω
     ... | ≺*≡  = 
       subst ω 
         (⊃E (hyp Z) (WK-N.wkN (⊆to/wken* ω (⊆to/refl _)) (defocV pf V₁)))
         (WK-N.wkN wkex (defocSp pf ω Sp₂))
-    ... | ≺*+ ω' = {! subst ω ? (WK-N.wkN wkex (defocSp pf ω Sp₂))!}
+    ... | ≺*+ ω' = {! subst ω ? (WK-N.wkN wkex (defocSp pf ω Sp₂))!} -}
 
    -- open SEQUENT UWF dec≺
 
@@ -137,8 +154,8 @@ module EQUIV
    -- Given the induction hypothesis, natural deduction implies sequent
    
 
-   nd→seq' : (w : W) → ((w' : W) → w ≺+ w' → equivP w')
-              → ∀{Γ A} → Γ ⊢ A [ w ] → Γ ⇒ A [ w ]
+   nd→seq' : (w : W) → ((w' : W) → w ≺+ w' → equivP w') 
+             → ∀{Γ A} → Γ ⊢ A [ w ] → Γ ⇒ A [ w ]
    nd→seq' w ih (hyp iN) = ident iN
    nd→seq' w ih (⊃I D) = ⊃R (nd→seq' w ih D)
    nd→seq' w ih (⊃E D D') = 
@@ -166,24 +183,6 @@ module EQUIV
        (□L (≺*+ ωh) Z (λ D₀ → decut (fst (ih _ ωh) D) (nd→seq' w ih 
         (D' (λ ω → snd (ih _ (≺+S' ωh ω)) (wkS (wkto ω) (D₀ ω)))))))
 
-   -- Given the induction hypothesis, sequent implies natural deduction
-   seq→nd' : (w : W) → ((w' : W) → w ≺+ w' → equivP w')
-              → ∀{Γ A} → Γ ⇒ A [ w ] → Γ ⊢ A [ w ]
-   seq→nd' w ih (hyp iN) = hyp iN
-   seq→nd' w ih (⊃R D) = ⊃I (seq→nd' w ih D)
-   seq→nd' w ih (⊃L ≺*≡ iN D D') = 
-      subst ≺*≡ (⊃E (hyp iN) (seq→nd' w ih D)) (seq→nd' w ih D')
-   seq→nd' w ih (⊃L (≺*+ ωh) iN D D') = 
-      subst (≺*+ ωh) (⊃E (hyp iN) (snd (ih _ ωh) D)) (seq→nd' w ih D')
-   seq→nd' w ih (⊥L ωh iN) = ⊥E ωh (hyp iN) 
-   seq→nd' w ih (◇R ω D) = ◇I ω (snd (ih _ (≺+0 ω)) D)
-   seq→nd' w ih (◇L ωh iN D) = 
-      ◇E ωh (hyp iN)
-       (λ ω D₀ → seq→nd' w ih (D ω (fst (ih _ (≺*S' ωh ω)) D₀))) 
-   seq→nd' w ih (□R D) = □I (λ ω → snd (ih _ (≺+0 ω)) (D ω))
-   seq→nd' w ih (□L ωh iN D) = 
-      □E ωh (hyp iN) 
-       (λ D₀ → seq→nd' w ih (D (λ ω → fst (ih _ (≺*S' ωh ω)) (D₀ ω)))) 
 
    -- Therefore, both sequent calculus and natural deduction are equivalent
    nd⇆seq : (w : W) → 

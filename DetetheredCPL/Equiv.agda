@@ -31,6 +31,234 @@ module EQUIV
   open CUT UWF dec≺
   open IDENTITY UWF dec≺
 
+  pol⁺ : UType → Type ⁺
+  pol⁻ : UType → Type ⁻
+
+  pol⁺ (a Q ⁺) = a Q ⁺
+  pol⁺ ⊥ = ⊥
+  pol⁺ (◇ A) = ◇ (pol⁺ A)
+  pol⁺ (□ A) = □ (pol⁺ A)
+  pol⁺ (a Q ⁻) = ↓ (a Q ⁻)
+  pol⁺ (A ⊃ B) = ↓ (pol⁺ A ⊃ pol⁻ B)
+
+  pol⁻ (a Q ⁺) = ↑ (a Q ⁺)
+  pol⁻ ⊥ = ↑ ⊥
+  pol⁻ (◇ A) = ↑ (◇ (pol⁺ A))
+  pol⁻ (□ A) = ↑ (□ (pol⁺ A))
+  pol⁻ (a Q ⁻) = a Q ⁻
+  pol⁻ (A ⊃ B) = pol⁺ A ⊃ pol⁻ B
+
+  polhyp : Item UType → Item (Type ⁺)
+  polhyp (a Q ⁺ at w) = a Q ⁺ at w
+  polhyp (⊥ at w) = ↓ (↑ ⊥) at w
+  polhyp (◇ A at w) = ↓ (↑ (◇ (pol⁺ A))) at w
+  polhyp (□ A at w) = ↓ (↑ (□ (pol⁺ A))) at w
+  polhyp (a Q ⁻ at w) = ↓ (a Q ⁻) at w
+  polhyp ((A ⊃ B) at w) = ↓ (pol⁺ A ⊃ pol⁻ B) at w
+
+  polΓ : UMCtx → MCtx
+  polΓ [] = []
+  polΓ (Item :: Γ) = polhyp Item :: polΓ Γ
+
+  polx : ∀{Item Γ} → Item ∈ Γ → (polhyp Item) ∈ (polΓ Γ)
+  polx Z = Z
+  polx (S x) = S (polx x)
+
+  Pfoc : W → Set
+  Pfoc wc = ∀{A Γ}
+    → Γ ⊢ A [ wc ]
+    → Term [] (polΓ Γ) wc · (Reg (pol⁻ A))
+
+  
+
+
+{-
+  PdefocV : W → Set
+  PdefocV wc = ∀{Γ A}
+    → Value [] Γ wc A
+    → eraseΓ Γ ⊢ eraseA A [ wc ]
+
+  PdefocN : W → Set
+  PdefocN wc = ∀{Γ A}
+    → Γ stableΓ
+    → Term [] Γ wc · (Reg A)
+    → eraseΓ Γ ⊢ eraseA A [ wc ]
+
+  PdefocSp : W → Set
+  PdefocSp wc = ∀{Γ B A wh}
+    → Γ stableΓ
+    → wc ≺* wh
+    → eraseΓ Γ ⊢ eraseA B [ wh ]
+    → Spine [] Γ wh B wc (Reg A)
+    → eraseΓ Γ ⊢ eraseA A [ wc ]
+
+
+  eraseΩ : ICtx → UMCtx
+  eraseΩ · = []
+  eraseΩ (I A w) = [ eraseA A at w ]
+
+  eraseΓ : MCtx → UMCtx
+  eraseΓ [] = []
+  eraseΓ ((A at w) :: Γ) = (eraseA A at w) :: eraseΓ Γ
+
+
+  _stableΓ : MCtx → Set
+  _stableΓ = LIST.All (λ Item → prjx Item stable⁺)
+
+  unerasex : ∀{Γ A w} 
+    → Γ stableΓ
+    → (A at w) ∈ eraseΓ Γ 
+    → (∃ λ B → ((↓ B at w) ∈ Γ) × (A ≡ eraseA B))
+      + (∃ λ Q → ((a Q ⁺ at w) ∈ Γ) × (A ≡ a Q ⁺))
+  unerasex {[]} pf ()
+  unerasex {A :: xs} pf Z with pf Z 
+  unerasex {(a Q .⁺ at w) :: xs} pf Z | pf' = Inr (_ , Z , refl)
+  unerasex {(↓ A at w) :: xs} pf Z | pf' = Inl (_ , Z , refl)
+  unerasex {(⊥ at w) :: xs} pf Z | ()
+  unerasex {(◇ A at w) :: xs} pf Z | ()
+  unerasex {(□ A at w) :: xs} pf Z | ()
+  unerasex {_ :: _} pf (S x) with unerasex (λ x' → pf (S x')) x
+  ... | Inl (_ , x' , refl) = Inl (_ , S x' , refl)
+  ... | Inr (_ , x' , refl) = Inr (_ , S x' , refl)
+
+-}
+
+  record Pequiv (wc : W) : Set where
+   field
+    foc : Pfoc wc
+{-
+    defocV : PdefocV wc
+    defocN : PdefocN wc
+    defocSp : PdefocSp wc
+-}
+
+  module EQUIV-LEM (wc : W) (ih : (wc' : W) → wc ≺+ wc' → Pequiv wc') where
+
+{-
+    defocV : PdefocV wc
+    defocN : PdefocN wc
+    defocSp : PdefocSp wc
+
+    defocV pf (pR x) = hyp (erasex x)
+    defocV pf (↓R N₁) = defocN pf N₁
+    defocV pf (◇R ω N₁) = ◇I ω (Pequiv.defocN (ih _ (≺+0 ω)) pf N₁)
+    defocV pf (□R N₁) = □I λ ω → Pequiv.defocN (ih _ (≺+0 ω)) pf (N₁ ω)
+
+    defocN pf (↓L pf⁻ ωh x Sp) = defocSp pf ωh (hyp (erasex x)) Sp
+    defocN pf (↑R V₁) = defocV pf V₁
+    defocN pf (⊃R (L pf⁺ N₁)) = ⊃I (defocN (LIST.ALL.cons pf⁺ pf) N₁)
+    defocN pf (⊃R ⊥L) = ⊃I (⊥E ≺*≡ (hyp Z))
+    defocN pf (⊃R (◇L N₁)) =
+      ⊃I (◇E ≺*≡ (hyp Z)
+           λ ω D₀ →
+             WK-N.wkN wken
+               (defocN pf
+                 (N₁ ω 
+                   (Pequiv.foc (ih _ (≺+0 ω)) pf (WK-N.wkN (wkto ω) D₀)))))
+    defocN pf (⊃R (□L N₁)) = 
+      ⊃I (□E ≺*≡ (hyp Z) 
+           λ D₀ → 
+             WK-N.wkN wken 
+               (defocN pf 
+                 (N₁ λ ω → 
+                       Pequiv.foc (ih _ (≺+0 ω)) pf 
+                         (WK-N.wkN (wkto ω) (D₀ ω)))))
+ 
+    defocSp pf ω R pL = R 
+    defocSp pf ω R (↑L (L pf⁺ N₁)) = 
+      subst ω R (defocN (LIST.ALL.cons pf⁺ pf) N₁)
+    defocSp pf ω R (↑L ⊥L) = ⊥E ω R
+    defocSp pf ω R (↑L (◇L N₁)) = 
+      ◇E ω R
+        λ ω' D₀ → defocN pf (N₁ ω' (Pequiv.foc (ih _ (≺*S' ω ω')) pf D₀))
+    defocSp pf ω R (↑L (□L N₁)) = 
+      □E ω R 
+        λ D₀ → defocN pf (N₁ λ ω' → Pequiv.foc (ih _ (≺*S' ω ω')) pf (D₀ ω'))
+    defocSp pf ω R (⊃L V₁ Sp₂) with ω
+    ... | ≺*≡ = defocSp pf ω (⊃E R (defocV pf V₁)) Sp₂ 
+    ... | ≺*+ ω' = 
+      defocSp pf ω (⊃E R (Pequiv.defocV (ih _ ω') pf V₁)) Sp₂ 
+-}
+
+    u↓↑E : ∀{A w Γ}
+      → Term [] Γ w · (Reg (↑ (↓ A)))
+      → Term [] Γ w · (Reg A)
+    u↓↑E N = 
+      rsubstN [] ≺*≡ N 
+        (expand⁻ (↓L <> ≺*≡ Z (↑L (L <> (↓L <> ≺*≡ Z hyp⁻))))) ·t
+
+    u⊃I : ∀{A B w Γ}
+      → Term [] ((polhyp (A at w)) :: Γ) w · (Reg B)
+      → Term [] Γ w · (Reg (pol⁺ A ⊃ B))
+    u⊃I {a Q ⁺} N = ⊃R (L <> N)
+    u⊃I {⊥} N = ⊃R ⊥L
+    u⊃I {◇ A} N = 
+      rsubstN [] ≺*≡ (⊃R (L <> N)) 
+        (⊃R (◇L λ ω N₀ → 
+                  expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (↑R (◇R ω N₀))) hyp⁻)))) ·t
+    u⊃I {□ A} N = 
+      rsubstN [] ≺*≡ (⊃R (L <> N)) 
+        (⊃R (□L λ N₀ →  
+                  expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (↑R (□R λ ω → N₀ ω))) hyp⁻))))
+        ·t
+    u⊃I {a Q ⁻} N = ⊃R (L <> N)
+    u⊃I {A ⊃ B} N = ⊃R (L <> N)
+
+    u⊥E : ∀{A w wc Γ}
+      → wc ≺* w
+      → Term [] Γ w · (Reg (↑ ⊥))
+      → Term [] Γ wc · (Reg A)
+    u⊥E ω N = u↓↑E (subst⁻ <> ω N (↑L ⊥L))
+
+    u◇E : ∀{A w wc Γ}
+      → wc ≺* w
+      → Term [] Γ w · (Reg (↑ ⊥))
+      → Term [] Γ wc · (Reg A)
+    u◇E ω N = u↓↑E (subst⁻ <> ω N (↑L ⊥L))
+
+    foc : Pfoc wc
+    foc {a N ⁻} (hyp x) = ↓L <> ≺*≡ (polx x) pL
+    foc {a N ⁺} (hyp x) = ↑R (pR (polx x))
+    foc {⊥} (hyp x) = expand⁻ (↓L <> ≺*≡ (polx x) hyp⁻)
+    foc {A ⊃ B} (hyp x) = expand⁻ (↓L <> ≺*≡ (polx x) hyp⁻)
+    foc {◇ A} (hyp x) = expand⁻ (↓L <> ≺*≡ (polx x) hyp⁻)
+    foc {□ A} (hyp x) = expand⁻ (↓L <> ≺*≡ (polx x) hyp⁻)
+    foc {A ⊃ B} (⊃I D₁) = u⊃I {A} {pol⁻ B} (foc D₁)
+    foc (⊃E D₁ D₂) = u↓↑E (rsubstN [] ≺*≡ (foc D₁) {!!} ·t)
+    foc (⊥E ω D₁) with ω
+    ... | ≺*≡ =
+      u↓↑E (rsubstN [] ω (foc D₁) (↓L <> ω Z (↑L ⊥L)) ·t)
+    ... | ≺*+ ω' = 
+      u↓↑E (rsubstN [] ω (Pequiv.foc (ih _ ω') D₁) (↓L <> ω Z (↑L ⊥L)) ·t)
+    foc (◇I ω D₁) = {!!}
+    foc (◇E ωh D₁ D₂) = {!!}
+    foc (□I D₁) = {!!}
+    foc (□E ωh D₁ D₂) = {!!}
+{-
+    foc {↑ (↓ A)} pf D = ↑R (↓R (foc {A} pf D))
+    foc {↑ (◇ A)} pf (◇I ω D₁) = ↑R (◇R ω (Pequiv.foc (ih _ (≺+0 ω)) pf D₁))
+    foc {↑ (□ A)} pf (□I D₁) = 
+      ↑R (□R λ ω → Pequiv.foc (ih _ (≺+0 ω)) pf (D₁ ω))
+    foc {a Q .⁺ ⊃ B} pf (⊃I D₁) = ⊃R (L <> (foc (LIST.ALL.cons <> pf) D₁))
+    foc {↓ A ⊃ B} pf (⊃I D₁) = ⊃R (L <> (foc (LIST.ALL.cons <> pf) D₁))
+    foc {⊥ ⊃ B} pf (⊃I D₁) = ⊃R ⊥L
+    foc {◇ A ⊃ B} pf (⊃I D₁) = u◇⊃I (foc (LIST.ALL.cons <> pf) D₁) 
+    foc {□ A ⊃ B} pf (⊃I D₁) = u□⊃I (foc (LIST.ALL.cons <> pf) D₁)
+
+    foc {A} pf (hyp x) = {!!}
+
+    foc {A} pf (CORE.⊃E {B} D₁ D₂) = {!!}
+    foc pf (⊥E ω D₁) with ω
+    ... | ≺*≡ = u⊥E ω (foc pf D₁)
+    ... | ≺*+ ω' = u⊥E ω (Pequiv.foc (ih _ ω') pf D₁) 
+    foc pf (◇E ≺*≡ D₁ D₂) = {!!}
+    foc pf (◇E (≺*+ y) D₁ D₂) = {!!}
+    foc pf (□E ≺*≡ D₁ D₂) = {!!}
+    foc pf (□E (≺*+ y) D₁ D₂) = {!!}
+-}
+
+
+{-
   eraseA : ∀{⁼} → Type ⁼ → UType
   eraseA {⁼} (a Q .⁼) = a Q ⁼
   eraseA (↓ A) = eraseA A
@@ -207,6 +435,7 @@ module EQUIV
     foc pf (◇E (≺*+ y) D₁ D₂) = {!!}
     foc pf (□E ≺*≡ D₁ D₂) = {!!}
     foc pf (□E (≺*+ y) D₁ D₂) = {!!}
+-}
 
 {- with ω
     ... | ≺*≡  = 

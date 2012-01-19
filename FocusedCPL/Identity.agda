@@ -83,3 +83,6 @@ module IDENTITY (UWF : UpwardsWellFounded)
     ⊃R (◇L λ ω N₀ → expand⁻ (fsub⁻ <> (⊃L (◇R ω N₀) hyp⁻) N))
   expand⁻ {□ A ⊃ B} N = 
     ⊃R (□L (λ N₀ → expand⁻ (fsub⁻ <> (⊃L (□R (λ ω → N₀ ω)) hyp⁻) N)))
+
+  identity : ∀{A Γ w} → (↓ A at w) ∈ Γ → Term [] Γ w · (Reg A)
+  identity x = expand⁻ (↓L <> ≺*≡ x hyp⁻)

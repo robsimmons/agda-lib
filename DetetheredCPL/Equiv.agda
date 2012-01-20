@@ -106,7 +106,7 @@ module EQUIV
     → Γ ⊢ A [ wc ]
 
   PdefocSp : W → Set
-  PdefocSp wc = ∀{B Γ A wh}
+  PdefocSp wc = ∀{B A Γ wh}
     → wc ≺* wh
     → Γ ⊢ B [ wh ]
     → Spine [] (polΓ Γ) wh (pol⁻ B) wc (Reg (pol⁻ A))
@@ -188,12 +188,16 @@ module EQUIV
     defocN {□ A} (↑R V₁) = defocV V₁
     defocN (↓L pf⁻ ωh x Sp) with unpolx' x
     ... | (_ , x' , Refl) = defocSp ωh (hyp x') Sp
-    defocN {a Q ⁺ ⊃ B} (⊃R (L pf⁺ N₁)) = {!!}
-    defocN {a Q ⁻ ⊃ B} (⊃R (L pf⁺ N₁)) = {!!}
-    defocN {(A ⊃ B) ⊃ B'} (⊃R (L pf⁺ N₁)) = {!!}
+    defocN {a Q ⁺ ⊃ B} (⊃R (L pf⁺ N₁)) = ⊃I (defocN N₁)
+    defocN {a Q ⁻ ⊃ B} (⊃R (L pf⁺ N₁)) = ⊃I (defocN N₁)
+    defocN {(A ⊃ B) ⊃ B'} (⊃R (L pf⁺ N₁)) = ⊃I (defocN N₁)
     defocN {⊥ ⊃ B} (⊃R ⊥L) = ⊃I (⊥E ≺*≡ (hyp Z))
     defocN {◇ A ⊃ B} (⊃R (◇L N₁)) = 
-      ⊃I (◇E ≺*≡ (hyp Z) λ ω D₀ → WK-N.wkN wken (defocN (N₁ ω {! wkN <> ? · (Pequiv.foc (ih _ (≺+0 ω)) D₀) !})))
+      ⊃I (◇E ≺*≡ (hyp Z)
+           λ ω D₀ → 
+             WK-N.wkN wken 
+               (defocN (N₁ ω (wkN <> (⊆to/stenirrev (≺⊀ ω) (⊆to/refl _)) · 
+               (Pequiv.foc↑ (ih _ (≺+0 ω)) D₀)))))
     defocN {□ A ⊃ B} (⊃R (□L N₁)) = {!!}
     defocN {⊥ ⊃ B} (⊃R (L () N₁))
     defocN {◇ A ⊃ B} (⊃R (L () N₁))
@@ -205,7 +209,12 @@ module EQUIV
       ◇E ω D λ ω' D₀ → defocN (N₁ ω' (Pequiv.foc↑ (ih _ (≺*S' ω ω')) D₀))
     defocSp {□ A} ω D (↑L (□L N₁)) = 
       □E ω D λ D₀ → defocN (N₁ λ ω' → Pequiv.foc↑ (ih _ (≺*S' ω ω')) (D₀ ω'))
-    defocSp {a Q ⁻} ω D Sp = {!!}
+    defocSp {a .Q ⁻} {a Q ⁻} ω D pL = D
+    defocSp {a Q ⁻} {a N ⁺} ω D ()
+    defocSp {a Q ⁻} {⊥} ω D ()
+    defocSp {a Q ⁻} {A ⊃ B} ω D ()
+    defocSp {a Q ⁻} {◇ A} ω D ()
+    defocSp {a Q ⁻} {□ A} ω D ()
     defocSp {A ⊃ B} ω D (⊃L V₁ Sp₂) with ω
     ... | ≺*≡ = defocSp {B} ω (⊃E D (defocV V₁)) Sp₂
     ... | ≺*+ ω' = defocSp {B} ω (⊃E D (Pequiv.defocV (ih _ ω') V₁)) Sp₂

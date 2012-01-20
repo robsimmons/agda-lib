@@ -64,33 +64,65 @@ module EQUIV
   polx Z = Z
   polx (S x) = S (polx x)
 
+  unpolx : ∀{Γ A w} 
+    → (A at w) ∈ polΓ Γ 
+    → (∃ λ B → ((B at w) ∈ Γ) × (polhyp (B at w) ≡ (A at w)))
+  unpolx {[]} ()
+  unpolx {(a Q ⁺ at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {(⊥ at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {(◇ A at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {(□ A at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {(a Q ⁻ at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {((A ⊃ B) at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx {A :: Γ'} (S x) with unpolx {Γ'} x 
+  ... | (_ , x' , refl) = (_ , S x' , refl)
+
+  unpolx' : ∀{Γ A w} 
+    → (↓ A at w) ∈ polΓ Γ 
+    → (∃ λ B → ((B at w) ∈ Γ) × (pol⁻ B ≡ A))
+  unpolx' {[]} ()
+  unpolx' {(⊥ at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx' {(◇ A at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx' {(□ A at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx' {(a Q ⁻ at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx' {((A ⊃ B) at w) :: Γ'} Z = (_ , Z , refl)
+  unpolx' {A :: Γ'} (S x) with unpolx' {Γ'} x 
+  ... | (_ , x' , refl) = (_ , S x' , refl)
+
+
   Pfoc : W → Set
   Pfoc wc = ∀{A Γ}
     → Γ ⊢ A [ wc ]
     → Term [] (polΓ Γ) wc · (Reg (pol⁻ A))
 
+  PdefocV : W → Set
+  PdefocV wc = ∀{A Γ}
+    → Value [] (polΓ Γ) wc (pol⁺ A)
+    → Γ ⊢ A [ wc ]
+
   PdefocN : W → Set
-  PdefocN wc = ∀{Γ A}
+  PdefocN wc = ∀{A Γ}
+    → Term [] (polΓ Γ) wc · (Reg (pol⁻ A))
+    → Γ ⊢ A [ wc ]
+
+  PdefocSp : W → Set
+  PdefocSp wc = ∀{B Γ A wh}
+    → wc ≺* wh
+    → Γ ⊢ B [ wh ]
+    → Spine [] (polΓ Γ) wh (pol⁻ B) wc (Reg (pol⁻ A))
+    → Γ ⊢ A [ wc ]
+
+  Pfoc↑ : W → Set
+  Pfoc↑ wc = ∀{A Γ}
+    → Γ ⊢ A [ wc ]
+    → Term [] (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
+
+  Pdefoc↑ : W → Set
+  Pdefoc↑ wc = ∀{A Γ}
     → Term [] (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
     → Γ ⊢ A [ wc ]
   
-
-
 {-
-  PdefocV : W → Set
-  PdefocV wc = ∀{Γ A}
-    → Value [] Γ wc A
-    → eraseΓ Γ ⊢ eraseA A [ wc ]
-
-
-  PdefocSp : W → Set
-  PdefocSp wc = ∀{Γ B A wh}
-    → Γ stableΓ
-    → wc ≺* wh
-    → eraseΓ Γ ⊢ eraseA B [ wh ]
-    → Spine [] Γ wh B wc (Reg A)
-    → eraseΓ Γ ⊢ eraseA A [ wc ]
-
 
   eraseΩ : ICtx → UMCtx
   eraseΩ · = []
@@ -125,25 +157,63 @@ module EQUIV
   record Pequiv (wc : W) : Set where
    field
     foc : Pfoc wc
-    defocN : PdefocN wc
-{-
     defocV : PdefocV wc
     defocN : PdefocN wc
     defocSp : PdefocSp wc
--}
+    foc↑ : Pfoc↑ wc
+    defoc↑ : Pdefoc↑ wc
 
   module EQUIV-LEM (wc : W) (ih : (wc' : W) → wc ≺+ wc' → Pequiv wc') where
 
-{-
     defocV : PdefocV wc
     defocN : PdefocN wc
     defocSp : PdefocSp wc
 
-    defocV pf (pR x) = hyp (erasex x)
-    defocV pf (↓R N₁) = defocN pf N₁
-    defocV pf (◇R ω N₁) = ◇I ω (Pequiv.defocN (ih _ (≺+0 ω)) pf N₁)
-    defocV pf (□R N₁) = □I λ ω → Pequiv.defocN (ih _ (≺+0 ω)) pf (N₁ ω)
+    defocV {a Q ⁺} (pR x) with unpolx x
+    defocV {a Q ⁺} (SEQUENT.pR x) | (a .Q ⁺ , x' , Refl) = hyp x'
+    defocV {a Q ⁺} (SEQUENT.pR x) | (⊥ , x' , ())
+    defocV {a Q ⁺} (SEQUENT.pR x) | (◇ A , x' , ())
+    defocV {a Q ⁺} (SEQUENT.pR x) | (□ A , x' , ())
+    defocV {a Q ⁺} (SEQUENT.pR x) | (a N ⁻ , x' , ())
+    defocV {a Q ⁺} (SEQUENT.pR x) | (A ⊃ B , x' , ())
+    defocV {⊥} ()
+    defocV {◇ A} (◇R ω N₁) = ◇I ω (Pequiv.defoc↑ (ih _ (≺+0 ω)) N₁)
+    defocV {□ A} (□R N₁) = □I λ ω → Pequiv.defoc↑ (ih _ (≺+0 ω)) (N₁ ω) 
+    defocV {a Q ⁻} (↓R N₁) = defocN N₁
+    defocV {A ⊃ B} (↓R N₁) = defocN N₁
 
+    defocN {a Q ⁺} (↑R V₁) = defocV V₁
+    defocN {⊥} (↑R V₁) = defocV V₁
+    defocN {◇ A} (↑R V₁) = defocV V₁
+    defocN {□ A} (↑R V₁) = defocV V₁
+    defocN (↓L pf⁻ ωh x Sp) with unpolx' x
+    ... | (_ , x' , Refl) = defocSp ωh (hyp x') Sp
+    defocN {a Q ⁺ ⊃ B} (⊃R (L pf⁺ N₁)) = {!!}
+    defocN {a Q ⁻ ⊃ B} (⊃R (L pf⁺ N₁)) = {!!}
+    defocN {(A ⊃ B) ⊃ B'} (⊃R (L pf⁺ N₁)) = {!!}
+    defocN {⊥ ⊃ B} (⊃R ⊥L) = ⊃I (⊥E ≺*≡ (hyp Z))
+    defocN {◇ A ⊃ B} (⊃R (◇L N₁)) = 
+      ⊃I (◇E ≺*≡ (hyp Z) λ ω D₀ → WK-N.wkN wken (defocN (N₁ ω {! wkN <> ? · (Pequiv.foc (ih _ (≺+0 ω)) D₀) !})))
+    defocN {□ A ⊃ B} (⊃R (□L N₁)) = {!!}
+    defocN {⊥ ⊃ B} (⊃R (L () N₁))
+    defocN {◇ A ⊃ B} (⊃R (L () N₁))
+    defocN {□ A ⊃ B} (⊃R (L () N₁))
+
+    defocSp {a N ⁺} ω D (↑L (L pf⁺ N₁)) = subst ω D (defocN N₁)
+    defocSp {⊥} ω D (↑L ⊥L) = ⊥E ω D
+    defocSp {◇ A} ω D (↑L (◇L N₁)) = 
+      ◇E ω D λ ω' D₀ → defocN (N₁ ω' (Pequiv.foc↑ (ih _ (≺*S' ω ω')) D₀))
+    defocSp {□ A} ω D (↑L (□L N₁)) = 
+      □E ω D λ D₀ → defocN (N₁ λ ω' → Pequiv.foc↑ (ih _ (≺*S' ω ω')) (D₀ ω'))
+    defocSp {a Q ⁻} ω D Sp = {!!}
+    defocSp {A ⊃ B} ω D (⊃L V₁ Sp₂) with ω
+    ... | ≺*≡ = defocSp {B} ω (⊃E D (defocV V₁)) Sp₂
+    ... | ≺*+ ω' = defocSp {B} ω (⊃E D (Pequiv.defocV (ih _ ω') V₁)) Sp₂
+    defocSp {⊥} ω D (↑L (L () N₁))
+    defocSp {◇ A} ω D (↑L (L () N₁))
+    defocSp {□ A} ω D (↑L (L () N₁))
+    
+{-
     defocN pf (↓L pf⁻ ωh x Sp) = defocSp pf ωh (hyp (erasex x)) Sp
     defocN pf (↑R V₁) = defocV pf V₁
     defocN pf (⊃R (L pf⁺ N₁)) = ⊃I (defocN (LIST.ALL.cons pf⁺ pf) N₁)
@@ -269,7 +339,7 @@ module EQUIV
       ↑R (◇R ω (↑R (↓R (Pequiv.foc (ih _ (≺+0 ω)) D₁))))
     foc {C} (◇E ωh D₁ D₂) = 
       u◇E ωh (foc* ωh D₁)
-        λ ω N₀ → foc (D₂ ω (Pequiv.defocN (ih _ (≺*S' ωh ω)) N₀))
+        λ ω N₀ → foc (D₂ ω (Pequiv.defoc↑ (ih _ (≺*S' ωh ω)) N₀))
     foc (□I D₁) = {!!}
     foc (□E ωh D₁ D₂) = {!!}
 {-

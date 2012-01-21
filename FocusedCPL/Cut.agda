@@ -77,18 +77,18 @@ module CUT
   decutSp = P.decutSp PF
   
   cut : ∀{wc w Γ A C}
-    → Term [] Γ w · (Reg A)
-    → Term [] ((↓ A at w) :: Γ) wc · (Reg C)
-    → Term [] Γ wc · (Reg C)
+    → Term Γ w · (Reg A)
+    → Term ((↓ A at w) :: Γ) wc · (Reg C)
+    → Term Γ wc · (Reg C)
   cut {wc} {w} N M with dec≺ wc w
   ... | Inl ω = rsubstN [] ω N M ·t
-  ... | Inr ω = wkN <> (⊆to/stenirrev ω (⊆to/refl _)) · M
+  ... | Inr ω = wkN (⊆to/stenirrev ω (⊆to/refl _)) · M
 
   decut : ∀{wc w Γ A U}
-    → Term [] Γ w · (Reg A)
-    → Term [] Γ wc · U
-    → Term [] ((↓ A at w) :: Γ) wc · U
+    → Term Γ w · (Reg A)
+    → Term Γ wc · U
+    → Term ((↓ A at w) :: Γ) wc · U
   decut {wc} {w} N M with dec≺ wc w
   decut N M | Inl ≺*≡ = decutN (N⊀ (nrefl+ _ _ refl)) ·t M
   decut N M | Inl (≺*+ ω) = decutN (N+ ω <> (Cut (↑R (↓R N)))) ·t M
-  decut N M | Inr ω = wkN <> (⊆to/wkenirrev ω (⊆to/refl _)) · M  
+  decut N M | Inr ω = wkN (⊆to/wkenirrev ω (⊆to/refl _)) · M  

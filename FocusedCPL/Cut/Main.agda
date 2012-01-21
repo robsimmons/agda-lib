@@ -37,16 +37,13 @@ module MAIN-STEP
   lsubstN : PlsubstN wc
   lsubstSp : PlsubstSp wc
 
-  subst⁺ ω (pR x) (L pf⁺ N₁) = wkN <> (⊆to/cntr x) · N₁
+  subst⁺ ω (pR x) (L pf⁺ N₁) = wkN (⊆to/cntr x) · N₁
   subst⁺ ω (↓R N₁) (L pf⁺ N₁')  = rsubstN [] ω N₁ N₁' ·t
   subst⁺ ω (◇R wh N₁) (L () N₁')
   subst⁺ ω (◇R wh N₁) (◇L N₁') = N₁' wh N₁
   subst⁺ ω (□R N₁) (L () N₁')
   subst⁺ ω (□R N₁) (□L N₁') = N₁' (λ ω → N₁ ω)
 
-  --subst⁻ pf ω (↓L pf⁻ ωh x Sp) SEQUENT.hyp⁻ = {!!}
-  --subst⁻ pf ω (↑R V₁) SEQUENT.hyp⁻ = {!!}
-  --subst⁻ pf ω (⊃R N₁) SEQUENT.hyp⁻ = {!!}
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) pL = ↓L pf⁻ ωh x Sp
   subst⁻ pf ω (↓L pf⁻ ωh x Sp) (↑L N₁) = 
     ↓L pf (≺*trans ω ωh) x (lsubstSp [] pf ω Sp N₁ (varE x (≺*trans ω ωh)))

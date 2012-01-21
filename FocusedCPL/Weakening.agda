@@ -23,27 +23,24 @@ module WEAKENING (UWF : UpwardsWellFounded) where
       → wc ≺' (I A w) 
 
   PwkV : W → Set
-  PwkV wc = ∀{א Γ Γ' A}
-      → Unit
+  PwkV wc = ∀{Γ Γ' A}
       → Γ ⊆ Γ' to wc
-      → Value א Γ wc A
-      → Value א Γ' wc A
+      → Value Γ wc A
+      → Value Γ' wc A
 
   PwkN : W → Set
-  PwkN wc = ∀{א Γ Γ' Ω A}
-      → Unit
+  PwkN wc = ∀{Γ Γ' Ω A}
       → Γ ⊆ Γ' to wc
       → wc ≺' Ω
-      → Term א Γ wc Ω A
-      → Term א Γ' wc Ω A
+      → Term Γ wc Ω A
+      → Term Γ' wc Ω A
 
   PwkSp : W → Set
-  PwkSp wc = ∀{א Γ Γ' wh B A}
-      → Unit
+  PwkSp wc = ∀{Γ Γ' wh B A}
       → Γ ⊆ Γ' to wc
       → wc ≺* wh
-      → Spine א Γ wh B wc A
-      → Spine א Γ' wh B wc A
+      → Spine Γ wh B wc A
+      → Spine Γ' wh B wc A
 
   record Pwk (wc : W) : Set where
    field
@@ -57,31 +54,31 @@ module WEAKENING (UWF : UpwardsWellFounded) where
     wkN : PwkN wc
     wkSp : PwkSp wc
   
-    wkV ρ θ (pR x) = pR (⊆to/now θ x)
-    wkV ρ θ (↓R N₁) = ↓R (wkN ρ θ · N₁)
-    wkV ρ θ (◇R ω N₁) = ◇R ω (Pwk.N (ih _ (≺+0 ω)) ρ (⊆to/≺ ω θ) · N₁)
-    wkV ρ θ (□R N₁) = □R λ ω → Pwk.N (ih _ (≺+0 ω)) ρ (⊆to/≺ ω θ) · (N₁ ω)
+    wkV θ (pR x) = pR (⊆to/now θ x)
+    wkV θ (↓R N₁) = ↓R (wkN θ · N₁)
+    wkV θ (◇R ω N₁) = ◇R ω (Pwk.N (ih _ (≺+0 ω)) (⊆to/≺ ω θ) · N₁)
+    wkV θ (□R N₁) = □R λ ω → Pwk.N (ih _ (≺+0 ω)) (⊆to/≺ ω θ) · (N₁ ω)
 
-    wkN ρ θ ω (L pf⁺ N₁) = L pf⁺ (wkN ρ (⊆to/both θ) · N₁)
-    wkN ρ θ ω (↓L pf⁻ ωh x Sp) = 
-      ↓L pf⁻ ωh (⊆to* ωh θ x) (wkSp ρ θ ωh Sp)
-    wkN ρ θ ω ⊥L = ⊥L
-    wkN ρ θ (I ω) (◇L N₁) = 
-      ◇L λ ω' N₀ → wkN ρ θ · 
-        (N₁ ω' (Pwk.N (ih _ (≺*S' ω ω')) ρ (⊆to/≺+' (≺*S' ω ω') θ) · N₀)) 
-    wkN ρ θ (I ω) (□L N₁) = 
-      □L λ N₀ → wkN ρ θ · 
+    wkN θ ω (L pf⁺ N₁) = L pf⁺ (wkN (⊆to/both θ) · N₁)
+    wkN θ ω (↓L pf⁻ ωh x Sp) = 
+      ↓L pf⁻ ωh (⊆to* ωh θ x) (wkSp θ ωh Sp)
+    wkN θ ω ⊥L = ⊥L
+    wkN θ (I ω) (◇L N₁) = 
+      ◇L λ ω' N₀ → wkN θ · 
+        (N₁ ω' (Pwk.N (ih _ (≺*S' ω ω')) (⊆to/≺+' (≺*S' ω ω') θ) · N₀)) 
+    wkN θ (I ω) (□L N₁) = 
+      □L λ N₀ → wkN θ · 
         (N₁ λ ω' → 
-          Pwk.N (ih _ (≺*S' ω ω')) ρ (⊆to/≺+' (≺*S' ω ω') θ) · (N₀ ω'))
-    wkN ρ θ ω (↑R V₁) = ↑R (wkV ρ θ V₁)
-    wkN ρ θ ω (⊃R N₁) = ⊃R (wkN ρ θ (I ≺*≡) N₁)
+          Pwk.N (ih _ (≺*S' ω ω')) (⊆to/≺+' (≺*S' ω ω') θ) · (N₀ ω'))
+    wkN θ ω (↑R V₁) = ↑R (wkV θ V₁)
+    wkN θ ω (⊃R N₁) = ⊃R (wkN θ (I ≺*≡) N₁)
 
-    wkSp ρ θ ω hyp⁻ = hyp⁻
-    wkSp ρ θ ω pL = pL
-    wkSp ρ θ ω (↑L N₁) = ↑L (wkN ρ θ (I ω) N₁)
-    wkSp ρ θ ω (⊃L V₁ Sp₂) with ω
-    ... | ≺*≡ = ⊃L (wkV ρ θ V₁) (wkSp ρ θ ω Sp₂)
-    ... | (≺*+ ω') = ⊃L (Pwk.V (ih _ ω') ρ (⊆to/≺+ ω' θ) V₁) (wkSp ρ θ ω Sp₂)
+    wkSp θ ω hyp⁻ = hyp⁻
+    wkSp θ ω pL = pL
+    wkSp θ ω (↑L N₁) = ↑L (wkN θ (I ω) N₁)
+    wkSp θ ω (⊃L V₁ Sp₂) with ω
+    ... | ≺*≡ = ⊃L (wkV θ V₁) (wkSp θ ω Sp₂)
+    ... | (≺*+ ω') = ⊃L (Pwk.V (ih _ ω') (⊆to/≺+ ω' θ) V₁) (wkSp θ ω Sp₂)
 
   PFwk : ∀{wc} → Pwk wc
   PFwk {wc} = ind+ Pwk (λ wc ih → 

@@ -71,9 +71,9 @@ module PRE-STEP
     → wc ≺+ w
     → w ≺* w'
     → (Reg C) stable⁻
-    → Atomic [] Γ w' A b
-    → Spine [] Γ w' A w (Reg C)
-    → Term [] Γ w · (Reg C)
+    → Atomic Γ w' A b
+    → Spine Γ w' A w (Reg C)
+    → Term Γ w · (Reg C)
   unwind' ω+ ω* pf (↓E x) Sp = ↓L pf ω* x Sp
   unwind' ω+ ω* pf (Cut N) Sp = P.subst⁻ (ih _ ω+) pf ω* N Sp
   unwind' ω+ ω* pf (⊃E R V) Sp = unwind' ω+ ω* pf R (⊃L V Sp)
@@ -82,14 +82,14 @@ module PRE-STEP
     → wc ≺+ w
     → w ≺* w'
     → A stable⁺
-    → Atomic [] Γ w' (↑ A) b'
-    → Atomic [] Γ w C b
-    → Atomic [] ((A at w') :: Γ) w C b
+    → Atomic Γ w' (↑ A) b'
+    → Atomic Γ w C b
+    → Atomic ((A at w') :: Γ) w C b
   decutR ω+ ω* pf R (↓E x) = ↓E (S x)
-  decutR ω+ ≺*≡ pf R (Cut N) = Cut (wkN <> (⊆to/wken (⊆to/refl _)) · N) 
+  decutR ω+ ≺*≡ pf R (Cut N) = Cut (wkN (⊆to/wken (⊆to/refl _)) · N) 
   decutR ω+ (≺*+ ω) pf R (Cut N) = Cut (P.decutN (ih _ ω+) (N+ ω pf R) ·t N)
   decutR ω+ ≺*≡ pf R (⊃E R' V) = 
-    ⊃E (decutR ω+ ≺*≡ pf R R') (wkV <> (⊆to/wken (⊆to/refl _)) V)
+    ⊃E (decutR ω+ ≺*≡ pf R R') (wkV (⊆to/wken (⊆to/refl _)) V)
   decutR ω+ (≺*+ ω) pf R (⊃E R' V) = 
     ⊃E (decutR ω+ (≺*+ ω) pf R R') (P.decutV (ih _ ω+) (N+ ω pf R) V)
 
@@ -97,7 +97,7 @@ module PRE-STEP
     → wc ≺+ w'
     → w' ≺* w
     → Evidence Γ wc Γ' (A at w)
-    → Atomic [] (Γ' ++ Γ) w (↑ A) True
+    → Atomic (Γ' ++ Γ) w (↑ A) True
   carry-evidence ω+ ω* (N⊀ ω) = abort (ω (≺+*trans ω+ ω*))
   carry-evidence ω+ ω* (N+ ω pf⁺ R) = subset R
   carry-evidence ω+ ω* (C⊀ ω edΓ) = 
@@ -114,22 +114,22 @@ module PRE-STEP
     → w' ≺* w
     → (Reg C) stable⁻
     → Evidence Γ wc Γ' (A at w)
-    → Term [] (Γ' ++ A at w :: Γ) w' · (Reg C)
-    → Term [] (Γ' ++ Γ) w' · (Reg C)
+    → Term (Γ' ++ A at w :: Γ) w' · (Reg C)
+    → Term (Γ' ++ Γ) w' · (Reg C)
   re-cut-evidence {Γ' = Γ'} ω+ ω* pf⁻ ed N with ed-stable (≺+*trans ω+ ω*) ed
   ... | pf⁺ = unwind' ω+ ω* pf⁻ (carry-evidence ω+ ω* ed) 
-                (↑L (L pf⁺ (wkN <> (⊆to/append-swap Γ' [ _ ]) · N))) 
+                (↑L (L pf⁺ (wkN (⊆to/append-swap Γ' [ _ ]) · N))) 
 
   re-cut-evidence' : ∀{w w' Γ Γ' A B b wh C}
     → EvidenceΩ (Γ' ++ Γ) wc (I B wh) b
     → wh ≺ w'
     → (Reg C) stable⁻
     → Evidence Γ wc Γ' (A at w)
-    → Term [] (Γ' ++ A at w :: Γ) w' · (Reg C)
-    → Term [] (Γ' ++ Γ) w' · (Reg C)
+    → Term (Γ' ++ A at w :: Γ) w' · (Reg C)
+    → Term (Γ' ++ Γ) w' · (Reg C)
   re-cut-evidence' {w} {w'} ed ω pf⁻ edΓ N with dec≺ w' w
   re-cut-evidence' {Γ' = Γ'} ed ω pf⁻ edΓ N | Inr ω' = 
-    wkN <> (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) · N
+    wkN (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) · N
   re-cut-evidence' I≡ ω pf⁻ edΓ N | Inl ω' =
     re-cut-evidence (≺+0 ω) ω' pf⁻ edΓ N
   re-cut-evidence' (I+ ω'' _) ω pf⁻ edΓ N | Inl ω' =
@@ -171,24 +171,24 @@ module PRE-STEP
   ih-rsubstN : ∀{wc' w Γ A C} 
       → wc ≺+ wc'
       → (Γ' : MCtx)
-      → Term [] (Γ' ++ Γ) w · (Reg A)
-      → Term [] (Γ' ++ ↓ A at w :: Γ) wc' · (Reg C)
-      → Term [] (Γ' ++ Γ) wc' · (Reg C)
+      → Term (Γ' ++ Γ) w · (Reg A)
+      → Term (Γ' ++ ↓ A at w :: Γ) wc' · (Reg C)
+      → Term (Γ' ++ Γ) wc' · (Reg C)
   ih-rsubstN {wc'} {w} ω Γ' N M with dec≺ wc' w
   ... | Inl ω' = P.rsubstN (ih _ ω) Γ' ω' N M ·t
   ... | Inr ω' = 
-    wkN <> (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) · M
+    wkN (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) · M
 
   ih-rsubstV : ∀{wc' w Γ A C}
       → wc ≺+ wc'
       → (Γ' : MCtx)
-      → Term [] (Γ' ++ Γ) w · (Reg A)
-      → Value [] (Γ' ++ ↓ A at w :: Γ) wc' C
-      → Value [] (Γ' ++ Γ) wc' C
+      → Term (Γ' ++ Γ) w · (Reg A)
+      → Value (Γ' ++ ↓ A at w :: Γ) wc' C
+      → Value (Γ' ++ Γ) wc' C
   ih-rsubstV {wc'} {w} ω Γ' N V with dec≺ wc' w
   ... | Inl ω' = P.rsubstV (ih _ ω) Γ' ω' N V
   ... | Inr ω' = 
-    wkV <> (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) V
+    wkV (⊆to/append-congr Γ' (⊆to/stenirrev ω' (⊆to/refl _))) V
 
   -- Messy dispatch lemmas
 
@@ -196,13 +196,13 @@ module PRE-STEP
     → B stable⁺
     → wc ≺* w
     → EvidenceΩ Γ wc (I B wh) b
-    → Term [] Γ w · (Reg C)
-    → Term [] ((B at wh) :: Γ) w · (Reg C)
+    → Term Γ w · (Reg C)
+    → Term ((B at wh) :: Γ) w · (Reg C)
   weaken-with-evidence-r {w} {wh} pf ω ed N with dec≺ w wh 
   weaken-with-evidence-r pf ω ed N | Inr ωh =
-    wkN <> (⊆to/wkenirrev ωh (⊆to/refl _)) · N
+    wkN (⊆to/wkenirrev ωh (⊆to/refl _)) · N
   weaken-with-evidence-r pf ω ed N | Inl ≺*≡ = 
-    wkN <> (⊆to/wken (⊆to/refl _)) · N
+    wkN (⊆to/wken (⊆to/refl _)) · N
   weaken-with-evidence-r pf ω I≡ N | Inl (≺*+ ωh) = abort (≺+⊀ ωh ω)
   weaken-with-evidence-r pf ≺*≡ (I+ ωq R) N | Inl (≺*+ ωh) = 
     decutN (N+ ωh pf R) ·t N
@@ -213,11 +213,11 @@ module PRE-STEP
     → B stable⁺
     → wc ≺* w
     → EvidenceΩ Γ wc (I B wh) False
-    → Term [] ((B at wh) :: Γ) w · (Reg (↑ A))
-    → Term [] Γ wc (I A w) (Reg C)
-    → Term [] ((B at wh) :: Γ) wc (I A w) (Reg C)
+    → Term ((B at wh) :: Γ) w · (Reg (↑ A))
+    → Term Γ wc (I A w) (Reg C)
+    → Term ((B at wh) :: Γ) wc (I A w) (Reg C)
   weaken-with-evidence-l pf ω I≡ N₁ N' = 
-    wkN <> (⊆to/wken (⊆to/refl _)) (I ω) N'
+    wkN (⊆to/wken (⊆to/refl _)) (I ω) N'
   weaken-with-evidence-l pf ≺*≡ (I+ ω' R) N₁ N' = 
     decutN {b = False} (N+ ω' pf R) I≡ N'
   weaken-with-evidence-l {w} {wh} pf (≺*+ ω) (I+ ω' R) N₁ N' with dec≺ w wh
@@ -226,21 +226,21 @@ module PRE-STEP
       (I+ ω (Cut (unwind <> ω'' R (↑L (L pf N₁))))) N' 
   ... | Inr ω'' = 
     decutN (N+ ω' pf R) 
-      (I+ ω (Cut (wkN <> (⊆to/stenirrev ω'' (⊆to/refl _)) · N₁))) N'
+      (I+ ω (Cut (wkN (⊆to/stenirrev ω'' (⊆to/refl _)) · N₁))) N'
 
   decut : ∀{w w' Γ A B C b wh}
     (Γ' : MCtx)
     → EvidenceΩ (Γ' ++ Γ) wc (I C wh) b
     → wh ≺ w
-    → Term [] (Γ' ++ Γ) w' · (Reg A)
-    → Term [] (Γ' ++ Γ) w · (Reg B)
-    → Term [] (Γ' ++ (↓ A at w') :: Γ) w · (Reg B)
+    → Term (Γ' ++ Γ) w' · (Reg A)
+    → Term (Γ' ++ Γ) w · (Reg B)
+    → Term (Γ' ++ (↓ A at w') :: Γ) w · (Reg B)
   decut {w} {w'} Γ' ed ω N N₀ with evidenceΩ≺ ed | dec≺ w w'
   decut Γ' ed ω N N₀ | _ | Inr ω' = 
-    wkN <> (⊆to/append-congr Γ' (⊆to/wkenirrev ω' (⊆to/refl _))) · N₀
+    wkN (⊆to/append-congr Γ' (⊆to/wkenirrev ω' (⊆to/refl _))) · N₀
   decut Γ' ed ω N N₀ | _ | Inl ≺*≡ = 
-    wkN <> (⊆to/append-congr Γ' (⊆to/wken (⊆to/refl _))) · N₀
+    wkN (⊆to/append-congr Γ' (⊆to/wken (⊆to/refl _))) · N₀
   decut Γ' ed ω N N₀ | (I ωed) | Inl (≺*+ ω') = 
-    wkN <> (⊆to/append-swap [ _ ] Γ') ·
+    wkN (⊆to/append-swap [ _ ] Γ') ·
       (P.decutN (ih _ (≺*S' ωed ω)) (N+ ω' <> (Cut (↑R (↓R N)))) ·t N₀)
   

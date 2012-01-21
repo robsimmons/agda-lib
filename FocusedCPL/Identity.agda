@@ -26,20 +26,20 @@ module IDENTITY (UWF : UpwardsWellFounded)
   fsubN⁻ : ∀{Γ A wc Ω U}
     → U stable⁻
     → EvidenceΩ Γ wc Ω False
-    → Spine [] Γ wc A wc U
-    → Term [] Γ wc Ω (Abs A)
-    → Term [] Γ wc Ω U
+    → Spine Γ wc A wc U
+    → Term Γ wc Ω (Abs A)
+    → Term Γ wc Ω U
 
   fsubSp⁻ : ∀{Γ A wc wh B U}
     → U stable⁻
     → wc ≺* wh
     → EvidenceA Γ wc B wh False
-    → Spine [] Γ wc A wc U
-    → Spine [] Γ wh B wc (Abs A)
-    → Spine [] Γ wh B wc U
+    → Spine Γ wc A wc U
+    → Spine Γ wh B wc (Abs A)
+    → Spine Γ wh B wc U
 
   fsubN⁻ pf I≡ Sp (L pf⁺ N₁) = 
-    L pf⁺ (fsubN⁻ pf ·f (wkSp <> (⊆to/wken (⊆to/refl _)) ≺*≡ Sp) N₁)
+    L pf⁺ (fsubN⁻ pf ·f (wkSp wken ≺*≡ Sp) N₁)
   fsubN⁻ pf (I+ ω R) Sp (L pf⁺ N₁) = 
     L pf⁺ (fsubN⁻ pf ·f (decutSp {b = False} (N+ ω pf⁺ R) E≡ Sp) N₁)
   fsubN⁻ pf ω Sp (↓L pf⁻ ωh x Sp') = 
@@ -54,12 +54,12 @@ module IDENTITY (UWF : UpwardsWellFounded)
   
   fsub⁻ : ∀{Γ A wc U}
     → U stable⁻
-    → Spine [] Γ wc A wc U
-    → Term [] Γ wc · (Abs A)
-    → Term [] Γ wc · U
+    → Spine Γ wc A wc U
+    → Term Γ wc · (Abs A)
+    → Term Γ wc · U
   fsub⁻ pf Sp N = fsubN⁻ pf ·f Sp N
 
-  expand⁻ : ∀{A Γ wc} → Term [] Γ wc · (Abs A) → Term [] Γ wc · (Reg A)
+  expand⁻ : ∀{A Γ wc} → Term Γ wc · (Abs A) → Term Γ wc · (Reg A)
   expand⁻ {a Q .⁻} N = fsub⁻ <> pL N
   expand⁻ {↑ (a Q .⁺)} N = 
     fsub⁻ <> (↑L (L <> (↑R (pR Z)))) N
@@ -72,11 +72,10 @@ module IDENTITY (UWF : UpwardsWellFounded)
   expand⁻ {↑ (□ A)} N = 
     fsub⁻ <> (↑L (□L λ N₀ → ↑R (□R λ ω → N₀ ω))) N
   expand⁻ {a Q .⁺ ⊃ B} N = 
-    ⊃R (L <> (expand⁻ (fsub⁻ <> (⊃L (pR Z) hyp⁻) 
-                        (wkN <> (⊆to/wken (⊆to/refl _)) · N))))
+    ⊃R (L <> (expand⁻ (fsub⁻ <> (⊃L (pR Z) hyp⁻) (wkN wken · N))))
   expand⁻ {↓ A ⊃ B} N = 
     ⊃R (L <> (expand⁻ (fsub⁻ <> (⊃L (↓R (expand⁻ (↓L <> ≺*≡ Z hyp⁻))) hyp⁻) 
-                        (wkN <> (⊆to/wken (⊆to/refl _)) · N))))
+                        (wkN wken · N))))
   expand⁻ {⊥ ⊃ B} N = 
     ⊃R ⊥L
   expand⁻ {◇ A ⊃ B} N = 
@@ -84,5 +83,5 @@ module IDENTITY (UWF : UpwardsWellFounded)
   expand⁻ {□ A ⊃ B} N = 
     ⊃R (□L (λ N₀ → expand⁻ (fsub⁻ <> (⊃L (□R (λ ω → N₀ ω)) hyp⁻) N)))
 
-  identity : ∀{A Γ w} → (↓ A at w) ∈ Γ → Term [] Γ w · (Reg A)
+  identity : ∀{A Γ w} → (↓ A at w) ∈ Γ → Term Γ w · (Reg A)
   identity x = expand⁻ (↓L <> ≺*≡ x hyp⁻)

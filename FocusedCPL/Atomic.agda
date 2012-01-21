@@ -20,50 +20,50 @@ module ATOMIC (UWF : UpwardsWellFounded) where
   open SEQUENT UWF
   open WEAKENING UWF
 
-  data Atomic (א : FCtx) (Γ : MCtx) (wc : W) : Type ⁻ → Bool → Set where
+  data Atomic (Γ : MCtx) (wc : W) : Type ⁻ → Bool → Set where
     ↓E : ∀{A b}
       (x : ↓ A at wc ∈ Γ)
-      → Atomic א Γ wc A b
+      → Atomic Γ wc A b
     Cut : ∀{A} 
-      (N : Term א Γ wc · (Reg A)) 
-      → Atomic א Γ wc A True
+      (N : Term Γ wc · (Reg A)) 
+      → Atomic Γ wc A True
     ⊃E : ∀{A B b}
-      (R : Atomic א Γ wc (A ⊃ B) b)
-      (V : Value א Γ wc A)
-      → Atomic א Γ wc B b
+      (R : Atomic Γ wc (A ⊃ B) b)
+      (V : Value Γ wc A)
+      → Atomic Γ wc B b
 
   -- The boolean flag is a graceless mechanism, but the point is that, if you 
   -- commit yourself to not using cut, there's a trivial "unwind" pseudo-cut. 
 
-  unwind : ∀{א Γ A U w wc}
+  unwind : ∀{Γ A U w wc}
     → U stable⁻
     → wc ≺* w
-    → Atomic א Γ w A False
-    → Spine א Γ w A wc U
-    → Term א Γ wc · U
+    → Atomic Γ w A False
+    → Spine Γ w A wc U
+    → Term Γ wc · U
   unwind pf ω (↓E x) Sp = ↓L pf ω x Sp
   unwind pf ω (⊃E R V) Sp = unwind pf ω R (⊃L V Sp) 
 
-  subset : ∀{א Γ w A b}
-    → Atomic א Γ w A b
-    → Atomic א Γ w A True
+  subset : ∀{Γ w A b}
+    → Atomic Γ w A b
+    → Atomic Γ w A True
   subset (↓E x) = ↓E x
   subset (Cut N) = Cut N
   subset (⊃E R V) = ⊃E (subset R) V
 
-  wkR : ∀{א Γ Γ' wc A b}
+  wkR : ∀{Γ Γ' wc A b}
     → Γ ⊆ Γ' to wc
-    → Atomic א Γ wc A b
-    → Atomic א Γ' wc A b
+    → Atomic Γ wc A b
+    → Atomic Γ' wc A b
   wkR θ (↓E x) = ↓E (⊆to/now θ x)
-  wkR θ (Cut N) = Cut (wkN <> θ · N)
-  wkR θ (⊃E R V) = ⊃E (wkR θ R) (wkV <> θ V)
+  wkR θ (Cut N) = Cut (wkN θ · N)
+  wkR θ (⊃E R V) = ⊃E (wkR θ R) (wkV θ V)
 
   data EvidenceA (Γ : MCtx) (wc : W) : Type ⁻ → W → Bool → Set where
     E≡ : ∀{A b} → EvidenceA Γ wc A wc b
     E+ : ∀{A w b}
       (ω : wc ≺+ w) 
-      (R : Atomic [] Γ w A b)
+      (R : Atomic Γ w A b)
       → EvidenceA Γ wc A w b
 
   data EvidenceΩ (Γ : MCtx) (wc : W) : ICtx → Bool → Set where
@@ -72,14 +72,14 @@ module ATOMIC (UWF : UpwardsWellFounded) where
     I≡ : ∀{A b} → EvidenceΩ Γ wc (I A wc) b
     I+ : ∀{A w b}
       (ω : wc ≺+ w) 
-      (R : Atomic [] Γ w (↑ A) b)
+      (R : Atomic Γ w (↑ A) b)
       → EvidenceΩ Γ wc (I A w) b
 
   varE : ∀{A Γ w wc b} → (↓ A at w) ∈ Γ → wc ≺* w → EvidenceA Γ wc A w b
   varE x ≺*≡ = E≡
   varE x (≺*+ ω) = E+ ω (↓E x)
 
-  cutE : ∀{A Γ w wc} → Term [] Γ w · (Reg A) → wc ≺* w 
+  cutE : ∀{A Γ w wc} → Term Γ w · (Reg A) → wc ≺* w 
     → EvidenceA Γ wc A w True
   cutE N ≺*≡ = E≡
   cutE N (≺*+ ω) = E+ ω (Cut N)
@@ -90,7 +90,7 @@ module ATOMIC (UWF : UpwardsWellFounded) where
 
   appE : ∀{A Γ w wc B b} 
     → EvidenceA Γ wc (A ⊃ B) w b
-    → Value [] Γ w A
+    → Value Γ w A
     → EvidenceA Γ wc B w b
   appE E≡ V = E≡
   appE (E+ ω R) V = E+ ω (⊃E R V)
@@ -117,7 +117,7 @@ module ATOMIC (UWF : UpwardsWellFounded) where
     N+ : ∀{w A b} → 
       (ω : wc ≺+ w)
       (pf⁺ : A stable⁺)
-      (R : Atomic [] Γ w (↑ A) b)
+      (R : Atomic Γ w (↑ A) b)
       → Evidence Γ wc [] (A at w)
     C⊀ : ∀{w A Γ' Item}
       (ω : wc ≺+ w → Void)
@@ -126,6 +126,6 @@ module ATOMIC (UWF : UpwardsWellFounded) where
     C+ : ∀{w A Γ' Item b}
       (ω : wc ≺+ w)
       (pf⁺ : A stable⁺)
-      (R : Atomic [] (Γ' ++ Γ) w (↑ A) b)
+      (R : Atomic (Γ' ++ Γ) w (↑ A) b)
       (edΓ : Evidence Γ wc Γ' Item) 
       → Evidence Γ wc ((A at w) :: Γ') Item

@@ -6,7 +6,7 @@
 
 {-# OPTIONS --no-positivity-check #-}
 
-open import Prelude hiding (⊥; [_])
+open import Prelude hiding (⊥)
 open import Accessibility.Inductive
 open import Accessibility.IndexedList
 
@@ -47,7 +47,6 @@ module SEQUENT (UWF : UpwardsWellFounded) where
   open ILIST UWF
 
   -- Building blocks
-  FCtx = List Unit -- XXX IDENTITY
   MCtx = IList (Type ⁺)
 
   fromctx : ∀{A w Item Γ} (Γ' : MCtx) 
@@ -74,74 +73,74 @@ module SEQUENT (UWF : UpwardsWellFounded) where
     Lfoc : (w : W) (A : Type ⁻) (U : Conc) → SeqForm wc
     Use : (A : Type ⁻) → SeqForm wc
 
-  data Exp (א : FCtx) (Γ : MCtx) (wc : W) : SeqForm wc → Set
+  data Exp (Γ : MCtx) (wc : W) : SeqForm wc → Set
 
-  Value : FCtx → MCtx → (wc : W) → Type ⁺ → Set
-  Value א Γ wc A = Exp א Γ wc (Rfoc A)
+  Value : MCtx → (wc : W) → Type ⁺ → Set
+  Value Γ wc A = Exp Γ wc (Rfoc A)
 
-  Term : FCtx → MCtx → (wc : W) → ICtx → Conc → Set
-  Term א Γ wc Ω U = Exp א Γ wc (Inv Ω U)
+  Term : MCtx → (wc : W) → ICtx → Conc → Set
+  Term Γ wc Ω U = Exp Γ wc (Inv Ω U)
 
-  Spine : FCtx → MCtx → (w : W) → Type ⁻ → (wc : W) → Conc → Set
-  Spine א Γ w A wc U = Exp א Γ wc (Lfoc w A U) 
+  Spine : MCtx → (w : W) → Type ⁻ → (wc : W) → Conc → Set
+  Spine Γ w A wc U = Exp Γ wc (Lfoc w A U) 
 
-  data Exp א Γ wc where
+  data Exp Γ wc where
 
     -- Values
     -- XXX INVERSION
     pR : ∀{Q}
       (x : (a Q ⁺ at wc) ∈ Γ)
-      → Value א Γ wc (a Q ⁺)
+      → Value Γ wc (a Q ⁺)
     ↓R : ∀{A}
-      (N₁ : Term א Γ wc · (Reg A))
-      → Value א Γ wc (↓ A)
+      (N₁ : Term Γ wc · (Reg A))
+      → Value Γ wc (↓ A)
     ◇R : ∀{A w}
       (ω : wc ≺ w)
-      (N₁ : Term א Γ w · (Reg (↑ A)))
-      → Value א Γ wc (◇ A)
+      (N₁ : Term Γ w · (Reg (↑ A)))
+      → Value Γ wc (◇ A)
     □R : ∀{A}
-      (N₁ : ∀{w} (ω : wc ≺ w) → Term א Γ w · (Reg (↑ A)))
-      → Value א Γ wc (□ A)
+      (N₁ : ∀{w} (ω : wc ≺ w) → Term Γ w · (Reg (↑ A)))
+      → Value Γ wc (□ A)
 
     -- Terms
     L : ∀{A U wh}
       (pf⁺ : A stable⁺)
-      (N₁ : Term א (A at wh :: Γ) wc · U)
-      → Term א Γ wc (I A wh) U
+      (N₁ : Term (A at wh :: Γ) wc · U)
+      → Term Γ wc (I A wh) U
     ↓L : ∀{A U wh}
       (pf⁻ : U stable⁻)
       (ωh : wc ≺* wh)
       (x : ↓ A at wh ∈ Γ)
-      (Sp : Spine א Γ wh A wc U)
-      → Term א Γ wc · U
+      (Sp : Spine Γ wh A wc U)
+      → Term Γ wc · U
     ⊥L : ∀{U wh}
-      → Term א Γ wc (I ⊥ wh) U
+      → Term Γ wc (I ⊥ wh) U
     ◇L : ∀{A U wh}
-      (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term א Γ w · (Reg (↑ A)))
-        → Term א Γ wc · U)
-      → Term א Γ wc (I (◇ A) wh) U
+      (N₁ : ∀{w} (ω : wh ≺ w) (N₀ : Term Γ w · (Reg (↑ A)))
+        → Term Γ wc · U)
+      → Term Γ wc (I (◇ A) wh) U
     □L : ∀{A U wh}
-      (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term א Γ w · (Reg (↑ A)))
-        → Term א Γ wc · U)
-      → Term א Γ wc (I (□ A) wh) U
+      (N₁ : (N₀ : ∀{w} (ω : wh ≺ w) → Term Γ w · (Reg (↑ A)))
+        → Term Γ wc · U)
+      → Term Γ wc (I (□ A) wh) U
     ↑R : ∀{A}
-      (V₁ : Value א Γ wc A)
-      → Term א Γ wc · (Reg (↑ A))
+      (V₁ : Value Γ wc A)
+      → Term Γ wc · (Reg (↑ A))
     ⊃R : ∀{A B}
-      (N₁ : Term א Γ wc (I A wc) (Reg B))
-      → Term א Γ wc · (Reg (A ⊃ B))
+      (N₁ : Term Γ wc (I A wc) (Reg B))
+      → Term Γ wc · (Reg (A ⊃ B))
     
     -- Spines
     hyp⁻ : ∀{A} 
-      → Spine א Γ wc A wc (Abs A)
+      → Spine Γ wc A wc (Abs A)
     pL : ∀{Q}
-      → Spine א Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
+      → Spine Γ wc (a Q ⁻) wc (Reg (a Q ⁻))
     ↑L : ∀{A U wh}
-      (N₁ : Term א Γ wc (I A wh) U)
-      → Spine א Γ wh (↑ A) wc U
+      (N₁ : Term Γ wc (I A wh) U)
+      → Spine Γ wh (↑ A) wc U
     ⊃L : ∀{A B U wh}
-      (V₁ : Value א Γ wh A)
-      (Sp₂ : Spine א Γ wh B wc U)
-      → Spine א Γ wh (A ⊃ B) wc U
+      (V₁ : Value Γ wh A)
+      (Sp₂ : Spine Γ wh B wc U)
+      → Spine Γ wh (A ⊃ B) wc U
 
 

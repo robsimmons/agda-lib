@@ -93,33 +93,33 @@ module EQUIV
   Pfoc : W → Set
   Pfoc wc = ∀{A Γ}
     → Γ ⊢ A [ wc ]
-    → Term [] (polΓ Γ) wc · (Reg (pol⁻ A))
+    → Term (polΓ Γ) wc · (Reg (pol⁻ A))
 
   PdefocV : W → Set
   PdefocV wc = ∀{A Γ}
-    → Value [] (polΓ Γ) wc (pol⁺ A)
+    → Value (polΓ Γ) wc (pol⁺ A)
     → Γ ⊢ A [ wc ]
 
   PdefocN : W → Set
   PdefocN wc = ∀{A Γ}
-    → Term [] (polΓ Γ) wc · (Reg (pol⁻ A))
+    → Term (polΓ Γ) wc · (Reg (pol⁻ A))
     → Γ ⊢ A [ wc ]
 
   PdefocSp : W → Set
   PdefocSp wc = ∀{B A Γ wh}
     → wc ≺* wh
     → Γ ⊢ B [ wh ]
-    → Spine [] (polΓ Γ) wh (pol⁻ B) wc (Reg (pol⁻ A))
+    → Spine (polΓ Γ) wh (pol⁻ B) wc (Reg (pol⁻ A))
     → Γ ⊢ A [ wc ]
 
   Pfoc↑ : W → Set
   Pfoc↑ wc = ∀{A Γ}
     → Γ ⊢ A [ wc ]
-    → Term [] (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
+    → Term (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
 
   Pdefoc↑ : W → Set
   Pdefoc↑ wc = ∀{A Γ}
-    → Term [] (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
+    → Term (polΓ Γ) wc · (Reg (↑ (pol⁺ A)))
     → Γ ⊢ A [ wc ]
   
 
@@ -165,13 +165,13 @@ module EQUIV
       ⊃I (◇E ≺*≡ (hyp Z)
            λ ω D₀ → 
              WK-N.wkN wken 
-               (defocN (N₁ ω (wkN <> (⊆to/stenirrev (≺⊀ ω) (⊆to/refl _)) · 
+               (defocN (N₁ ω (wkN (⊆to/stenirrev (≺⊀ ω) (⊆to/refl _)) · 
                                 (Pequiv.foc↑ (ih _ (≺+0 ω)) D₀)))))
     defocN {□ A ⊃ B} (⊃R (□L N₁)) = 
       ⊃I (□E ≺*≡ (hyp Z) 
            λ D₀ → 
              WK-N.wkN wken 
-               (defocN (N₁ λ ω → wkN <> (⊆to/stenirrev (≺⊀ ω) (⊆to/refl _)) ·
+               (defocN (N₁ λ ω → wkN (⊆to/stenirrev (≺⊀ ω) (⊆to/refl _)) ·
                                    (Pequiv.foc↑ (ih _ (≺+0 ω)) (D₀ ω)))))
     defocN {⊥ ⊃ B} (⊃R (L () N₁))
     defocN {◇ A ⊃ B} (⊃R (L () N₁))
@@ -197,13 +197,13 @@ module EQUIV
     defocSp {□ A} ω D (↑L (L () N₁))    
 
     u↓↑E : ∀{A w Γ}
-      → Term [] Γ w · (Reg (↑ (↓ A)))
-      → Term [] Γ w · (Reg A)
+      → Term Γ w · (Reg (↑ (↓ A)))
+      → Term Γ w · (Reg A)
     u↓↑E N = cut N (expand⁻ (↓L <> ≺*≡ Z (↑L (L <> (↓L <> ≺*≡ Z hyp⁻)))))
 
     u⊃I : ∀{A B w Γ}
-      → Term [] ((polhyp (A at w)) :: Γ) w · (Reg B)
-      → Term [] Γ w · (Reg (pol⁺ A ⊃ B))
+      → Term ((polhyp (A at w)) :: Γ) w · (Reg B)
+      → Term Γ w · (Reg (pol⁺ A ⊃ B))
     u⊃I {a Q ⁺} N = ⊃R (L <> N)
     u⊃I {⊥} N = ⊃R ⊥L
     u⊃I {◇ A} N = 
@@ -218,41 +218,41 @@ module EQUIV
     u⊃I {A ⊃ B} N = ⊃R (L <> N)
 
     u⊃E : ∀{A B w Γ}
-      → Term [] Γ w · (Reg (pol⁺ A ⊃ B))
-      → Term [] Γ w · (Reg (pol⁻ A))
-      → Term [] Γ w · (Reg B)
+      → Term Γ w · (Reg (pol⁺ A ⊃ B))
+      → Term Γ w · (Reg (pol⁻ A))
+      → Term Γ w · (Reg B)
     u⊃E {a Q ⁺} N M = 
       cut M 
-        (cut (wkN <> wken · N) 
+        (cut (wkN wken · N) 
           (expand⁻ (↓L <> ≺*≡ (S Z) (↑L (L <> 
                      (↓L <> ≺*≡ (S Z) (⊃L (pR Z) hyp⁻)))))))
     u⊃E {⊥} N M = cut M (expand⁻ (↓L <> ≺*≡ Z (↑L ⊥L)))
     u⊃E {◇ A} N M = 
       cut M 
-        (cut (wkN <> wken · N) 
+        (cut (wkN wken · N) 
           (expand⁻ (↓L <> ≺*≡ (S Z) (↑L (◇L 
                      λ ω N₀ → ↓L <> ≺*≡ Z (⊃L (◇R ω N₀) hyp⁻))))))
     u⊃E {□ A} N M = 
       cut M 
-        (cut (wkN <> wken · N) 
+        (cut (wkN wken · N) 
           (expand⁻ (↓L <> ≺*≡ (S Z) (↑L (□L 
                      λ N₀ → ↓L <> ≺*≡ Z (⊃L (□R (λ ω → N₀ ω)) hyp⁻))))))
     u⊃E {a Q ⁻} N M = 
-      cut N (expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (wkN <> wken · M)) hyp⁻)))
+      cut N (expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (wkN wken · M)) hyp⁻)))
     u⊃E {A ⊃ B} N M = 
-      cut N (expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (wkN <> wken · M)) hyp⁻)))
+      cut N (expand⁻ (↓L <> ≺*≡ Z (⊃L (↓R (wkN wken · M)) hyp⁻)))
 
     u⊥E : ∀{A w wc Γ}
       → wc ≺* w
-      → Term [] Γ w · (Reg (↑ ⊥))
-      → Term [] Γ wc · (Reg A)
+      → Term Γ w · (Reg (↑ ⊥))
+      → Term Γ wc · (Reg A)
     u⊥E ω N = u↓↑E (subst⁻ <> ω N (↑L ⊥L))
 
     u◇E : ∀{A w wc Γ C}
       → wc ≺* w
-      → Term [] Γ w · (Reg (↑ (◇ A)))
-      → (∀{w'} → w ≺ w' → Term [] Γ w' · (Reg (↑ A)) → Term [] Γ wc · (Reg C))
-      → Term [] Γ wc · (Reg C)
+      → Term Γ w · (Reg (↑ (◇ A)))
+      → (∀{w'} → w ≺ w' → Term Γ w' · (Reg (↑ A)) → Term Γ wc · (Reg C))
+      → Term Γ wc · (Reg C)
     u◇E ω N₁ N₂ =
       u↓↑E (cut N₁ 
              (↓L <> ω Z 
@@ -261,10 +261,10 @@ module EQUIV
 
     u□E : ∀{A w wc Γ C}
       → wc ≺* w
-      → Term [] Γ w · (Reg (↑ (□ A)))
-      → ((∀{w'} → w ≺ w' → Term [] Γ w' · (Reg (↑ A)))
-          → Term [] Γ wc · (Reg C))
-      → Term [] Γ wc · (Reg C)
+      → Term Γ w · (Reg (↑ (□ A)))
+      → ((∀{w'} → w ≺ w' → Term Γ w' · (Reg (↑ A)))
+          → Term Γ wc · (Reg C))
+      → Term Γ wc · (Reg C)
     u□E ω N₁ N₂ = 
       u↓↑E (cut N₁ 
              (↓L <> ω Z 
@@ -275,7 +275,7 @@ module EQUIV
     foc* : ∀{A Γ w}
       → wc ≺* w
       → Γ ⊢ A [ w ]
-      → Term [] (polΓ Γ) w · (Reg (pol⁻ A))
+      → Term (polΓ Γ) w · (Reg (pol⁻ A))
     foc* ≺*≡ N = foc N
     foc* (≺*+ ω) N = Pequiv.foc (ih _ ω) N
 

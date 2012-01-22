@@ -9,13 +9,15 @@ open import Prelude hiding (⊥ ; ¬)
 open import Accessibility.Inductive
 open import Accessibility.Three
 open import Accessibility.IndexedList
-open import DetetheredCPL.Core
-open import DetetheredCPL.Sequent
+open import DetetheredCPL.Core renaming (Type to UType)
+open import FocusedCPL.Core
+open import FocusedCPL.Cut
+open import FocusedCPL.Identity
 open import DetetheredCPL.Equiv
 
-Ctx = List Type
+Ctx = List UType
 
-¬ : Type → Type
+¬ : UType → UType
 ¬ A = A ⊃ ⊥
 
 module PROPERTIES (UWF : UpwardsWellFounded) where
@@ -135,140 +137,95 @@ module NON-AXIOMS where
    open ILIST SmallExample
    open CORE SmallExample
    open SEQUENT SmallExample
+
+   dec≺ : (w w' : Three) → Decidable (w ≺* w')
+   dec≺ α α = Inl ≺*≡
+   dec≺ α β = Inl (≺*+ (≺+0 αβ))
+   dec≺ α γ = Inl (≺*+ (≺+0 αγ))
+   dec≺ β α = Inr (≺⊀ αβ)
+   dec≺ β β = Inl ≺*≡
+   dec≺ β γ = Inl (≺*+ (≺+0 βγ))
+   dec≺ γ α = Inr (≺⊀ αγ)
+   dec≺ γ β = Inr (≺⊀ βγ)
+   dec≺ γ γ = Inl ≺*≡
+
+   open EQUIV SmallExample dec≺
   
-   Q : Type
-   Q = a "Q"   
+   Q : UType
+   Q = a "Q" ⁺   
+
+   Q⁺ : Type ⁺
+   Q⁺ = a "Q" ⁺   
 
  -- Axioms of IK, Simpson's intuitionistic modal logic (Theorem 3.3)
-   axIK : [] ⇒ (◇ Q ⊃ □ ⊥) ⊃ □ (Q ⊃ ⊥) [ β ] → Void
-   axIK = lem0
+   axIK : [] ⊢ (◇ Q ⊃ □ ⊥) ⊃ □ (Q ⊃ ⊥) [ β ] → Void
+   axIK D = lem (foc D)
     where
-       lem2 : ((◇ Q ⊃ □ ⊥) at β :: []) ⇒ (Q ⊃ ⊥) [ γ ] → Void
-       lem2 (⊃R (⊃L (≺*+ (≺+0 ())) (S Z) _ _))
-       lem2 (⊃R (⊃L (≺*+ (≺+S () _)) (S Z) _ _))
-       lem2 (⊃R (⊃L _ (S (S ())) _ _))
-       lem2 (⊃R (⊥L _ (S (S ()))))
-       lem2 (⊃R (◇L _ (S (S ())) _)) 
-       lem2 (⊃R (□L _ (S (S ())) _)) 
-       lem2 (⊃L (≺*+ (≺+0 ())) Z _ _)
-       lem2 (⊃L (≺*+ (≺+S () y')) Z _ _)
-       lem2 (⊃L _ (S ()) _ _)
-       lem2 (⊥L _ (S ()))
-       lem2 (◇L _ (S ()) _)
-       lem2 (□L _ (S ()) _)
-     
-       lem1 : ((◇ Q) ⊃ □ ⊥) at β :: [] ⇒ (◇ Q) [ β ] → Void
-       lem1 (⊃L _ Z D₁' _) = lem1 D₁'
-       lem1 (⊃L _ (S ()) _ _)
-       lem1 (⊥L _ (S ())) 
-       lem1 (◇R βγ (hyp (S ())))
-       lem1 (◇R βγ (⊃L (≺*+ (≺+0 ())) Z _ _))
-       lem1 (◇R βγ (⊃L (≺*+ (≺+S () _)) Z _ _))
-       lem1 (◇R βγ (⊃L _ (S ()) _ _))
-       lem1 (◇R βγ (⊥L _ (S ()))) 
-       lem1 (◇R βγ (◇L _ (S ()) _)) 
-       lem1 (◇R βγ (□L _ (S ()) _)) 
-       lem1 (◇L _ (S ()) _)
-       lem1 (□L _ (S ()) _) 
-
-       lem0 : [] ⇒ (◇ Q ⊃ □ ⊥) ⊃ □ (Q ⊃ ⊥) [ β ] → Void
-       lem0 (⊃R (⊃L _ Z D₁ _)) = lem1 D₁
-       lem0 (⊃R (⊃L _ (S ()) _ _))
-       lem0 (⊃R (⊥L _ (S ())))
-       lem0 (⊃R (◇L _ (S ()) _))
-       lem0 (⊃R (□R D₁)) = lem2 (D₁ βγ)
-       lem0 (⊃R (□L _ (S ()) _))
-       lem0 (⊃L _ () _ _)
-       lem0 (⊥L _ ())
-       lem0 (◇L _ () _) 
-       lem0 (□L _ () _)
+     lem : 
+       Term [] β · (Reg (↓ (◇ Q⁺ ⊃ ↑ (□ ⊥)) ⊃ ↑ (□ (↓ (Q⁺ ⊃ ↑ ⊥))))) 
+       → Void
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ (≺*+ (≺+0 ())) Z _)) _)))) 
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ (≺*+ (≺+S () _)) Z _)) _))))
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ _ (S ()) _)) _)))) 
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βy (↑R (pR (S ())))) _)))) 
+     lem (⊃R (L <> (↓L <> _ (S ()) Sp)))
+     lem (↓L () ωh x Sp)
+     lem (⊃R (L <> (↑R (□R N₁)))) with N₁ βγ
+     ... | ↓L <> (≺*+ (≺+0 ())) Z Sp
+     ... | ↓L <> (≺*+ (≺+S () y')) Z Sp
+     ... | ↓L <> ωh (S ()) Sp
+     ... | ↑R (↓R (↓L pf⁻ (≺*+ (≺+0 ())) Z Sp))
+     ... | ↑R (↓R (↓L pf⁻ (≺*+ (≺+S () y')) Z Sp))
+     ... | ↑R (↓R (↓L pf⁻ ωh (S ()) Sp))
+     ... | ↑R (↓R (⊃R (L <> (↓L <> (≺*+ (≺+0 ())) (S Z) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↓L <> (≺*+ (≺+S () y')) (S Z) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↓L <> ωh (S (S ())) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↑R ()))))
 
  -- De Morgan laws (Theorem 3.6)
-   ax¬◇ : [] ⇒ ¬ (◇ Q) ⊃ □(¬ Q) [ β ] → Void
-   ax¬◇ = lem0
+   ax¬◇ : [] ⊢ ¬ (◇ Q) ⊃ □(¬ Q) [ β ] → Void
+   ax¬◇ D = lem (foc D) 
     where
-      lem2 : ( ¬ (◇ Q) at β :: []) ⇒ (◇ Q) [ β ] → Void
-      lem2 (⊃L _ Z D₁ _) = lem2 D₁
-      lem2 (⊃L _ (S ()) _ _)
-      lem2 (⊥L _ (S ()))
-      lem2 (◇R βγ (hyp (S ()))) 
-      lem2 (◇R βγ (⊃L (≺*+ (≺+0 ())) Z _ _)) 
-      lem2 (◇R βγ (⊃L (≺*+ (≺+S () _)) Z _ _))
-      lem2 (◇R βγ (⊃L _ (S ()) _ _))
-      lem2 (◇R βγ (⊥L _ (S ()))) 
-      lem2 (◇R βγ (◇L _ (S ()) _)) 
-      lem2 (◇R βγ (□L _ (S ()) _)) 
-      lem2 (◇L _ (S ()) _)
-      lem2 (□L _ (S ()) _) 
+     lem : 
+       Term [] β · (Reg (↓ (◇ (a "Q" ⁺) ⊃ ↑ ⊥) ⊃ ↑ (□ (↓ (a "Q" ⁺ ⊃ ↑ ⊥))))) 
+       → Void
+     lem (↓L () ωh x Sp)
+     lem (⊃R (L <> (↓L <> ≺*≡ Z (⊃L (◇R () (↓L <> ≺*≡ Z _)) _))))
+     lem (⊃R (L <> (↓L <> (≺*+ y) Z (⊃L (◇R () (↓L <> ≺*≡ Z _)) _))))
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ (≺*+ (≺+0 ())) Z _)) _))))
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ (≺*+ (≺+S () _)) Z _)) _))))
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↓L _ _ (S ()) _)) _))))
+     lem (⊃R (L <> (↓L <> _ Z (⊃L (◇R βγ (↑R (pR (S ())))) _))))
+     lem (⊃R (L <> (↓L <> _ (S ()) Sp)))
+     lem (⊃R (L <> (↑R (□R N₁)))) with N₁ βγ
+     ... | ↓L pf⁻ (≺*+ (≺+0 ())) Z Sp
+     ... | ↓L pf⁻ (≺*+ (≺+S () y')) Z Sp
+     ... | ↓L pf⁻ ωh (S ()) Sp
+     ... | ↑R (↓R (↓L () ωh x Sp))
+     ... | ↑R (↓R (⊃R (L <> (↓L pf⁻ (≺*+ (≺+0 ())) (S Z) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↓L pf⁻ (≺*+ (≺+S () y')) (S Z) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↓L pf⁻ ωh (S (S ())) Sp))))
+     ... | ↑R (↓R (⊃R (L <> (↑R ()))))
 
-      lem1 : (¬ (◇ Q) at β :: []) ⇒ (¬ Q) [ γ ] → Void
-      lem1 (⊃R (⊃L (≺*+ (≺+0 ())) (S Z) _ _))
-      lem1 (⊃R (⊃L (≺*+ (≺+S () y')) (S Z) _ _ ))
-      lem1 (⊃R (⊃L _ (S (S ())) _ _ ))
-      lem1 (⊃R (⊥L _ (S (S ()))))
-      lem1 (⊃R (◇L _ (S (S ())) _))
-      lem1 (⊃R (□L _ (S (S ())) _))
-      lem1 (⊃L (≺*+ (≺+0 ())) Z _ _)
-      lem1 (⊃L (≺*+ (≺+S () _)) Z _ _)
-      lem1 (⊃L _ (S ()) _ _)
-      lem1 (⊥L _ (S ()))
-      lem1 (◇L _ (S ()) _)
-      lem1 (□L _ (S ()) _)
-          
-      lem0 : [] ⇒ ¬ (◇ Q) ⊃ □(¬ Q) [ β ] → Void
-      lem0 (⊃R (⊃L _ Z D₁ _)) = lem2 D₁
-      lem0 (⊃R (⊃L _ (S ()) _ _))
-      lem0 (⊃R (⊥L _ (S ())))
-      lem0 (⊃R (◇L _ (S ()) _))
-      lem0 (⊃R (□R D₁)) = lem1 (D₁ βγ)
-      lem0 (⊃R (□L _ (S ()) _))
-      lem0 (⊃L _ () _ _) 
-      lem0 (⊥L _ ())
-      lem0 (◇L _ () _) 
-      lem0 (□L _ () _) 
-
-   ax¬□ : [] ⇒ ¬ (□ Q) ⊃ ◇ (¬ Q) [ β ] → Void
-   ax¬□ = lem0
+   ax¬□ : [] ⊢ ¬ (□ Q) ⊃ ◇ (¬ Q) [ β ] → Void
+   ax¬□ D = lem (foc D) 
     where
-
-      lem2 : (¬ (□ Q) at β :: []) ⇒ Q [ γ ] → Void
-      lem2 (hyp (S ())) 
-      lem2 (⊃L (≺*+ (≺+0 ())) Z _ _)
-      lem2 (⊃L (≺*+ (≺+S () _)) Z _ _)
-      lem2 (⊃L _ (S ()) _ _)
-      lem2 (⊥L _ (S ()))
-      lem2 (◇L _ (S ()) _)
-      lem2 (□L _ (S ()) _) 
-
-      lem1 : (¬ (□ Q)) at β :: [] ⇒ (□ Q) [ β ] → Void
-      lem1 (⊃L _ Z D₁ _) = lem1 D₁
-      lem1 (⊃L _ (S ()) _ _)
-      lem1 (⊥L _ (S ()))
-      lem1 (◇L _ (S ()) _)
-      lem1 (□R D₁) = lem2 (D₁ βγ)
-      lem1 (□L _ (S ()) _)
-      
-      lem0 : [] ⇒ ¬ (□ Q) ⊃ ◇ (¬ Q) [ β ] → Void
-      lem0 (⊃R (⊃L _ Z D₁ _)) = lem1 D₁
-      lem0 (⊃R (⊃L _ (S ()) _ _))
-      lem0 (⊃R (⊥L _ (S ())))
-      lem0 (⊃R (◇R βγ (⊃R (⊃L (≺*+ (≺+0 ())) (S Z) _ _))))
-      lem0 (⊃R (◇R βγ (⊃R (⊃L (≺*+ (≺+S () _)) (S Z) _ _))))
-      lem0 (⊃R (◇R βγ (⊃R (⊃L _ (S (S ())) _ _))))
-      lem0 (⊃R (◇R βγ (⊃R (⊥L _ (S (S ()))))))
-      lem0 (⊃R (◇R βγ (⊃R (◇L _ (S (S ())) _))))
-      lem0 (⊃R (◇R βγ (⊃R (□L _ (S (S ())) _))))
-      lem0 (⊃R (◇R βγ (⊃L (≺*+ (≺+0 ())) Z _ _)))
-      lem0 (⊃R (◇R βγ (⊃L (≺*+ (≺+S () _)) Z _ _)))
-      lem0 (⊃R (◇R βγ (⊃L _ (S ()) _ _)))
-      lem0 (⊃R (◇R βγ (⊥L _ (S ()))))
-      lem0 (⊃R (◇R βγ (◇L _ (S ()) _)))
-      lem0 (⊃R (◇R βγ (□L _ (S ()) _)))
-      lem0 (⊃R (◇L _ (S ()) _))
-      lem0 (⊃R (□L _ (S ()) _))
-      lem0 (⊃L _ () _ _)
-      lem0 (⊥L _ ())
-      lem0 (◇L _ () _)
-      lem0 (□L _ () _)
-
-
+     lem : 
+       Term [] β · (Reg (↓ (□ (a "Q" ⁺) ⊃ ↑ ⊥) ⊃ ↑ (◇ (↓ (a "Q" ⁺ ⊃ ↑ ⊥)))))
+       → Void
+     lem (↓L () ωh x Sp)
+     lem (⊃R (L <> (↓L <> ωh Z (⊃L (□R N₁) Sp₂)))) with N₁ βγ 
+     ... | ↓L pf⁻ (≺*+ (≺+0 ())) Z Sp
+     ... | ↓L pf⁻ (≺*+ (≺+S () y')) Z Sp
+     ... | ↓L pf⁻ _ (S ()) Sp
+     ... | ↑R (pR (S ()))
+     lem (⊃R (L <> (↓L <> ωh (S ()) Sp)))
+     lem (⊃R (L <> (↑R (◇R βγ (↓L pf⁻ (≺*+ (≺+0 ())) Z Sp)))))
+     lem (⊃R (L <> (↑R (◇R βγ (↓L pf⁻ (≺*+ (≺+S () y')) Z Sp)))))
+     lem (⊃R (L <> (↑R (◇R βγ (↓L pf⁻ ωh (S ()) Sp)))))
+     lem (⊃R (L <> (↑R (◇R βγ (↑R (↓R (↓L () ωh x Sp)))))))
+     lem (⊃R (L <> (↑R (◇R βγ (↑R (↓R (⊃R (L pf⁺ N)))))))) with N
+     ... | ↓L pf⁻ (≺*+ (≺+0 ())) (S Z) Sp
+     ... | ↓L pf⁻ (≺*+ (≺+S () y')) (S Z) Sp
+     ... | ↓L pf⁻ ωh (S (S ())) Sp
+     ... | ↑R ()

@@ -62,19 +62,19 @@ module CORE (UWF : UpwardsWellFounded) where
          → (∀{w'} → w' ∈ succ → (w' ∈ succ') + (Γ ⊢ A [ w' ]))
          → Γ ⊢ C [ w ] 
       iter [] sub col = 
-         D'' (λ ω → case (col (all-succ ω)) (λ ()) (λ x → x))
-      iter (w' :: succ') sub col = 
+         D'' (λ ω → case _ (col (all-succ ω)) (λ ()) (λ x → x))
+      iter (w' :: succ') sub col =
          □E' D (only-succ (sub Z))
           (λ D' → iter succ' (sub o LIST.SET.sub-cons) 
-           (λ n → case (col n) 
-            (LIST.case-cons (λ w0 → (w0 ∈ succ') + (Γ ⊢ A [ w0 ])) 
-             (Inr D') Inl)
-            Inr))
+           (λ n → case _ (col n) 
+                    (LIST.case-cons (λ x → (x ∈ succ') + (Γ ⊢ A [ x ])) 
+                      (Inr D') Inl) 
+                    Inr))
 
 module EXAMPLE where
    open import Accessibility.Five
-   open UpwardsWellFounded Arbitrary
-   open CORE (Arbitrary)
+   open UpwardsWellFounded Example
+   open CORE Example
 
    -- Local completeness at δ 
    -- We use δ instead of ω in the tech report because ω is the metavariable

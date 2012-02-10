@@ -107,7 +107,7 @@ module WIDE where
    _≺_ : Five → Five → Set
    w ≺ w' = w' ∈ succ◆ w
 
-   notin : ∀{A ws}{w w' : A} 
+   notin : {A : Set} → ∀{ws}{w w' : A} 
       → (w ≡ w' → Void) → (w ∈ ws → Void) → (w ∈ (w' :: ws) → Void)
    notin f g Z = f refl
    notin f g (S iN) = g iN

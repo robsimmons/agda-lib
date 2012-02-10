@@ -1,0 +1,23 @@
+This directory contains code from the Constructive Provability Logic project.
+
+ - MinimalCPL - a tethered, minimal (no explicit negation) constructive 
+   provability logic that was the focus of the technical report "Principles of 
+   Constructive Provability Logic." Both natural deduction and sequent 
+   calculus versions are presented, and their equivalence is established.
+
+ - TetheredCPL - a tethered, intuitionistic constructive provability logic with
+   negation, shared by the IMLA workshop submission and the journal version of
+   "Constructive Provability Logic." Both natural deduction and sequent 
+   calculus versions are presented, and their equivalence is established.
+
+ - FocusedCPL - a less-tethered, polarized, intuitionistic presentation of 
+   constructive provability logic is presented in focused sequent form only.
+   This is the version of CPL that is most adequate as the foundation of a 
+   logic programming language.
+
+ - DetetheredCPL - a less-tethered intuitionistic constructive provability logic
+   with negation is presented in natural deduction form and proved to be 
+   equivalent to the focused presentation in FocusedCPL. The IMLA workshop 
+   paper instead presented a non-focused sequent calculus, and while this 
+   system exists in the version control system, it has been removed here in 
+   favor of the focused version.

@@ -68,8 +68,48 @@ clear⊆ : ∀{Γ L Γ'} → Γ ⊆ Γ' → clear Γ L ⊆ clear Γ' L
 clear⊆ {Γ} {L} {Γ'} θ x = 
   inclear-suff {Γ'} (fst (inclear-necc {Γ} x)) (θ (snd (inclear-necc {Γ} x)))
 
-clearer : ∀{Γ L L'} → L ≤ L' → clear Γ L' ≡ clear (clear Γ L) L'
-clearer = {!!}
+clearlem : ∀{Γ L1 L2} → L1 ≤ L2 → clear Γ L2 ≡ clear (clear Γ L1) L2
+clearlem {[]} pf = refl
+clearlem {(A , L') :: Γ} {L1} {L2} pf with dec≤ L1 L' | dec≤ L2 L' 
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inl pf2 with dec≤ L2 L'
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inl pf2 | Inl _ = 
+  LIST.cons-congr (clearlem {Γ} pf)
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inl pf2 | Inr pf' = 
+  abort (pf' pf2)
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inr pf2 with dec≤ L2 L'
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inr pf2 | Inl pf' = 
+  abort (pf2 pf')
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inl pf1 | Inr pf2 | Inr pf' = 
+  clearlem {Γ} pf
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inr pf1 | Inl pf2 = 
+  abort (pf1 (trans≤ pf pf2))
+clearlem {(A , L') :: Γ} {L1} {L2} pf | Inr pf1 | Inr pf2 = clearlem {Γ} pf
+
+clearer : ∀{Γ L1 L2} → L1 ≤ L2 → clear Γ L2 ⊆ clear (clear Γ L1) L2
+clearer {Γ} pf = LIST.SET.sub-eq (clearlem {Γ} pf)
+{-
+clearer {[]} pf ()
+clearer {(A , L') :: Γ} {L1} {L2} pf x with dec≤ L' L2 | dec≤ L1 L'
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inl _ | Inl _ = {!!}
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inl _ | Inr _ = {!!}
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inl _ = {!!}
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inr _ with dec≤ L2 L'  
+clearer {(A , L') :: Γ} pf Z | Inr inr | Inr inr' | Inl inl = {!Z!}
+clearer {(A , L') :: Γ} pf (S n) | Inr inr | Inr inr' | Inl inl = {!!}
+... | Inr _ = clearer {Γ} pf x
+
+{-
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inl _ = {!!}
+clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inr _ with dec≤= {!x!}
+
+ with dec≤ L1 L'
+... | Inl _ = {! !}
+... | Inr pf' = abort (pf' {!!}) -}
+-}
+
+clearer' : ∀{Γ L L'} → L ≤ L' → clear (clear Γ L) L' ⊆ clear Γ L'
+clearer' {Γ} pf = LIST.SET.sub-eq (symm (clearlem {Γ} pf))
+-- clearer' pf x = {!!}
 
 
 -- Propositions
@@ -92,13 +132,13 @@ _stable⁺ : Hyp → Set
 (! L' A , L) stable⁺ = Void
 
 data SeqForm : Set where
-  Rfoc : Type ⁺ → SeqForm
+  Rfoc : Hyp → SeqForm
   Inv : Maybe Hyp → Conc → SeqForm 
   Lfoc : Type ⁻ → Conc → SeqForm
 
 data Exp (א Γ : Ctx) : SeqForm → Set
 
-Value : Ctx → Ctx → Type ⁺ → Set
+Value : Ctx → Ctx → Hyp → Set
 Value א Γ A = Exp א Γ (Rfoc A)
 
 Case : Ctx → Ctx → Hyp → Conc → Set
@@ -113,18 +153,19 @@ Spine א Γ A U = Exp א Γ (Lfoc A U)
 data Exp א Γ where
 
   -- Values
-  hyp⁺ : ∀{A L}
-    (v : (A , L) ∈ א)
-    → Value א Γ A
+  hyp⁺ : ∀{H}
+    (v : H ∈ א)
+    → Value א Γ H
   pR : ∀{Q L}
     (x : (q Q , L) ∈ Γ)
-    → Value א Γ (q Q)
-  ↓R : ∀{A}
+    → Value א Γ (q Q , L)
+  ↓R : ∀{A L}
     (N : Term א Γ (Reg A))
-    → Value א Γ (↓ A)
-  !R : ∀{L A}
-    (V : Value (clear א L) (clear Γ L) A)
-    → Value א Γ (! L A)
+    → Value א Γ (↓ A , L)
+  !R : ∀{L1 L2 A}
+    (pf≤ : L1 ≤ L2)
+    (V : Value (clear א L2) (clear Γ L2) (A , L2))
+    → Value א Γ (! L2 A , L1)
   
   -- Terms
   L : ∀{H U}
@@ -136,11 +177,11 @@ data Exp א Γ where
     (x : (↓ A , L) ∈ Γ)
     (Sp : Spine א Γ A U)
     → Term א Γ U
-  !L : ∀{A U L L'} 
-    (NI : Case א Γ (A , L) U)
-    → Case א Γ (! L A , L') U 
+  !L : ∀{A U L1 L2} 
+    (NI : L1 ≤ L2 → Case א Γ (A , L2) U)
+    → Case א Γ (! L2 A , L1) U 
   ↑R : ∀{A}
-    (V : Value א Γ A)
+    (V : Value א Γ (A , True))
     → Term א Γ (Reg (↑ A))
   ⊃R : ∀{A B}
     (NI : Case א Γ (A , True) (Reg B))
@@ -160,7 +201,7 @@ data Exp א Γ where
     (NI : Case א Γ (A , True) U)
     → Spine א Γ (↑ A) U
   ⊃L : ∀{A B U}
-    (V : Value א Γ A)
+    (V : Value א Γ (A , True))
     (Sp : Spine א Γ B U)
     → Spine א Γ (A ⊃ B) U
   ∧⁻L₁ : ∀{A B U}
@@ -179,11 +220,11 @@ wk' : ∀{א א' Γ Γ' Form} → א ⊆ א' → Γ ⊆ Γ' → Exp א Γ Form �
 wk' ρ θ (hyp⁺ v) = hyp⁺ (ρ v)
 wk' ρ θ (pR x) = pR (θ x)
 wk' ρ θ (↓R N) = ↓R (wk' ρ θ N)
-wk' ρ θ (!R V) = !R (wk' (clear⊆ ρ) (clear⊆ θ) V)
+wk' ρ θ (!R pf≤ V) = !R pf≤ (wk' (clear⊆ ρ) (clear⊆ θ) V)
 
 wk' ρ θ (L pf⁺ N) = L pf⁺ (wk' ρ (LIST.SET.sub-cons-congr θ) N)
 wk' ρ θ (↓L pf⁻ x Sp) = ↓L pf⁻ (θ x) (wk' ρ θ Sp)
-wk' ρ θ (!L NI) = !L (wk' ρ θ NI)
+wk' ρ θ (!L NI) = !L (λ pf → wk' ρ θ (NI pf))
 wk' ρ θ (↑R V) = ↑R (wk' ρ θ V)
 wk' ρ θ (⊃R NI) = ⊃R (wk' ρ θ NI)
 wk' ρ θ ⊤⁻R = ⊤⁻R
@@ -206,8 +247,8 @@ fwk ρ = wk' ρ (λ x → x)
 
 -- Focal substitution (positive)
 
-fsub⁺ : ∀{א Γ A L Form} 
-  → Value (clear א L) (clear Γ L) A 
+fsub⁺ : ∀{א Γ Form A L} 
+  → Value (clear א L) (clear Γ L) (A , L)
   → Exp ((A , L) :: א) Γ Form 
   → Exp א Γ Form
 
@@ -215,15 +256,13 @@ fsub⁺ V (hyp⁺ Z) = wk' (snd o inclear-necc) (snd o inclear-necc) V
 fsub⁺ V (hyp⁺ (S v)) = hyp⁺ v
 fsub⁺ V (pR x) = pR x
 fsub⁺ V (↓R N) = ↓R (fsub⁺ V N)
-fsub⁺ {א} {Γ} {L = L2} V (!R {L1} V') with dec≤ L1 L2
-... | Inl pf≤ = !R (fsub⁺ (wk' (LIST.SET.sub-eq (clearer {א} pf≤)) 
-                               (LIST.SET.sub-eq (clearer {Γ} pf≤)) V) 
-                      V')
-... | Inr _ = !R V'
+fsub⁺ {א} {Γ} {L = L3} V (!R {L1} {L2} pf≤ V') with dec≤ L2 L3
+... | Inl pf = !R pf≤ (fsub⁺ (wk' (clearer {א} pf) (clearer {Γ} pf) V) V') 
+... | Inr pf = !R pf≤ V' 
 
 fsub⁺ V (L pf⁺ N) = L pf⁺ (fsub⁺ (wk (clear⊆ LIST.SET.sub-wken) V) N)
 fsub⁺ V (↓L pf⁻ x Sp) = ↓L pf⁻ x (fsub⁺ V Sp)
-fsub⁺ V (!L NI) = !L (fsub⁺ V NI)
+fsub⁺ V (!L NI) = !L (λ pf → fsub⁺ V (NI pf))
 fsub⁺ V (↑R V') = ↑R (fsub⁺ V V')
 fsub⁺ V (⊃R NI) = ⊃R (fsub⁺ V NI)
 fsub⁺ V ⊤⁻R = ⊤⁻R
@@ -261,7 +300,7 @@ fsubSp⁻ : ∀{א Γ A U B}
 fsub⁻ pf⁻ Sp (↓L _ x Sp') = ↓L pf⁻ x (fsubSp⁻ pf⁻ Sp Sp')
 
 fsubNI⁻ pf⁻ Sp (L pf⁺ N) = L pf⁺ (fsub⁻ pf⁻ (wk LIST.SET.sub-wken Sp) N)
-fsubNI⁻ pf⁻ Sp (!L NI) = !L (fsubNI⁻ pf⁻ Sp NI)
+fsubNI⁻ pf⁻ Sp (!L NI) = !L (λ pf → (fsubNI⁻ pf⁻ Sp (NI pf)))
 
 fsubSp⁻ pf⁻ Sp hyp⁻ = Sp
 fsubSp⁻ pf⁻ Sp (↑L NI) = ↑L (fsubNI⁻ pf⁻ Sp NI)
@@ -283,7 +322,23 @@ expand⁺ {q Q} N =
 expand⁺ {↓ P} N = 
   L <> (fsub⁺ (↓R (expand⁻ (↓L <> (inclear-suff (refl≤ _) Z) hyp⁻)))
     (wk LIST.SET.sub-wken N))
-expand⁺ { ! L2 A} {L1} N = 
-  !L (expand⁺ (fsub⁺ (!R (hyp⁺ {!!})) (fwk LIST.SET.sub-wkex N)))
+expand⁺ { ! L2 A} {L1} {א} N = 
+  !L (λ pf → expand⁺ (fsub⁺ (!R pf (hyp⁺ (inclear-suff (refl≤ _) (x pf))))
+    (fwk LIST.SET.sub-wkex N)))
+ where
+   x : L1 ≤ L2 → (A , L2) ∈ clear ((A , L2) :: א) L1
+   x pf with dec≤ L1 L2
+   ... | Inl _ = Z
+   ... | Inr pf' = abort (pf' pf)
 
-expand⁻ {A} N = {!!}
+expand⁻ {q Q} N = fsub⁻ <> pL N
+expand⁻ {↑ P} N = fsub⁻ <> (↑L (expand⁺ (↑R (hyp⁺ Z)))) N
+expand⁻ {A ⊃ B} N = 
+  ⊃R (expand⁺ 
+       (expand⁻ (fsub⁻ <> (⊃L (hyp⁺ Z) hyp⁻) (fwk LIST.SET.sub-wken N))))
+expand⁻ {⊤⁻} N = ⊤⁻R
+expand⁻ {A ∧⁻ B} N = 
+  ∧⁻R (expand⁻ (fsub⁻ <> (∧⁻L₁ hyp⁻) N)) (expand⁻ (fsub⁻ <> (∧⁻L₂ hyp⁻) N))
+
+
+

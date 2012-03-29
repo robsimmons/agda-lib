@@ -29,7 +29,6 @@ data Type : Polarity → Set where
   _∧⁻_ : (A B : Type ⁻) → Type ⁻
 
 
-
 -- Contexts and operations on them (context clearing)
 
 _⊆_ : ∀{A} → List A → List A → Set
@@ -68,6 +67,12 @@ clear⊆ : ∀{Γ L Γ'} → Γ ⊆ Γ' → clear Γ L ⊆ clear Γ' L
 clear⊆ {Γ} {L} {Γ'} θ x = 
   inclear-suff {Γ'} (fst (inclear-necc {Γ} x)) (θ (snd (inclear-necc {Γ} x)))
 
+cleartrue : ∀{Γ} → Γ ≡ clear Γ True
+cleartrue {[]} = refl
+cleartrue {(A , L) :: Γ} with dec≤ True L
+... | Inl _ = LIST.cons-congr (cleartrue {Γ})
+... | Inr pf = abort (pf (truth _))
+
 clearlem : ∀{Γ L1 L2} → L1 ≤ L2 → clear Γ L2 ≡ clear (clear Γ L1) L2
 clearlem {[]} pf = refl
 clearlem {(A , L') :: Γ} {L1} {L2} pf with dec≤ L1 L' | dec≤ L2 L' 
@@ -87,29 +92,9 @@ clearlem {(A , L') :: Γ} {L1} {L2} pf | Inr pf1 | Inr pf2 = clearlem {Γ} pf
 
 clearer : ∀{Γ L1 L2} → L1 ≤ L2 → clear Γ L2 ⊆ clear (clear Γ L1) L2
 clearer {Γ} pf = LIST.SET.sub-eq (clearlem {Γ} pf)
-{-
-clearer {[]} pf ()
-clearer {(A , L') :: Γ} {L1} {L2} pf x with dec≤ L' L2 | dec≤ L1 L'
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inl _ | Inl _ = {!!}
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inl _ | Inr _ = {!!}
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inl _ = {!!}
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inr _ with dec≤ L2 L'  
-clearer {(A , L') :: Γ} pf Z | Inr inr | Inr inr' | Inl inl = {!Z!}
-clearer {(A , L') :: Γ} pf (S n) | Inr inr | Inr inr' | Inl inl = {!!}
-... | Inr _ = clearer {Γ} pf x
-
-{-
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inl _ = {!!}
-clearer {(A , L') :: Γ} {L1} {L2} pf x | Inr _ | Inr _ with dec≤= {!x!}
-
- with dec≤ L1 L'
-... | Inl _ = {! !}
-... | Inr pf' = abort (pf' {!!}) -}
--}
 
 clearer' : ∀{Γ L L'} → L ≤ L' → clear (clear Γ L) L' ⊆ clear Γ L'
 clearer' {Γ} pf = LIST.SET.sub-eq (symm (clearlem {Γ} pf))
--- clearer' pf x = {!!}
 
 
 -- Propositions

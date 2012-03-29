@@ -2,6 +2,8 @@ open import Prelude
 
 module Foo where
 
-data A : Set (LS (LS LZ)) where
+ident : {A : Set} → A → A
+ident x = x
 
-data B : A -> Set where
+foo : {A : Set} → A → A
+foo = ident ident

@@ -109,7 +109,7 @@ data Prove Δ where
 
 data Spine where
   nil : ∀{A} → Spine ⟦⟧ A ⟨⟨ A ⟩⟩
-  ↑L : ∀{A U} (Θ : ZCtx) 
+  ↑L : ∀{Θ A U} 
     (N : elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) U))
     → Spine Θ (↑ A) U
   &L₁ : ∀{Θ A B U} (Sp : Spine Θ A U) → Spine Θ (A & B) U
@@ -129,36 +129,69 @@ RInv Δ A = elim⁻ A (λ Θ U → Prove (Θ ⟦ Δ ⟧) U)
 LInv : ZCtx → Type ⁺ → Conc → Set
 LInv Θ A U = elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) U)
 
+
+
 map⁺ : (A : Type ⁺) {P : SCtx → Set}
-  → ((Δ : SCtx) (V : Value Δ A) → P Δ) 
+  → ({Δ : SCtx} (V : Value Δ A) → P Δ) 
   → elim⁺ A P
 
 map⁻ : (A : Type ⁻) {P : ZCtx → Conc → Set}
-  → ((Θ : ZCtx) (U : Conc) (Sp : Spine Θ A U) → P Θ U)
+  → ((Θ : ZCtx) {U : Conc} (Sp : Spine Θ A U) → P Θ U)
   → elim⁻ A P
 
-map⁺ (a Q .⁺) F = F ⟨⟨ a Q ⁺ ⟩⟩ hyp
+map⁺ (a Q .⁺) F = F hyp
 map⁺ (A ● B) {P} F = 
-  map⁺ A (λ ΔA VA → 
-   map⁺ B (λ ΔB VB → 
-     F (ΔA · ΔB) (●R VA VB)))
-map⁺ ⊤⁺ F = F ∅ ⊤⁺R
+  map⁺ A (λ VA → 
+   map⁺ B (λ VB → 
+     F (●R VA VB)))
+map⁺ ⊤⁺ F = F ⊤⁺R
 map⁺ (A ⊕ B) F = 
-  (map⁺ A (λ Δ V → F Δ (⊕R₁ V))) , (map⁺ B (λ Δ V → F Δ (⊕R₂ V)))
+  (map⁺ A (λ V → F (⊕R₁ V))) , (map⁺ B (λ V → F (⊕R₂ V)))
 map⁺ ⊥ F = <>
-map⁺ (↓ A) F = F ⟨ A ⟩ (↓R (map⁻ A (λ Θ U Sp → lfoc Θ refl Sp)))
+map⁺ (↓ A) F = F (↓R (map⁻ A (λ Θ Sp → lfoc Θ refl Sp)))
 
-map⁻ (a Q .⁻) F = F ⟦⟧ ⟨⟨ a Q ⁻ ⟩⟩ nil
+map⁻ (a Q .⁻) F = F ⟦⟧ nil
 map⁻ (A & B) F =
-  (map⁻ A (λ Θ U Sp → F Θ U (&L₁ Sp))) , (map⁻ B (λ Θ U Sp → F Θ U (&L₂ Sp)))
+  (map⁻ A (λ Θ Sp → F Θ (&L₁ Sp))) , (map⁻ B (λ Θ Sp → F Θ (&L₂ Sp)))
 map⁻ ⊤⁻ F = <>
 map⁻ (A ->> B) F = 
-  map⁺ A (λ Δ V → map⁻ B (λ Θ U Sp → F (Θ ⟦⟦⟧· Δ ⟧) U (->>L V Sp)))
+  map⁺ A (λ V → map⁻ B (λ Θ Sp → F (Θ ⟦⟦⟧· _ ⟧) (->>L V Sp)))
 map⁻ (A >-> B) F = 
-  map⁺ A (λ Δ V → map⁻ B (λ Θ U Sp → F (Θ ⟦ Δ ·⟦⟧⟧) U (>->L V Sp)))
-map⁻ (↑ A) F = F ⟦⟧ ⟨ A ⟩ (↑L ⟦⟧ (map⁺ A (λ Δ V → rfoc V)))
+  map⁺ A (λ V → map⁻ B (λ Θ Sp → F (Θ ⟦ _ ·⟦⟧⟧) (>->L V Sp)))
+map⁻ (↑ A) F = F ⟦⟧ (↑L (map⁺ A (λ V → rfoc V)))
+
+subst⁺ : ∀{Δ A U} (Θ : ZCtx) → Value Δ A → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) U → Prove (Θ ⟦ Δ ⟧) U
+subst⁺ V N = {!!}
 
 
+id⁺ : ∀{C} (Θ : ZCtx) (A : Type ⁺) 
+  → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) C
+  → elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) C)
+id⁺ Θ A N = map⁺ A (λ V → subst⁺ Θ V N)
+
+demap⁺ : (A : Type ⁺) {P : SCtx → Set}
+  → elim⁺ A P
+  → ({Δ : SCtx} (V : Value Δ A) → P Δ) 
+
+demap⁻ : (A : Type ⁻) {P : ZCtx → Conc → Set}
+  → elim⁻ A P
+  → ((Θ : ZCtx) {U : Conc} (Sp : Spine Θ A U) → P Θ U)
+
+demap⁺ (a Q .⁺) N hyp = N
+demap⁺ A N hyp = {!N!} -- Case eliminated by stability
+demap⁺ (A ● B) N (●R V₁ V₂) = demap⁺ B (demap⁺ A N V₁) V₂
+demap⁺ ⊤⁺ N ⊤⁺R = N
+demap⁺ (A ⊕ B) (N₁ , N₂) (⊕R₁ V) = demap⁺ A N₁ V
+demap⁺ (A ⊕ B) (N₁ , N₂) (⊕R₂ V) = demap⁺ B N₂ V
+demap⁺ (↓ A) N (↓R N') = {!!}
+
+demap⁻ (a Q .⁻) N .⟦⟧ nil = N
+demap⁻ A N .⟦⟧ nil = {!!} -- Case eliminated by stability
+demap⁻ (A & B) (N₁ , N₂) Θ (&L₁ Sp) = demap⁻ A N₁ Θ Sp
+demap⁻ (A & B) (N₁ , N₂) Θ (&L₂ Sp) = demap⁻ B N₂ Θ Sp
+demap⁻ (A ->> B) N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = demap⁻ B (demap⁺ A N V) Θ Sp
+demap⁻ (A >-> B) N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = demap⁻ B (demap⁺ A N V) Θ Sp
+demap⁻ (↑ A) N Θ (↑L N') = {!!}
 
 cut⁺ : ∀{Δ U} (A : Type ⁺) (Θ : ZCtx)
   → Value Δ A 
@@ -191,7 +224,7 @@ lsubstSp : ∀{B A U} (Θ Θ' : ZCtx)
   → Spine (Θ ○ Θ') B U
 
 cut⁺ A Θ hyp N = {!!}
-cut⁺ (A ● B) Θ (●R V₁ V₂) N = {!!}
+cut⁺ (A ● B) Θ (●R V₁ V₂) N = cut⁺ B (Θ ⟦ _ ·⟦⟧⟧) V₂ {!!}
 --  cut⁺ A (Θ ⟪⟪⟫· _ ⟫) V₁ {!cut⁺ B (Θ ⟦ _ ·⟦⟧⟧) V₂ N!} --
 cut⁺ ⊤⁺ Θ ⊤⁺R N = N
 cut⁺ (A ⊕ B) Θ (⊕R₁ V) (N₁ , N₂) = cut⁺ A Θ V N₁
@@ -209,7 +242,7 @@ cut⁻ (A ->> B) (Θ ⟦ Δ' ·⟦⟧⟧) N ()
 cut⁻ (A ->> B) (Θ ⟦⟦⟧· Δ' ⟧) N (->>L V Sp) = {!!}
 cut⁻ (A >-> B) (Θ ⟦ Δ' ·⟦⟧⟧) N (>->L V Sp) = {!!}
 cut⁻ (A >-> B) (Θ ⟦⟦⟧· Δ' ⟧) N ()
-cut⁻ (↑ A) Θ N (↑L .Θ N') = lsubstN Θ N N'
+cut⁻ (↑ A) Θ N (↑L N') = lsubstN Θ N N'
 
 rsubstV (Δ' ·⟪ Θ ⟪⟫⟫) M (●R V₁ V₂) = ●R V₁ (rsubstV Θ M V₂)
 rsubstV (⟪ Θ ⟪⟫⟫· Δ') M (●R V₁ V₂) = ●R (rsubstV Θ M V₁) V₂
@@ -223,7 +256,7 @@ rsubstN Θ M (lfoc Θ' eq Sp) = {!!}
 lsubstN Θ (rfoc V) M = cut⁺ _ Θ V M
 lsubstN Θ (lfoc Θ' Refl Sp) M = lfoc (Θ ○ Θ') {!!} (lsubstSp Θ Θ' Sp M)
 
-lsubstSp Θ Θ' (↑L ._ N) M = {!!}
+lsubstSp Θ Θ' (↑L N) M = {!!}
 lsubstSp Θ Θ' (&L₁ Sp) M = &L₁ (lsubstSp Θ Θ' Sp M)
 lsubstSp Θ Θ' (&L₂ Sp) M = &L₂ (lsubstSp Θ Θ' Sp M)
 lsubstSp Θ (Θ' ⟦⟦⟧· Δ' ⟧) (->>L V Sp) M = ->>L V (lsubstSp Θ Θ' Sp M)
@@ -239,12 +272,4 @@ p5 = a "E" ⁺
 qqq : Value ∅ (↓ (p1 >-> (p2 >-> (p3 ->> (p4 ->> (p5 >-> ↑ p5))))))
 qqq = ↓R {!!}
 
-subst⁺ : ∀{Δ A U} (Θ : ZCtx) → Value Δ A → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) U → Prove (Θ ⟦ Δ ⟧) U
-subst⁺ V N = {!!}
-
-
-id⁺ : ∀{C} (Θ : ZCtx) (A : Type ⁺) 
-  → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) C
-  → elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) C)
-id⁺ Θ A N = map⁺ A (λ Δ V → subst⁺ Θ V N)
 

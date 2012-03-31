@@ -68,6 +68,8 @@ elim⁺ (A ⊕ B) P = elim⁺ A P × elim⁺ B P
 elim⁺ ⊥ P = Unit
 elim⁺ (↓ A) P = P ⟨ A ⟩
 
+-- lift : 
+
 elim⁻ : Type ⁻ → (ZCtx → Conc → Set) → Set
 elim⁻ (a Q .⁻) P = P ⟦⟧ ⟨⟨ a Q ⁻ ⟩⟩
 elim⁻ (A & B) P = elim⁻ A P × elim⁻ B P
@@ -169,12 +171,22 @@ id⁺ : ∀{C} (Θ : ZCtx) (A : Type ⁺)
   → elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) C)
 id⁺ Θ A N = map⁺ A (λ V → subst⁺ Θ V N)
 
-right-ok : HCtx → (SCtx → Set) → Set
-right-ok Θ P = ∀{Δ A} → RInv Δ A → P (Θ ⟪ ⟨ A ⟩ ⟫) → P (Θ ⟪ Δ ⟫)
+right-ok : (SCtx → Set) → Set
+right-ok P = (Θ : HCtx) → ∀{Δ A} → RInv Δ A → P (Θ ⟪ ⟨ A ⟩ ⟫) → P (Θ ⟪ Δ ⟫)
+
+{-
+left-ok : (ZCtx → Conc → Set) → Set
+left-ok P = (Θ' : ZCtx) (Θ : HCtx) → ∀{Θ' A U} → LInv Θ' 
+              → P (Θ' ⟦ Θ ⟪ ⟨ A ⟩ ⟫ ⟧ ⟫)
+              → P (Θ' ⟦ Θ ⟪ Δ ⟫ ⟧ ⟫)
+-}
+
+-- right-ok-lift : right-ok P → right-ok (λ Δ → 
 
 -- rightN : right-ok (λ {Θ} {A} → 
 
 demap⁺ : (A : Type ⁺) {P : SCtx → Set}
+  → right-ok P
   → elim⁺ A P
   → ({Δ : SCtx} (V : Value Δ A) → P Δ) 
 
@@ -189,20 +201,45 @@ lmapN : ∀{A U} (Θ : ZCtx) {P : ZCtx → Conc → Set}
   → LInv Θ A U
   → P Θ U
 
-demap⁺ (a Q .⁺) Θ rs N hyp = N
-demap⁺ A Θ rs N hyp = {!N!} -- Case eliminated by stability
-demap⁺ (A ● B) Θ rs N (●R V₁ V₂) = demap⁺ B {!!} {!λ {Δ}{A} → rs {Δ}{A}!} (demap⁺ A (⟪ Θ ⟪⟫⟫· _) {!λ {Δ}{A} → rs {Δ}{A}!} N V₁) V₂
-demap⁺ ⊤⁺ Θ rs N ⊤⁺R = N
-demap⁺ (A ⊕ B) Θ rs (N₁ , N₂) (⊕R₁ V) = demap⁺ A Θ rs N₁ V
-demap⁺ (A ⊕ B) Θ rs (N₁ , N₂) (⊕R₂ V) = demap⁺ B Θ rs N₂ V
-demap⁺ (↓ A) Θ rs N (↓R N') = {!!} -- rs N' N
+foo⁺ : {P : SCtx → Set} {P' : SCtx → Set} 
+  → (A : Type ⁺)
+  → (∀{Δ} → P Δ → P' Δ) 
+  → (elim⁺ A P → elim⁺ A P')
+foo⁺ (a Q .⁺) f N = f N
+foo⁺ (A ● B) f N = foo⁺ A (foo⁺ B f) N
+foo⁺ ⊤⁺ f N = f N
+foo⁺ (A ⊕ B) f (N₁ , N₂) = foo⁺ A f N₁ , foo⁺ B f N₂
+foo⁺ ⊥ f <> = <>
+foo⁺ (↓ A) f N = f N
+
+foo⁻ : {P : ZCtx → Conc → Set} {P' : ZCtx → Conc → Set}
+  → (A : Type ⁻)
+  → (∀{Δ}{U} → P Δ U → P' Δ U) 
+  → (elim⁻ A P → elim⁻ A P')
+foo⁻ (a Q .⁻) f N = f N
+foo⁻ (A & B) f (N₁ , N₂) = foo⁻ A f N₁ , foo⁻ B f N₂
+foo⁻ ⊤⁻ f <> = <>
+foo⁻ (A ->> B) f N = foo⁺ A (foo⁻ B f) N
+foo⁻ (A >-> B) f N = foo⁺ A (foo⁻ B f) N
+foo⁻ (↑ A) f N = f N
+
+demap⁺ (a Q .⁺) rs N hyp = N
+demap⁺ A rs N hyp = {!N!} -- Case eliminated by stability
+demap⁺ (A ● B) rs N (●R V₁ V₂) =
+  demap⁺ B (λ Θ → rs (_ ·⟪ Θ ⟪⟫⟫))
+    (demap⁺ A (λ Θ x → foo⁺ B (rs (⟪ Θ ⟪⟫⟫· _) x)) N V₁) V₂
+ -- map⁺ B (λ V → rs (⟪ Θ ⟪⟫⟫· _) {!!} {!y!})) N V₁) V₂
+demap⁺ ⊤⁺ rs N ⊤⁺R = N
+demap⁺ (A ⊕ B) rs (N₁ , N₂) (⊕R₁ V) = demap⁺ A rs N₁ V
+demap⁺ (A ⊕ B) rs (N₁ , N₂) (⊕R₂ V) = demap⁺ B rs N₂ V
+demap⁺ (↓ A) rs N (↓R N') = rs ⟪⟫ N' N 
 
 demap⁻ (a Q .⁻) N .⟦⟧ nil = N
 demap⁻ A N .⟦⟧ nil = {!!} -- Case eliminated by stability
 demap⁻ (A & B) (N₁ , N₂) Θ (&L₁ Sp) = demap⁻ A N₁ Θ Sp
 demap⁻ (A & B) (N₁ , N₂) Θ (&L₂ Sp) = demap⁻ B N₂ Θ Sp
-demap⁻ (A ->> B) N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = demap⁻ B (demap⁺ A {!!} {!!} N V) Θ Sp
-demap⁻ (A >-> B) N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = demap⁻ B (demap⁺ A {!!} {!!} N V) Θ Sp
+demap⁻ (A ->> B) N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = demap⁻ B (demap⁺ A {!!} N V) Θ Sp
+demap⁻ (A >-> B) N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = demap⁻ B (demap⁺ A {!!} N V) Θ Sp
 demap⁻ (↑ A) {P} N Θ (↑L N') = {!!} -- demap⁺ A {!!} {!!} {!!}
 
 lmapN Θ N M = {!!}

@@ -60,6 +60,11 @@ _⟪_⟫ : HCtx → SCtx → SCtx
 (Δ ·⟪ Θ ⟪⟫⟫) ⟪ Δ' ⟫ = Δ · Θ ⟪ Δ' ⟫
 (⟪ Θ ⟪⟫⟫· Δ) ⟪ Δ' ⟫ = Θ ⟪ Δ' ⟫ · Δ
 
+rev : HCtx → ZCtx
+rev ⟪⟫ = {!!}
+rev (Δ ·⟪ Θ ⟪⟫⟫) = {!!}
+rev (⟪ Θ ⟪⟫⟫· Δ) = {!!}
+
 elim⁺ : Type ⁺ → (SCtx → Set) → Set
 elim⁺ (a Q .⁺) P = P ⟨⟨ a Q ⁺ ⟩⟩
 elim⁺ (A ● B) P = elim⁺ A λ ΔA → elim⁺ B (λ ΔB → P (ΔA · ΔB))
@@ -162,24 +167,24 @@ map⁻ (A >-> B) F =
   map⁺ A (λ V → map⁻ B (λ Θ Sp → F (Θ ⟦ _ ·⟦⟧⟧) (>->L V Sp)))
 map⁻ (↑ A) F = F ⟦⟧ (↑L (map⁺ A (λ V → rfoc V)))
 
+{-
 subst⁺ : ∀{Δ A U} (Θ : ZCtx) → Value Δ A → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) U → Prove (Θ ⟦ Δ ⟧) U
 subst⁺ V N = {!!}
-
 
 id⁺ : ∀{C} (Θ : ZCtx) (A : Type ⁺) 
   → Prove (Θ ⟦ ⟨⟨ A ⟩⟩ ⟧) C
   → elim⁺ A (λ Δ → Prove (Θ ⟦ Δ ⟧) C)
 id⁺ Θ A N = map⁺ A (λ V → subst⁺ Θ V N)
+-}
 
 right-ok : (SCtx → Set) → Set
 right-ok P = (Θ : HCtx) → ∀{Δ A} → RInv Δ A → P (Θ ⟪ ⟨ A ⟩ ⟫) → P (Θ ⟪ Δ ⟫)
 
-{-
 left-ok : (ZCtx → Conc → Set) → Set
-left-ok P = (Θ' : ZCtx) (Θ : HCtx) → ∀{Θ' A U} → LInv Θ' 
-              → P (Θ' ⟦ Θ ⟪ ⟨ A ⟩ ⟫ ⟧ ⟫)
-              → P (Θ' ⟦ Θ ⟪ Δ ⟫ ⟧ ⟫)
--}
+left-ok P = (Θ' : ZCtx) (Θ : ZCtx) → ∀{A U}
+              → LInv Θ A U
+              → P Θ' ⟨ A ⟩
+              → P (Θ' ○ Θ) U
 
 -- right-ok-lift : right-ok P → right-ok (λ Δ → 
 
@@ -191,6 +196,7 @@ demap⁺ : (A : Type ⁺) {P : SCtx → Set}
   → ({Δ : SCtx} (V : Value Δ A) → P Δ) 
 
 demap⁻ : (A : Type ⁻) {P : ZCtx → Conc → Set}
+  → left-ok P
   → elim⁻ A P
   → ((Θ : ZCtx) {U : Conc} (Sp : Spine Θ A U) → P Θ U)
 
@@ -214,7 +220,7 @@ foo⁺ (↓ A) f N = f N
 
 foo⁻ : {P : ZCtx → Conc → Set} {P' : ZCtx → Conc → Set}
   → (A : Type ⁻)
-  → (∀{Δ}{U} → P Δ U → P' Δ U) 
+  → (∀{Θ}{U} → P Θ U → P' Θ U) 
   → (elim⁻ A P → elim⁻ A P')
 foo⁻ (a Q .⁻) f N = f N
 foo⁻ (A & B) f (N₁ , N₂) = foo⁻ A f N₁ , foo⁻ B f N₂
@@ -234,13 +240,18 @@ demap⁺ (A ⊕ B) rs (N₁ , N₂) (⊕R₁ V) = demap⁺ A rs N₁ V
 demap⁺ (A ⊕ B) rs (N₁ , N₂) (⊕R₂ V) = demap⁺ B rs N₂ V
 demap⁺ (↓ A) rs N (↓R N') = rs ⟪⟫ N' N 
 
-demap⁻ (a Q .⁻) N .⟦⟧ nil = N
-demap⁻ A N .⟦⟧ nil = {!!} -- Case eliminated by stability
-demap⁻ (A & B) (N₁ , N₂) Θ (&L₁ Sp) = demap⁻ A N₁ Θ Sp
-demap⁻ (A & B) (N₁ , N₂) Θ (&L₂ Sp) = demap⁻ B N₂ Θ Sp
-demap⁻ (A ->> B) N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = demap⁻ B (demap⁺ A {!!} N V) Θ Sp
-demap⁻ (A >-> B) N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = demap⁻ B (demap⁺ A {!!} N V) Θ Sp
-demap⁻ (↑ A) {P} N Θ (↑L N') = {!!} -- demap⁺ A {!!} {!!} {!!}
+demap⁻ (a Q .⁻) ls N .⟦⟧ nil = N
+demap⁻ A ls N .⟦⟧ nil = {!!} -- Case eliminated by stability
+demap⁻ (A & B) ls (N₁ , N₂) Θ (&L₁ Sp) = demap⁻ A ls N₁ Θ Sp
+demap⁻ (A & B) ls (N₁ , N₂) Θ (&L₂ Sp) = demap⁻ B ls N₂ Θ Sp
+demap⁻ (A ->> B) ls N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = 
+  demap⁻ B (λ Θ' Θ0 x x' → {! ls Θ' (Θ0 ⟦⟦⟧· Δ ⟧) x x!})
+    (demap⁺ A {!!} N V) Θ Sp
+demap⁻ (A >-> B) ls N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = 
+  demap⁻ B (λ Θ' Θ'' → {!!})
+    (demap⁺ A (λ Θ' Θ0 x → {! foo⁻ B (λ {Θ} {U}x' → {! ls Θ (⟦⟧ ⟦ _ ·⟦⟧⟧) x {!x'!} !}) x !}) N V) Θ Sp
+demap⁻ (↑ A) {P} ls N Θ {U} (↑L N') = 
+  ID.coe1 (λ Θ' → P Θ' U) {!!} (ls ⟦⟧ Θ N' N)
 
 lmapN Θ N M = {!!}
 

@@ -124,8 +124,79 @@ data Exp Γ where
     (Sp : Spine Γ B U)
     → Spine Γ (A ⊃ B) U
 
+
+fmap⁺ : {P : Ctx → Set} {P' : Ctx → Set} 
+  → (A : Type ⁺)
+  → (∀{Γ Γ'} → Γ ⊆ Γ' → P Γ → P' Γ') 
+  → (∀{Γ Γ'} → Γ ⊆ Γ' → I⁺ A P Γ → I⁺ A P' Γ')
+fmap⁺ (a Q .⁺) f θ N = f (LIST.SET.sub-cons-congr θ) N
+fmap⁺ (A ∧⁺ B) f θ N = fmap⁺ A (fmap⁺ B f) θ N 
+fmap⁺ ⊤⁺ f θ N = f θ N 
+fmap⁺ (A ∨ B) f θ (N₁ , N₂) = fmap⁺ A f θ N₁ , fmap⁺ B f θ N₂
+fmap⁺ ⊥ f θ <> = <> 
+fmap⁺ (↓ A) f θ N = f (LIST.SET.sub-cons-congr θ) N
+
+fmap⁻ : {P : Conc → Ctx → Set} {P' : Conc → Ctx → Set} 
+  → (A : Type ⁻)
+  → (∀{Γ U Γ'} (θ : Γ ⊆ Γ') (N : P U Γ) → P' U Γ') 
+  → (∀{Γ Γ'} → Γ ⊆ Γ' → I⁻ A P Γ → I⁻ A P' Γ')
+fmap⁻ (a Q .⁻) f θ N = f θ N
+fmap⁻ (A ∧⁻ B) f θ (N₁ , N₂) = fmap⁻ A f θ N₁ , fmap⁻ B f θ N₂
+fmap⁻ ⊤⁻ f θ <> = <>
+fmap⁻ (A ⊃ B) f θ N = fmap⁺ A (fmap⁻ B f) θ N
+fmap⁻ (↑ A) f θ N = f θ N
+
+
+-- | Weakening, with termination problems due to fmap
 wk : ∀{Γ Γ' J} → Γ ⊆ Γ' → Exp Γ J → Exp Γ' J
-wk θ E = {!!}
+wk θ (id⁺ x) = id⁺ (θ x)
+wk θ (↓R {A} N) = ↓R (fmap⁻ A wk θ N)
+wk θ ⊤⁺R = ⊤⁺R
+wk θ (∧⁺R V₁ V₂) = ∧⁺R (wk θ V₁) (wk θ V₂)
+wk θ (∨R₁ V) = ∨R₁ (wk θ V)
+wk θ (∨R₂ V) = ∨R₂ (wk θ V)
+
+wk θ (rfoc V) = rfoc (wk θ V)
+wk θ (lfoc x Sp) = lfoc (θ x) (wk θ Sp)
+
+wk θ id⁻ = id⁻
+wk θ (↑L {A} N) = ↑L (fmap⁺ A wk θ N)
+wk θ (∧⁻L₁ Sp) = ∧⁻L₁ (wk θ Sp)
+wk θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk θ Sp)
+wk θ (⊃L V Sp) = ⊃L (wk θ V) (wk θ Sp)
+
+
+expand⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
+  → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ')
+  → I⁺ A P Γ
+
+expand⁻ : ∀{Γ} (A : Type ⁻) {P : Conc → Ctx → Set}
+  → ({U : Conc} {Γ' : Ctx} (Sp : Spine Γ' A U) (θ : Γ ⊆ Γ') → P U Γ')
+  → I⁻ A P Γ
+
+expand⁺ (a Q .⁺) F = F (id⁺ Z) LIST.SET.sub-wken 
+expand⁺ (A ∧⁺ B) F = 
+  expand⁺ A λ VA θ →
+    expand⁺ B λ VB θ' → 
+      F (∧⁺R (wk θ' VA) VB) (LIST.SET.trans-sub θ θ') 
+expand⁺ ⊤⁺ F = F ⊤⁺R (λ x → x) 
+expand⁺ (A ∨ B) F = 
+  (expand⁺ A (λ V → F (∨R₁ V))) , (expand⁺ B (λ V → F (∨R₂ V)))
+expand⁺ ⊥ F = <>
+expand⁺ (↓ A) F = F (↓R (expand⁻ A (λ Sp θ → lfoc (θ Z) Sp))) LIST.SET.sub-wken 
+
+expand⁻ (a Q .⁻) F = F id⁻ (λ x → x) 
+expand⁻ (A ∧⁻ B) F = 
+  (expand⁻ A (λ Sp → F (∧⁻L₁ Sp))) , (expand⁻ B (λ Sp → F (∧⁻L₂ Sp)))
+expand⁻ ⊤⁻ F = <>
+expand⁻ (A ⊃ B) F = 
+  expand⁺ A λ V θ → 
+    expand⁻ B λ Sp θ' → 
+      F (⊃L (wk θ' V) Sp) (LIST.SET.trans-sub θ θ')
+expand⁻ (↑ A) F = F (↑L (expand⁺ A (λ V θ → rfoc V))) (λ x → x)
+
+
+-- This is too out there, can we take it down a notch using fmap?
 
 record Props⁺ (P : Ctx → Set) : Set where 
  field
@@ -137,16 +208,6 @@ record Props⁻ (P : Conc → Ctx → Set) : Set where
   wk⁻ : ∀{Γ Γ' J} → Γ ⊆ Γ' → P J Γ → P J Γ'
 open Props⁻ public
 
-fmap⁺ : ∀{Γ Γ'} {P : Ctx → Set} {P' : Ctx → Set} 
-  → (A : Type ⁺)
-  → (∀{Γ Γ'} → Γ ⊆ Γ' → P Γ → P' Γ') 
-  → (∀{Γ Γ'} → Γ ⊆ Γ' → I⁺ A P Γ → I⁺ A P' Γ')
-fmap⁺ (a Q .⁺) f θ N = f (LIST.SET.sub-cons-congr θ) N
-fmap⁺ (A ∧⁺ B) f θ N = fmap⁺ A (fmap⁺ B f) θ N 
-fmap⁺ ⊤⁺ f θ N = f θ N 
-fmap⁺ (A ∨ B) f θ (N₁ , N₂) = fmap⁺ A f θ N₁ , fmap⁺ B f θ N₂
-fmap⁺ ⊥ f θ <> = <> 
-fmap⁺ (↓ A) f θ N = f (LIST.SET.sub-cons-congr θ) N
 
 cut⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
   → Props⁺ P
@@ -178,41 +239,3 @@ cut⁺ (↓ A) pr N V θ = {!!}
 cut⁻ A pr N Sp θ = {!!}
 
 
-expand⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
-  → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ')
-  → I⁺ A P Γ
-
-{-
-expand⁺ (a Q .⁺) F = F (id⁺ Z) LIST.SET.sub-wken
-expand⁺ (A ∧⁺ B) F = 
-  fmap⁺ A {!!} {!!} (expand⁺ A ?)
-expand⁺ ⊤⁺ F = {!!}
-expand⁺ (A ∨ B) F = {!!}
-expand⁺ ⊥ F = {!!}
-expand⁺ (↓ A) F = {!!}
--}
-
-expand⁻ : ∀{Γ} (A : Type ⁻) {P : Conc → Ctx → Set}
-  → ({U : Conc} {Γ' : Ctx} (Sp : Spine Γ' A U) (θ : Γ ⊆ Γ') → P U Γ')
-  → I⁻ A P Γ
-
-expand⁺ (a Q .⁺) F = F (id⁺ Z) LIST.SET.sub-wken 
-expand⁺ (A ∧⁺ B) F = 
-  expand⁺ A λ VA θ →
-    expand⁺ B λ VB θ' → 
-      F (∧⁺R (wk θ' VA) VB) (LIST.SET.trans-sub θ θ') 
-expand⁺ ⊤⁺ F = F ⊤⁺R (λ x → x) 
-expand⁺ (A ∨ B) F = 
-  (expand⁺ A (λ V → F (∨R₁ V))) , (expand⁺ B (λ V → F (∨R₂ V)))
-expand⁺ ⊥ F = <>
-expand⁺ (↓ A) F = F (↓R (expand⁻ A (λ Sp θ → lfoc (θ Z) Sp))) LIST.SET.sub-wken 
-
-expand⁻ (a Q .⁻) F = F id⁻ (λ x → x) 
-expand⁻ (A ∧⁻ B) F = 
-  (expand⁻ A (λ Sp → F (∧⁻L₁ Sp))) , (expand⁻ B (λ Sp → F (∧⁻L₂ Sp)))
-expand⁻ ⊤⁻ F = <>
-expand⁻ (A ⊃ B) F = 
-  expand⁺ A λ V θ → 
-    expand⁻ B λ Sp θ' → 
-      F (⊃L (wk θ' V) Sp) (LIST.SET.trans-sub θ θ')
-expand⁻ (↑ A) F = F (↑L (expand⁺ A (λ V θ → rfoc V))) (λ x → x)

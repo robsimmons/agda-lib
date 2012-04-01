@@ -178,13 +178,15 @@ id⁺ Θ A N = map⁺ A (λ V → subst⁺ Θ V N)
 -}
 
 right-ok : (SCtx → Set) → Set
-right-ok P = (Θ : HCtx) → ∀{Δ A} → RInv Δ A → P (Θ ⟪ ⟨ A ⟩ ⟫) → P (Θ ⟪ Δ ⟫)
+right-ok P = (Θ : HCtx) → ∀{Δ A} 
+              → RInv Δ A 
+              → P (Θ ⟪ ⟨ A ⟩ ⟫) → P (Θ ⟪ Δ ⟫)
 
 left-ok : (ZCtx → Conc → Set) → Set
-left-ok P = (Θ' : ZCtx) (Θ : ZCtx) → ∀{A U}
+left-ok P = (Θ : ZCtx) (Θ' : ZCtx) → ∀{A U}
               → LInv Θ A U
               → P Θ' ⟨ A ⟩
-              → P (Θ' ○ Θ) U
+              → P (Θ ○ Θ') U
 
 -- right-ok-lift : right-ok P → right-ok (λ Δ → 
 
@@ -220,14 +222,21 @@ foo⁺ (↓ A) f N = f N
 
 foo⁻ : {P : ZCtx → Conc → Set} {P' : ZCtx → Conc → Set}
   → (A : Type ⁻)
-  → (∀{Θ}{U} → P Θ U → P' Θ U) 
+  → ((Θ : ZCtx) → ∀{U} → P Θ U → P' Θ U) 
   → (elim⁻ A P → elim⁻ A P')
-foo⁻ (a Q .⁻) f N = f N
+foo⁻ (a Q .⁻) f N = f ⟦⟧ N
 foo⁻ (A & B) f (N₁ , N₂) = foo⁻ A f N₁ , foo⁻ B f N₂
 foo⁻ ⊤⁻ f <> = <>
-foo⁻ (A ->> B) f N = foo⁺ A (foo⁻ B f) N
-foo⁻ (A >-> B) f N = foo⁺ A (foo⁻ B f) N
-foo⁻ (↑ A) f N = f N
+foo⁻ (A ->> B) f N = foo⁺ A (foo⁻ B (λ Θ → f (Θ ⟦⟦⟧· _ ⟧))) N 
+foo⁻ (A >-> B) f N = foo⁺ A (foo⁻ B (λ Θ → f (Θ ⟦ _ ·⟦⟧⟧))) N 
+foo⁻ (↑ A) f N = f ⟦⟧ N
+
+bar⁻ : {P : ZCtx → Set} {P' : ZCtx → Set} 
+  → (A : Type ⁻)
+  → ((Θ : ZCtx) → P Δ → P' Δ) 
+  → (elim⁻ A (λ Θ → {!P Θ!}) → elim⁻ A {!!})
+bar⁻ = {!!}
+
 
 demap⁺ (a Q .⁺) rs N hyp = N
 demap⁺ A rs N hyp = {!N!} -- Case eliminated by stability
@@ -245,13 +254,25 @@ demap⁻ A ls N .⟦⟧ nil = {!!} -- Case eliminated by stability
 demap⁻ (A & B) ls (N₁ , N₂) Θ (&L₁ Sp) = demap⁻ A ls N₁ Θ Sp
 demap⁻ (A & B) ls (N₁ , N₂) Θ (&L₂ Sp) = demap⁻ B ls N₂ Θ Sp
 demap⁻ (A ->> B) ls N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) = 
-  demap⁻ B (λ Θ' Θ0 x x' → {! ls Θ' (Θ0 ⟦⟦⟧· Δ ⟧) x x!})
-    (demap⁺ A {!!} N V) Θ Sp
-demap⁻ (A >-> B) ls N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = 
-  demap⁻ B (λ Θ' Θ'' → {!!})
-    (demap⁺ A (λ Θ' Θ0 x → {! foo⁻ B (λ {Θ} {U}x' → {! ls Θ (⟦⟧ ⟦ _ ·⟦⟧⟧) x {!x'!} !}) x !}) N V) Θ Sp
-demap⁻ (↑ A) {P} ls N Θ {U} (↑L N') = 
-  ID.coe1 (λ Θ' → P Θ' U) {!!} (ls ⟦⟧ Θ N' N)
+  {! demap⁺ A {!!} 
+    (demap⁻ {!!} {!!} {!!} Θ Sp)
+    V !}
+{-
+  demap⁻ B (λ Θ' Θ'' → ls Θ' (Θ'' ⟦⟦⟧· Δ ⟧))
+    (demap⁺ A (λ Θ' x →
+      foo⁻ B (λ Θ'' x → 
+        {!  !})) N V) Θ Sp -}
+demap⁻ (A >-> B) {P} ls N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = 
+  demap⁻ B (λ Θ' Θ'' → ls Θ' (Θ'' ⟦ Δ ·⟦⟧⟧)) 
+    (demap⁺ A 
+      (λ Θ' x → {! ls ? (rev Θ') x!}) 
+      N V)
+    Θ Sp
+{-    (demap⁺ A (λ Θ' Θ0 x →
+      foo⁻ B (λ {Θ1} {U} x' →  
+        ID.coe1 (λ x0 → P x0 U) {!!} 
+          (ls Θ1 (rev Θ' ⟦ _ ·⟦⟧⟧) x {!!})) x) N V) Θ Sp -}
+demap⁻ (↑ A) {P} ls N Θ {U} (↑L N') = ls Θ ⟦⟧ N' N
 
 lmapN Θ N M = {!!}
 

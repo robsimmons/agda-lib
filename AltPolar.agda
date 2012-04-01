@@ -127,22 +127,55 @@ data Exp Γ where
 wk : ∀{Γ Γ' J} → Γ ⊆ Γ' → Exp Γ J → Exp Γ' J
 wk θ E = {!!}
 
+record Props⁺ (P : Ctx → Set) : Set where 
+ field
+  wk⁺ : ∀{Γ Γ'} → Γ ⊆ Γ' → P Γ → P Γ'
+open Props⁺ public
+
+record Props⁻ (P : Conc → Ctx → Set) : Set where 
+ field
+  wk⁻ : ∀{Γ Γ' J} → Γ ⊆ Γ' → P J Γ → P J Γ'
+open Props⁻ public
+
+fmap⁺ : {P : Ctx → Set} {P' : Ctx → Set} 
+  → (A : Type ⁺)
+  → (∀{Γ Γ'} → Γ ⊆ Γ' → P Γ → P' Γ') 
+  → (∀{Γ Γ'} → Γ ⊆ Γ' → I⁺ A P Γ → I⁺ A P' Γ')
+fmap⁺ (a Q .⁺) f θ N = f (LIST.SET.sub-cons-congr θ) N
+fmap⁺ (A ∧⁺ B) f θ N = fmap⁺ A (fmap⁺ B f) θ N 
+fmap⁺ ⊤⁺ f θ N = f θ N 
+fmap⁺ (A ∨ B) f θ (N₁ , N₂) = fmap⁺ A f θ N₁ , fmap⁺ B f θ N₂
+fmap⁺ ⊥ f θ <> = <> 
+fmap⁺ (↓ A) f θ N = f (LIST.SET.sub-cons-congr θ) N
+
 cut⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
+  → Props⁺ P
   → I⁺ A P Γ
   → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ') 
 
 cut⁻ : ∀{Γ} (A : Type ⁻) {P : Conc → Ctx → Set}
+  → Props⁻ P
   → I⁻ A P Γ
   → ({U : Conc} {Γ' : Ctx} (Sp : Spine Γ' A U) (θ : Γ ⊆ Γ') → P U Γ')
 
-cut⁺ (a Q .⁺) N (id⁺ x) θ = {!N!}
-cut⁺ (A ∧⁺ B) N V θ = {!!}
-cut⁺ ⊤⁺ N V θ = {!!}
-cut⁺ (A ∨ B) N V θ = {!!}
-cut⁺ ⊥ N V θ = {!!}
-cut⁺ (↓ A) N V θ = {!!}
+cut⁺ {Γ} (a Q .⁺) {P} pr N {Γ'} (id⁺ x) θ = wk⁺ pr θ' N
+ where
+  θ' : ∀{H} → H ∈ (⟨⟨ a Q ⁺ ⟩⟩ :: Γ) → H ∈ Γ' 
+  θ' Z = x
+  θ' (S n) = θ n
 
-cut⁻ A N Sp θ = {!!}
+cut⁺ {Γ} A {P} pr N {Γ'} (id⁺ x) θ = {!!} -- excluded
+
+cut⁺ (A ∧⁺ B) pr N (∧⁺R V₁ V₂) θ =  
+  cut⁺ A pr 
+    (fmap⁺ A (λ θ' N' → cut⁺ B pr N' (wk {!θ!} V₂) θ') (λ x → x) N) 
+    V₁ θ
+cut⁺ ⊤⁺ pr N ⊤⁺R θ = wk⁺ pr θ N
+cut⁺ (A ∨ B) pr (N₁ , N₂) (∨R₁ V) θ = {!!}
+cut⁺ (A ∨ B) pr (N₁ , N₂) (∨R₂ V) θ = {!!}
+cut⁺ (↓ A) pr N V θ = {!!}
+
+cut⁻ A pr N Sp θ = {!!}
 
 
 expand⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}

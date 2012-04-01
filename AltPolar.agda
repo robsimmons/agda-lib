@@ -127,6 +127,24 @@ data Exp Γ where
 wk : ∀{Γ Γ' J} → Γ ⊆ Γ' → Exp Γ J → Exp Γ' J
 wk θ E = {!!}
 
+cut⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
+  → I⁺ A P Γ
+  → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ') 
+
+cut⁻ : ∀{Γ} (A : Type ⁻) {P : Conc → Ctx → Set}
+  → I⁻ A P Γ
+  → ({U : Conc} {Γ' : Ctx} (Sp : Spine Γ' A U) (θ : Γ ⊆ Γ') → P U Γ')
+
+cut⁺ (a Q .⁺) N (id⁺ x) θ = {!N!}
+cut⁺ (A ∧⁺ B) N V θ = {!!}
+cut⁺ ⊤⁺ N V θ = {!!}
+cut⁺ (A ∨ B) N V θ = {!!}
+cut⁺ ⊥ N V θ = {!!}
+cut⁺ (↓ A) N V θ = {!!}
+
+cut⁻ A N Sp θ = {!!}
+
+
 expand⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
   → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ') 
   → I⁺ A P Γ

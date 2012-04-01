@@ -137,7 +137,7 @@ record Props⁻ (P : Conc → Ctx → Set) : Set where
   wk⁻ : ∀{Γ Γ' J} → Γ ⊆ Γ' → P J Γ → P J Γ'
 open Props⁻ public
 
-fmap⁺ : {P : Ctx → Set} {P' : Ctx → Set} 
+fmap⁺ : ∀{Γ Γ'} {P : Ctx → Set} {P' : Ctx → Set} 
   → (A : Type ⁺)
   → (∀{Γ Γ'} → Γ ⊆ Γ' → P Γ → P' Γ') 
   → (∀{Γ Γ'} → Γ ⊆ Γ' → I⁺ A P Γ → I⁺ A P' Γ')
@@ -179,8 +179,18 @@ cut⁻ A pr N Sp θ = {!!}
 
 
 expand⁺ : ∀{Γ} (A : Type ⁺) {P : Ctx → Set}
-  → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ') 
+  → ({Γ' : Ctx} (V : Value Γ' A) (θ : Γ ⊆ Γ') → P Γ')
   → I⁺ A P Γ
+
+{-
+expand⁺ (a Q .⁺) F = F (id⁺ Z) LIST.SET.sub-wken
+expand⁺ (A ∧⁺ B) F = 
+  fmap⁺ A {!!} {!!} (expand⁺ A ?)
+expand⁺ ⊤⁺ F = {!!}
+expand⁺ (A ∨ B) F = {!!}
+expand⁺ ⊥ F = {!!}
+expand⁺ (↓ A) F = {!!}
+-}
 
 expand⁻ : ∀{Γ} (A : Type ⁻) {P : Conc → Ctx → Set}
   → ({U : Conc} {Γ' : Ctx} (Sp : Spine Γ' A U) (θ : Γ ⊆ Γ') → P U Γ')

@@ -265,7 +265,7 @@ demap⁻ (A ->> B) ls N (Θ ⟦⟦⟧· Δ ⟧) (->>L V Sp) =
 demap⁻ (A >-> B) {P} ls N (Θ ⟦ Δ ·⟦⟧⟧) (>->L V Sp) = 
   demap⁻ B (λ Θ' Θ'' → ls Θ' (Θ'' ⟦ Δ ·⟦⟧⟧)) 
     (demap⁺ A 
-      (λ Θ' x → {! ls ? (rev Θ') x!}) 
+      (λ Θ' x → {! ls ? (rev (Θ')) x!}) 
       N V)
     Θ Sp
 {-    (demap⁺ A (λ Θ' Θ0 x →

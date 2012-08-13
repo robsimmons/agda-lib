@@ -40,7 +40,8 @@ u∨R₂ N₂ = subst⁻ <> N₂ (↑L (expand⁺ (↑R (∨R₂ (hyp⁺ Z)))))
 u∨L : ∀{Γ A B C} → (↓↑ A :: Γ) ⊢ C → (↓↑ B :: Γ) ⊢ C → (↓↑ (A ∨ B) :: Γ) ⊢ C
 u∨L N₁ N₂ =
   un↑↓ (↓L <> Z (↑L (lsubstN (_ :: []) <> Nid 
-                      (∨L (L <> (↑R (↓R N₁))) (L <> (↑R (↓R N₂)))))))
+                   (∨L (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₁)))) 
+                      (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₂))))))))
  where
   Nid = ∨L (expand⁺ (↑R (∨R₁ (↓R (↑R (hyp⁺ Z)))))) 
           (expand⁺ (↑R (∨R₂ (↓R (↑R (hyp⁺ Z)))))) 
@@ -61,11 +62,13 @@ u∧⁺R N₁ N₂ =
 
 u∧⁺L : ∀{Γ A B C} → (↓↑ B :: ↓↑ A :: Γ) ⊢ C → (↓↑ (A ∧⁺ B) :: Γ) ⊢ C
 u∧⁺L N₁ = 
-  un↑↓ (↓L <> Z (↑L (lsubstN (_ :: []) <> Nid 
-                      (∧⁺L (L <> (L <> (↑R (↓R N₁))))))))
+  un↑↓ (↓L <> Z 
+          (↑L (lsubstN (_ :: []) <> Nid 
+                 (∧⁺L (L <> (L <> (↑R (↓R (wk (θ LIST.SET.sub-wkex) N₁)))))))))
  where 
   Nid = ∧⁺L (expand⁺
               (expand⁺ (↑R (∧⁺R (↓R (↑R (hyp⁺ (S Z)))) (↓R (↑R (hyp⁺ Z)))))))
+  θ = LIST.SET.sub-cons-congr
 
 -- Implication
 

@@ -48,6 +48,9 @@ Susp (A ∧⁻ B) suspnormalR = Void
 True A suspnormalR = Unit
 Inv A suspnormalR = Unit
 
+_suspstable : Conc → Set
+U suspstable = U stableR × U suspnormalR
+
 data Hyp : Set where
   Susp : (A : Type ⁺) → Hyp
   Pers : (A : Type ⁻) → Hyp
@@ -66,6 +69,10 @@ Pers A suspnormalL = Unit
 _suspnormalΓ : Ctx → Set
 Γ suspnormalΓ = ∀{H} → H ∈ Γ → H suspnormalL 
 
+cons : ∀{Γ H} → H suspnormalL → Γ suspnormalΓ → (H :: Γ) suspnormalΓ
+cons pf pfΓ Z = pf
+cons pf pfΓ (S n) = pfΓ n
+
 fromctx : ∀{A B Γ} (Γ' : Ctx) → B ∈ (Γ' ++ A :: Γ) → (A ≡ B) + (B ∈ (Γ' ++ Γ))
 fromctx [] Z = Inl Refl
 fromctx [] (S x) = Inr x
@@ -78,10 +85,8 @@ fromctx (A :: Γ') (S x) with fromctx Γ' x
 -- Sequent calculus
 
 data SeqForm : Set where
-  Rfoc : Type ⁺ → SeqForm
-  Left : (List (Type ⁺) + Type ⁻) → Conc → SeqForm 
-  -- Left (Inl Ω) U is left inversion
-  -- Left (Inr A) U is left focus
+  Rfoc : (A : Type ⁺) → SeqForm
+  Left : (L : List (Type ⁺) + Type ⁻) (U : Conc) → SeqForm 
 
 _suspnormalF : SeqForm → Set
 Rfoc A suspnormalF = Unit
@@ -95,7 +100,7 @@ Value Γ A = Exp Γ (Rfoc A)
 Term : (Γ : Ctx) → List (Type ⁺) → Conc → Set
 Term Γ Ω U = Exp Γ (Left (Inl Ω) U)
 
-Spine : (Γ : Ctx) → Type ⁻ → Conc → Set
+Spine : (Γ : Ctx) (A : Type ⁻) (U : Conc) → Set
 Spine Γ A U = Exp Γ (Left (Inr A) U)
 
 data Exp Γ where
@@ -125,7 +130,7 @@ data Exp Γ where
     (V : Value Γ A)
     → Term Γ [] (True A)
   focusL : ∀{A U} 
-    (pf⁻ : U stableR)
+    (pf : U stableR)
     (x : Pers A ∈ Γ)
     (Sp : Spine Γ A U)
     → Term Γ [] U
@@ -172,7 +177,7 @@ data Exp Γ where
     → Spine Γ (↑ A) U
   ⊃L : ∀{A B U}
     (V : Value Γ A)
-    (Sp : Spine Γ B U)
+    (Sp : Spine Γ B U) 
     → Spine Γ (A ⊃ B) U
   ∧⁻L₁ : ∀{A B U}
     (Sp : Spine Γ A U)
@@ -194,7 +199,7 @@ wk θ ⊤⁺R = ⊤⁺R
 wk θ (∧⁺R V₁ V₂) = ∧⁺R (wk θ V₁) (wk θ V₂)
 
 wk θ (focusR V) = focusR (wk θ V)
-wk θ (focusL pf⁻ x Sp) = focusL pf⁻ (θ x) (wk θ Sp)
+wk θ (focusL pf x Sp) = focusL pf (θ x) (wk θ Sp)
 wk θ (η⁺ N) = η⁺ (wk (LIST.SET.sub-cons-congr θ) N)
 wk θ (η⁻ N) = η⁻ (wk θ N)
 wk θ (↓L N) = ↓L (wk (LIST.SET.sub-cons-congr θ) N)
@@ -212,6 +217,9 @@ wk θ (↑L N) = ↑L (wk θ N)
 wk θ (⊃L V Sp) = ⊃L (wk θ V) (wk θ Sp)
 wk θ (∧⁻L₁ Sp) = ∧⁻L₁ (wk θ Sp)
 wk θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk θ Sp)
+
+wken : ∀{Γ A Form} → Exp Γ Form → Exp (A :: Γ) Form
+wken = wk LIST.SET.sub-wken
 
 
 -- Judgmental principles (focal substitution)
@@ -231,12 +239,12 @@ fsub⁺ Γ' V ⊤⁺R = ⊤⁺R
 fsub⁺ Γ' V (∧⁺R V₁ V₂) = ∧⁺R (fsub⁺ Γ' V V₁) (fsub⁺ Γ' V V₂)
 
 fsub⁺ Γ' V (focusR V') = focusR (fsub⁺ Γ' V V')
-fsub⁺ Γ' V (focusL pf⁻ x Sp) with fromctx Γ' x
+fsub⁺ Γ' V (focusL pf x Sp) with fromctx Γ' x
 ... | Inl ()
-... | Inr x' = focusL pf⁻ x' (fsub⁺ Γ' V Sp)
-fsub⁺ Γ' V (η⁺ N) = η⁺ (fsub⁺ (_ :: Γ') (wk LIST.SET.sub-wken V) N)
+... | Inr x' = focusL pf x' (fsub⁺ Γ' V Sp)
+fsub⁺ Γ' V (η⁺ N) = η⁺ (fsub⁺ (_ :: Γ') (wken V) N)
 fsub⁺ Γ' V (η⁻ N) = η⁻ (fsub⁺ Γ' V N)
-fsub⁺ Γ' V (↓L N) = ↓L (fsub⁺ (_ :: Γ') (wk LIST.SET.sub-wken V) N)
+fsub⁺ Γ' V (↓L N) = ↓L (fsub⁺ (_ :: Γ') (wken V) N)
 fsub⁺ Γ' V (↑R N) = ↑R (fsub⁺ Γ' V N)
 fsub⁺ Γ' V ⊥L = ⊥L
 fsub⁺ Γ' V (∨L N₁ N₂) = ∨L (fsub⁺ Γ' V N₁) (fsub⁺ Γ' V N₂)

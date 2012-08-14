@@ -13,7 +13,7 @@ subst⁺ : ∀{A U Γ Ω}
 
 subst⁻ : ∀{U A Γ} 
   → Γ suspnormalΓ
-  → U suspnormalR
+  → U suspstable
   → Term Γ [] (Inv A)
   → Spine Γ A U
   → Term Γ [] U
@@ -27,93 +27,87 @@ rsubst : ∀{Γ A Form} (Γ' : Ctx)
 
 lsubst : ∀{Γ U L A} 
   → Γ suspnormalΓ
-  → U suspnormalR
+  → U suspstable
   → Exp Γ (Left L (True A))
-  → Term Γ [ A ] U
+  → Term Γ [ A ] U 
   → Exp Γ (Left L U)
 
 -- Positive principal substitution
-subst⁺ {A} pfΓ pfU (id⁺ x) N with pfΓ x
-subst⁺ {a Q .⁺} pfΓ pfU (id⁺ x) (η⁺ N) | pf = fsub⁺ [] (id⁺ x) N
-subst⁺ {↓ A} pfΓ pfU (id⁺ x) N | ()
-subst⁺ {⊥} pfΓ pfU (id⁺ x) N | ()
-subst⁺ {A ∨ B} pfΓ pfU (id⁺ x) N | ()
-subst⁺ {⊤⁺} pfΓ pfU (id⁺ x) N | ()
-subst⁺ {A ∧⁺ B} pfΓ pfU (id⁺ x) N | ()
-subst⁺ pfΓ pfU (↓R N) (↓L N') = rsubst [] pfΓ pfU N N'
-subst⁺ pfΓ pfU (∨R₁ V) (∨L N₁ N₂) = subst⁺ pfΓ pfU V N₁
-subst⁺ pfΓ pfU (∨R₂ V) (∨L N₁ N₂) = subst⁺ pfΓ pfU V N₂
-subst⁺ pfΓ pfU ⊤⁺R (⊤⁺L N) = N
-subst⁺ pfΓ pfU (∧⁺R V₁ V₂) (∧⁺L N) = subst⁺ pfΓ pfU V₂ (subst⁺ pfΓ pfU V₁ N)
+subst⁺ {A} pfΓ pf (id⁺ x) N with pfΓ x
+subst⁺ {a Q .⁺} pfΓ pf (id⁺ x) (η⁺ N) | <> = fsub⁺ [] (id⁺ x) N
+subst⁺ {↓ A} pfΓ pf (id⁺ x) N | ()
+subst⁺ {⊥} pfΓ pf (id⁺ x) N | ()
+subst⁺ {A ∨ B} pfΓ pf (id⁺ x) N | ()
+subst⁺ {⊤⁺} pfΓ pf (id⁺ x) N | ()
+subst⁺ {A ∧⁺ B} pfΓ pf (id⁺ x) N | ()
+subst⁺ pfΓ pf (↓R N) (↓L N') = rsubst [] pfΓ pf N N'
+subst⁺ pfΓ pf (∨R₁ V) (∨L N₁ N₂) = subst⁺ pfΓ pf V N₁
+subst⁺ pfΓ pf (∨R₂ V) (∨L N₁ N₂) = subst⁺ pfΓ pf V N₂
+subst⁺ pfΓ pf ⊤⁺R (⊤⁺L N) = N
+subst⁺ pfΓ pf (∧⁺R V₁ V₂) (∧⁺L N) = subst⁺ pfΓ pf V₂ (subst⁺ pfΓ pf V₁ N)
 
 -- Negative principle substitution
-subst⁻ pfΓ pfU (focusL () x Sp') Sp 
-subst⁻ pfΓ pfU (η⁻ N) id⁻ = N
-subst⁻ pfΓ () N (id⁻ {↑ A}) 
-subst⁻ pfΓ () N (id⁻ {A ⊃ B})
-subst⁻ pfΓ () N (id⁻ {⊤⁻})
-subst⁻ pfΓ () N (id⁻ {A ∧⁻ B})
-subst⁻ pfΓ pfU (↑R N) (↑L N') = lsubst pfΓ pfU N N'
-subst⁻ pfΓ pfU (⊃R N) (⊃L V Sp) = subst⁻ pfΓ pfU (subst⁺ pfΓ <> V N) Sp
-subst⁻ pfΓ pfU (∧⁻R N₁ N₂) (∧⁻L₁ Sp) = subst⁻ pfΓ pfU N₁ Sp
-subst⁻ pfΓ pfU (∧⁻R N₁ N₂) (∧⁻L₂ Sp) = subst⁻ pfΓ pfU N₂ Sp
+subst⁻ pfΓ pf (focusL () x Sp') Sp 
+subst⁻ pfΓ pf (η⁻ N) id⁻ = N
+subst⁻ pfΓ (_ , ()) N (id⁻ {↑ A}) 
+subst⁻ pfΓ (_ , ()) N (id⁻ {A ⊃ B})
+subst⁻ pfΓ (_ , ()) N (id⁻ {⊤⁻})
+subst⁻ pfΓ (_ , ()) N (id⁻ {A ∧⁻ B})
+subst⁻ pfΓ pf (↑R N) (↑L N') = lsubst pfΓ pf N N'
+subst⁻ pfΓ pf (⊃R N) (⊃L V Sp) = subst⁻ pfΓ pf (subst⁺ pfΓ <> V N) Sp
+subst⁻ pfΓ pf (∧⁻R N₁ N₂) (∧⁻L₁ Sp) = subst⁻ pfΓ pf N₁ Sp
+subst⁻ pfΓ pf (∧⁻R N₁ N₂) (∧⁻L₂ Sp) = subst⁻ pfΓ pf N₂ Sp
 
 -- Substitution into values
-rsubst Γ' pfΓ pfF N (id⁺ x) with fromctx Γ' x 
+rsubst Γ' pfΓ pf N (id⁺ x) with fromctx Γ' x 
 ... | Inl () 
 ... | Inr x' = id⁺ x'
-rsubst Γ' pfΓ pfF N (↓R N') = ↓R (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N (∨R₁ V) = ∨R₁ (rsubst Γ' pfΓ pfF N V)
-rsubst Γ' pfΓ pfF N (∨R₂ V) = ∨R₂ (rsubst Γ' pfΓ pfF N V)
-rsubst Γ' pfΓ pfF N ⊤⁺R = ⊤⁺R
-rsubst Γ' pfΓ pfF N (∧⁺R V₁ V₂) = 
-  ∧⁺R (rsubst Γ' pfΓ pfF N V₁) (rsubst Γ' pfΓ pfF N V₂)
+rsubst Γ' pfΓ pf N (↓R N') = ↓R (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N (∨R₁ V) = ∨R₁ (rsubst Γ' pfΓ pf N V)
+rsubst Γ' pfΓ pf N (∨R₂ V) = ∨R₂ (rsubst Γ' pfΓ pf N V)
+rsubst Γ' pfΓ pf N ⊤⁺R = ⊤⁺R
+rsubst Γ' pfΓ pf N (∧⁺R V₁ V₂) = 
+  ∧⁺R (rsubst Γ' pfΓ pf N V₁) (rsubst Γ' pfΓ pf N V₂)
 
 -- Substitution into terms
-rsubst Γ' pfΓ pfF N (focusR V) = focusR (rsubst Γ' pfΓ pfF N V)
-rsubst Γ' pfΓ pfF N (focusL pf⁻ x Sp) with fromctx Γ' x
-... | Inl Refl = subst⁻ pfΓ pfF N (rsubst Γ' pfΓ pfF N Sp)
-... | Inr x' = focusL pf⁻ x' (rsubst Γ' pfΓ pfF N Sp)
-rsubst Γ' pfΓ pfF N (η⁺ N') = 
-  η⁺ (rsubst (_ :: Γ') {!!} pfF (wk LIST.SET.sub-wken N) N')
-rsubst Γ' pfΓ pfF N (η⁻ N') = η⁻ (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N (↓L N') = 
-  ↓L (rsubst (_ :: Γ') {!!} pfF (wk LIST.SET.sub-wken N) N')
-rsubst Γ' pfΓ pfF N (↑R N') = ↑R (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N ⊥L = ⊥L
-rsubst Γ' pfΓ pfF N (∨L N₁ N₂) =
-  ∨L (rsubst Γ' pfΓ pfF N N₁) (rsubst Γ' pfΓ pfF N N₂)
-rsubst Γ' pfΓ pfF N (⊤⁺L N') = ⊤⁺L (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N (∧⁺L N') = ∧⁺L (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N (⊃R N') = ⊃R (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N ⊤⁻R = ⊤⁻R
-rsubst Γ' pfΓ pfF N (∧⁻R N₁ N₂) = 
-  ∧⁻R (rsubst Γ' pfΓ pfF N N₁) (rsubst Γ' pfΓ pfF N N₂)
+rsubst Γ' pfΓ pf N (focusR V) = focusR (rsubst Γ' pfΓ pf N V)
+rsubst Γ' pfΓ pf N (focusL pf⁻ x Sp) with fromctx Γ' x
+... | Inl Refl = subst⁻ pfΓ (pf⁻ , pf) N (rsubst Γ' pfΓ pf N Sp)
+... | Inr x' = focusL pf⁻ x' (rsubst Γ' pfΓ pf N Sp)
+rsubst Γ' pfΓ pf N (η⁺ N') = η⁺ (rsubst (_ :: Γ') (cons <> pfΓ) pf (wken N) N')
+rsubst Γ' pfΓ pf N (η⁻ N') = η⁻ (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N (↓L N') = ↓L (rsubst (_ :: Γ') (cons <> pfΓ) pf (wken N) N')
+rsubst Γ' pfΓ pf N (↑R N') = ↑R (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N ⊥L = ⊥L
+rsubst Γ' pfΓ pf N (∨L N₁ N₂) =
+  ∨L (rsubst Γ' pfΓ pf N N₁) (rsubst Γ' pfΓ pf N N₂)
+rsubst Γ' pfΓ pf N (⊤⁺L N') = ⊤⁺L (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N (∧⁺L N') = ∧⁺L (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N (⊃R N') = ⊃R (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N ⊤⁻R = ⊤⁻R
+rsubst Γ' pfΓ pf N (∧⁻R N₁ N₂) = 
+  ∧⁻R (rsubst Γ' pfΓ pf N N₁) (rsubst Γ' pfΓ pf N N₂)
 
 -- Substitution into spines
-rsubst Γ' pfΓ pfF N id⁻ = id⁻
-rsubst Γ' pfΓ pfF N (↑L N') = ↑L (rsubst Γ' pfΓ pfF N N')
-rsubst Γ' pfΓ pfF N (⊃L V Sp) = 
-  ⊃L (rsubst Γ' pfΓ <> N V) (rsubst Γ' pfΓ pfF N Sp)
-rsubst Γ' pfΓ pfF N (∧⁻L₁ Sp) = ∧⁻L₁ (rsubst Γ' pfΓ pfF N Sp)
-rsubst Γ' pfΓ pfF N (∧⁻L₂ Sp) = ∧⁻L₂ (rsubst Γ' pfΓ pfF N Sp)
+rsubst Γ' pfΓ pf N id⁻ = id⁻
+rsubst Γ' pfΓ pf N (↑L N') = ↑L (rsubst Γ' pfΓ pf N N')
+rsubst Γ' pfΓ pf N (⊃L V Sp) = 
+  ⊃L (rsubst Γ' pfΓ <> N V) (rsubst Γ' pfΓ pf N Sp)
+rsubst Γ' pfΓ pf N (∧⁻L₁ Sp) = ∧⁻L₁ (rsubst Γ' pfΓ pf N Sp)
+rsubst Γ' pfΓ pf N (∧⁻L₂ Sp) = ∧⁻L₂ (rsubst Γ' pfΓ pf N Sp)
 
 -- Substitution out of terms
-lsubst pfΓ pfU (focusR V) N = subst⁺ pfΓ pfU V N
-lsubst pfΓ pfU (focusL pf⁻ x Sp) N = 
-  focusL {! pfU implies stable!} x (lsubst pfΓ pfU Sp N)
-lsubst pfΓ pfU (η⁺ N) N' =
-  η⁺ (lsubst {!!} pfU N (wk LIST.SET.sub-wken N'))
-lsubst pfΓ pfU (↓L N) N' =
-  ↓L (lsubst {!!} pfU N (wk LIST.SET.sub-wken N'))
-lsubst pfΓ pfU ⊥L N = ⊥L
-lsubst pfΓ pfU (∨L N₁ N₂) N = 
-  ∨L (lsubst pfΓ pfU N₁ N) (lsubst pfΓ pfU N₂ N)
-lsubst pfΓ pfU (⊤⁺L N) N' = ⊤⁺L (lsubst pfΓ pfU N N')
-lsubst pfΓ pfU (∧⁺L N) N' = ∧⁺L (lsubst pfΓ pfU N N')
+lsubst pfΓ pf (focusR V) N = subst⁺ pfΓ (snd pf) V N
+lsubst pfΓ pf (focusL pf⁻ x Sp) N = focusL (fst pf) x (lsubst pfΓ pf Sp N)
+lsubst pfΓ pf (η⁺ N) N' = η⁺ (lsubst (cons <> pfΓ) pf N (wken N'))
+lsubst pfΓ pf (↓L N) N' = ↓L (lsubst (cons <> pfΓ) pf N (wken N'))
+lsubst pfΓ pf ⊥L N = ⊥L
+lsubst pfΓ pf (∨L N₁ N₂) N = ∨L (lsubst pfΓ pf N₁ N) (lsubst pfΓ pf N₂ N)
+lsubst pfΓ pf (⊤⁺L N) N' = ⊤⁺L (lsubst pfΓ pf N N')
+lsubst pfΓ pf (∧⁺L N) N' = ∧⁺L (lsubst pfΓ pf N N')
 
 -- Substitution out of spines 
-lsubst pfΓ pfU (↑L N) N' = ↑L (lsubst pfΓ pfU N N')
-lsubst pfΓ pfU (⊃L V Sp) N = ⊃L V (lsubst pfΓ pfU Sp N)
-lsubst pfΓ pfU (∧⁻L₁ Sp) N = ∧⁻L₁ (lsubst pfΓ pfU Sp N)
-lsubst pfΓ pfU (∧⁻L₂ Sp) N = ∧⁻L₂ (lsubst pfΓ pfU Sp N)
+lsubst pfΓ pf (↑L N) N' = ↑L (lsubst pfΓ pf N N')
+lsubst pfΓ pf (⊃L V Sp) N = ⊃L V (lsubst pfΓ pf Sp N)
+lsubst pfΓ pf (∧⁻L₁ Sp) N = ∧⁻L₁ (lsubst pfΓ pf Sp N)
+lsubst pfΓ pf (∧⁻L₂ Sp) N = ∧⁻L₂ (lsubst pfΓ pf Sp N)

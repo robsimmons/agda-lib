@@ -79,13 +79,13 @@ fromctx (A :: Γ') (S x) with fromctx Γ' x
 
 data SeqForm : Set where
   Rfoc : Type ⁺ → SeqForm
-  Inv : List (Type ⁺) → Conc → SeqForm 
-  Lfoc : Type ⁻ → Conc → SeqForm
+  Left : (List (Type ⁺) + Type ⁻) → Conc → SeqForm 
+  -- Left (Inl Ω) U is left inversion
+  -- Left (Inr A) U is left focus
 
 _suspnormalF : SeqForm → Set
 Rfoc A suspnormalF = Unit
-Inv Ω U suspnormalF = U suspnormalR
-Lfoc A U suspnormalF = U suspnormalR
+Left L U suspnormalF = U suspnormalR
 
 data Exp (Γ : Ctx) : SeqForm → Set
 
@@ -93,10 +93,10 @@ Value : (Γ : Ctx) → Type ⁺ → Set
 Value Γ A = Exp Γ (Rfoc A)
 
 Term : (Γ : Ctx) → List (Type ⁺) → Conc → Set
-Term Γ Ω U = Exp Γ (Inv Ω U)
+Term Γ Ω U = Exp Γ (Left (Inl Ω) U)
 
 Spine : (Γ : Ctx) → Type ⁻ → Conc → Set
-Spine Γ A U = Exp Γ (Lfoc A U)
+Spine Γ A U = Exp Γ (Left (Inr A) U)
 
 data Exp Γ where
 

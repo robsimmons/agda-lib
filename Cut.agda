@@ -25,19 +25,12 @@ rsubst : ∀{Γ A Form} (Γ' : Ctx)
   → Exp (Γ' ++ (Pers A) :: Γ) Form
   → Exp (Γ' ++ Γ) Form
 
-lsubstN : ∀{Γ U Ω A} (Γ' : Ctx)
-  → (Γ' ++ Γ) suspnormalΓ
+lsubst : ∀{Γ U L A} 
+  → Γ suspnormalΓ
   → U suspnormalR
-  → Term (Γ' ++ Γ) Ω (True A)
-  → Term (Γ' ++ Γ) [ A ] U
-  → Term (Γ' ++ Γ) Ω U
-
-lsubstSp : ∀{Γ U B A} (Γ' : Ctx)
-  → (Γ' ++ Γ) suspnormalΓ
-  → U suspnormalR
-  → Spine (Γ' ++ Γ) B (True A)
-  → Term (Γ' ++ Γ) [ A ] U
-  → Spine (Γ' ++ Γ) B U
+  → Exp Γ (Left L (True A))
+  → Term Γ [ A ] U
+  → Exp Γ (Left L U)
 
 -- Positive principal substitution
 subst⁺ {A} pfΓ pfU (id⁺ x) N with pfΓ x
@@ -60,7 +53,7 @@ subst⁻ pfΓ () N (id⁻ {↑ A})
 subst⁻ pfΓ () N (id⁻ {A ⊃ B})
 subst⁻ pfΓ () N (id⁻ {⊤⁻})
 subst⁻ pfΓ () N (id⁻ {A ∧⁻ B})
-subst⁻ pfΓ pfU (↑R N) (↑L N') = lsubstN [] pfΓ pfU N N'
+subst⁻ pfΓ pfU (↑R N) (↑L N') = lsubst pfΓ pfU N N'
 subst⁻ pfΓ pfU (⊃R N) (⊃L V Sp) = subst⁻ pfΓ pfU (subst⁺ pfΓ <> V N) Sp
 subst⁻ pfΓ pfU (∧⁻R N₁ N₂) (∧⁻L₁ Sp) = subst⁻ pfΓ pfU N₁ Sp
 subst⁻ pfΓ pfU (∧⁻R N₁ N₂) (∧⁻L₂ Sp) = subst⁻ pfΓ pfU N₂ Sp
@@ -106,21 +99,21 @@ rsubst Γ' pfΓ pfF N (∧⁻L₁ Sp) = ∧⁻L₁ (rsubst Γ' pfΓ pfF N Sp)
 rsubst Γ' pfΓ pfF N (∧⁻L₂ Sp) = ∧⁻L₂ (rsubst Γ' pfΓ pfF N Sp)
 
 -- Substitution out of terms
-lsubstN Γ' pfΓ pfU (focusR V) N = subst⁺ pfΓ pfU V N
-lsubstN Γ' pfΓ pfU (focusL pf⁻ x Sp) N = 
-  focusL {!pfU implies stable!} x (lsubstSp Γ' pfΓ pfU Sp N)
-lsubstN Γ' pfΓ pfU (η⁺ N) N' =
-  η⁺ (lsubstN (_ :: Γ') {!!} pfU N (wk LIST.SET.sub-wken N'))
-lsubstN Γ' pfΓ pfU (↓L N) N' =
-  ↓L (lsubstN (_ :: Γ') {!!} pfU N (wk LIST.SET.sub-wken N'))
-lsubstN Γ' pfΓ pfU ⊥L N = ⊥L
-lsubstN Γ' pfΓ pfU (∨L N₁ N₂) N = 
-  ∨L (lsubstN Γ' pfΓ pfU N₁ N) (lsubstN Γ' pfΓ pfU N₂ N)
-lsubstN Γ' pfΓ pfU (⊤⁺L N) N' = ⊤⁺L (lsubstN Γ' pfΓ pfU N N')
-lsubstN Γ' pfΓ pfU (∧⁺L N) N' = ∧⁺L (lsubstN Γ' pfΓ pfU N N')
+lsubst pfΓ pfU (focusR V) N = subst⁺ pfΓ pfU V N
+lsubst pfΓ pfU (focusL pf⁻ x Sp) N = 
+  focusL {! pfU implies stable!} x (lsubst pfΓ pfU Sp N)
+lsubst pfΓ pfU (η⁺ N) N' =
+  η⁺ (lsubst {!!} pfU N (wk LIST.SET.sub-wken N'))
+lsubst pfΓ pfU (↓L N) N' =
+  ↓L (lsubst {!!} pfU N (wk LIST.SET.sub-wken N'))
+lsubst pfΓ pfU ⊥L N = ⊥L
+lsubst pfΓ pfU (∨L N₁ N₂) N = 
+  ∨L (lsubst pfΓ pfU N₁ N) (lsubst pfΓ pfU N₂ N)
+lsubst pfΓ pfU (⊤⁺L N) N' = ⊤⁺L (lsubst pfΓ pfU N N')
+lsubst pfΓ pfU (∧⁺L N) N' = ∧⁺L (lsubst pfΓ pfU N N')
 
 -- Substitution out of spines 
-lsubstSp Γ' pfΓ pfU (↑L N) N' = ↑L (lsubstN Γ' pfΓ pfU N N')
-lsubstSp Γ' pfΓ pfU (⊃L V Sp) N = ⊃L V (lsubstSp Γ' pfΓ pfU Sp N)
-lsubstSp Γ' pfΓ pfU (∧⁻L₁ Sp) N = ∧⁻L₁ (lsubstSp Γ' pfΓ pfU Sp N)
-lsubstSp Γ' pfΓ pfU (∧⁻L₂ Sp) N = ∧⁻L₂ (lsubstSp Γ' pfΓ pfU Sp N)
+lsubst pfΓ pfU (↑L N) N' = ↑L (lsubst pfΓ pfU N N')
+lsubst pfΓ pfU (⊃L V Sp) N = ⊃L V (lsubst pfΓ pfU Sp N)
+lsubst pfΓ pfU (∧⁻L₁ Sp) N = ∧⁻L₁ (lsubst pfΓ pfU Sp N)
+lsubst pfΓ pfU (∧⁻L₂ Sp) N = ∧⁻L₂ (lsubst pfΓ pfU Sp N)

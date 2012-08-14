@@ -91,8 +91,7 @@ rsubst Γ' pfΓ pf N (∧⁻R N₁ N₂) =
 -- Substitution into spines
 rsubst Γ' pfΓ pf N id⁻ = id⁻
 rsubst Γ' pfΓ pf N (↑L N') = ↑L (rsubst Γ' pfΓ pf N N')
-rsubst Γ' pfΓ pf N (⊃L V Sp) = 
-  ⊃L (rsubst Γ' pfΓ <> N V) (rsubst Γ' pfΓ pf N Sp)
+rsubst Γ' pfΓ pf N (⊃L V Sp) = ⊃L (rsubst Γ' pfΓ <> N V) (rsubst Γ' pfΓ pf N Sp)
 rsubst Γ' pfΓ pf N (∧⁻L₁ Sp) = ∧⁻L₁ (rsubst Γ' pfΓ pf N Sp)
 rsubst Γ' pfΓ pf N (∧⁻L₂ Sp) = ∧⁻L₂ (rsubst Γ' pfΓ pf N Sp)
 

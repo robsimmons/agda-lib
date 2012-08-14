@@ -6,25 +6,33 @@ open import Identity
 
 module Admissible where
 
-_⊢_ : Ctx → Type ⁻ → Set
-Γ ⊢ A = Term [] Γ [] (Reg A)
-
-↓↑ : Type ⁺ → Type ⁺
-↓↑ A = ↓ (↑ A)
+_⊢_ : Ctx → Conc → Set
+Γ ⊢ U = Term Γ [] U
 
 -- Initial rules
 
-un↑↓ : ∀{Γ A} → Γ ⊢ (↑ (↓ A)) → Γ ⊢ A
-un↑↓ N = rsubstN [] N (expand⁻ (↓L <> Z (↑L (L <> (↓L <> Z hyp⁻)))))
-
+{-
 uinit⁻ : ∀{Γ Q} → (↓ (a Q ⁻) :: Γ) ⊢ (a Q ⁻)
 uinit⁻ = ↓L <> Z pL
 
 uinit⁺₁ : ∀{Γ Q} → (↓ (↑ (a Q ⁺)) :: Γ) ⊢ (↑ (a Q ⁺))
 uinit⁺₁ = ↓L <> Z (↑L (L <> (↑R (pR Z))))
+-}
 
-uinit⁺₂ : ∀{Γ Q} → a Q ⁺ ∈ Γ → Γ ⊢ (↑ (a Q ⁺))
-uinit⁺₂ x = ↑R (pR x)
+uinit⁻₁ : ∀{Γ Q} 
+  → (Pers (a Q ⁻) :: Γ) ⊢ True (↓ (a Q ⁻))
+uinit⁻₁ = focusR (↓R (η⁻ (focusL <> Z id⁻)))
+
+uinit⁺₁ : ∀{Γ Q} 
+  → (Pers (↑ (a Q ⁺)) :: Γ) ⊢ (True (a Q ⁺))
+uinit⁺₁ = focusL <> Z (↑L (η⁺ (focusR (id⁺ Z))))
+
+uinit⁺₂ : ∀{Γ Q} 
+  → Susp (a Q ⁺) ∈ Γ 
+  → Γ ⊢ (True (a Q ⁺))
+uinit⁺₂ x = focusR (id⁺ x)
+
+{-
 
 -- Disjunction
 
@@ -103,3 +111,5 @@ u↑↓L N₁ = un↑↓ (↓L <> Z (↑L (L <> (↑R (↓R (wk LIST.SET.sub-wke
 
 u↑↓R : ∀{Γ A} → Γ ⊢ A → Γ ⊢ ↑ (↓ A)
 u↑↓R N₁ = ↑R (↓R N₁)
+
+-}

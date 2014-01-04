@@ -74,6 +74,13 @@ module SET where
    sub-exch (S Z) = Z
    sub-exch (S (S n)) = S (S n)
 
+   sub-exch2 : ∀{a} {A : Set a} {x y z : A} {xs : List A} 
+       → Sub (z :: x :: y :: xs) (x :: y :: z :: xs)
+   sub-exch2 Z = S (S Z)
+   sub-exch2 (S Z) = Z
+   sub-exch2 (S (S Z)) = S Z
+   sub-exch2 (S (S (S n))) = S (S (S n))
+
    sub-wkex : ∀{a} {A : Set a} {x y : A} {xs : List A} 
        → Sub (x :: xs) (x :: y :: xs)
    sub-wkex Z = Z

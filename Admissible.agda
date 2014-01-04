@@ -11,105 +11,141 @@ _⊢_ : Ctx → Conc → Set
 
 -- Initial rules
 
-{-
-uinit⁻ : ∀{Γ Q} → (↓ (a Q ⁻) :: Γ) ⊢ (a Q ⁻)
-uinit⁻ = ↓L <> Z pL
+uinitsusp⁻ : ∀{Γ Q}
+  → (Pers (a Q ⁻) :: Γ) ⊢ Susp (a Q ⁻)
+uinitsusp⁻ = focL <> Z id⁻
 
-uinit⁺₁ : ∀{Γ Q} → (↓ (↑ (a Q ⁺)) :: Γ) ⊢ (↑ (a Q ⁺))
-uinit⁺₁ = ↓L <> Z (↑L (L <> (↑R (pR Z))))
--}
-
-uinit⁻₁ : ∀{Γ Q} 
+uinit⁻ : ∀{Γ Q}
   → (Pers (a Q ⁻) :: Γ) ⊢ True (↓ (a Q ⁻))
-uinit⁻₁ = focusR (↓R (η⁻ (focusL <> Z id⁻)))
+uinit⁻ = focR (↓R (η⁻ (focL <> Z id⁻)))
 
-uinit⁺₁ : ∀{Γ Q} 
-  → (Pers (↑ (a Q ⁺)) :: Γ) ⊢ (True (a Q ⁺))
-uinit⁺₁ = focusL <> Z (↑L (η⁺ (focusR (id⁺ Z))))
+uinitsusp⁺ : ∀{Γ Q}
+  → (Susp (a Q ⁺) :: Γ) ⊢ True (a Q ⁺)
+uinitsusp⁺ = focR (id⁺ Z)
 
-uinit⁺₂ : ∀{Γ Q} 
-  → Susp (a Q ⁺) ∈ Γ 
-  → Γ ⊢ (True (a Q ⁺))
-uinit⁺₂ x = focusR (id⁺ x)
-
-{-
+uinit⁺ : ∀{Γ Q}
+  → (Pers (↑ (a Q ⁺)) :: Γ) ⊢ True (a Q ⁺)
+uinit⁺ = focL <> Z (↑L (η⁺ (focR (id⁺ Z))))
 
 -- Disjunction
 
-u⊥L : ∀{Γ C} → (↓↑ ⊥ :: Γ) ⊢ C
-u⊥L = un↑↓ (↓L <> Z (↑L ⊥L))
+u⊥L : ∀{Γ U} → stable U
+  → (Pers (↑ ⊥) :: Γ) ⊢ U
+u⊥L pf = focL pf Z (↑L ⊥L)
 
-u∨R₁ : ∀{Γ A B} → Γ ⊢ ↑ A → Γ ⊢ ↑ (A ∨ B)
-u∨R₁ N₁ = subst⁻ <> N₁ (↑L (expand⁺ (↑R (∨R₁ (hyp⁺ Z)))))
 
-u∨R₂ : ∀{Γ A B} → Γ ⊢ ↑ B → Γ ⊢ ↑ (A ∨ B)
-u∨R₂ N₂ = subst⁻ <> N₂ (↑L (expand⁺ (↑R (∨R₂ (hyp⁺ Z)))))
+u∨R₁ : ∀{Γ A B} → suspnormalΓ Γ
+  → Γ ⊢ True A
+  → Γ ⊢ True (A ∨ B)
+u∨R₁ pfΓ N₁ = lsubst pfΓ (, <>) N₁ (expand⁺ (focR (∨R₁ (id⁺ Z))))
 
-u∨L : ∀{Γ A B C} → (↓↑ A :: Γ) ⊢ C → (↓↑ B :: Γ) ⊢ C → (↓↑ (A ∨ B) :: Γ) ⊢ C
-u∨L N₁ N₂ =
-  un↑↓ (↓L <> Z (↑L (lsubstN (_ :: []) <> Nid 
-                   (∨L (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₁)))) 
-                      (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₂))))))))
+u∨R₂ : ∀{Γ A B} → suspnormalΓ Γ
+  → Γ ⊢ True B
+  → Γ ⊢ True (A ∨ B)
+u∨R₂ pfΓ N₂ = lsubst pfΓ (, <>) N₂ (expand⁺ (focR (∨R₂ (id⁺ Z))))
+
+u∨L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U
+  → (Pers (↑ A) :: Γ) ⊢ U
+  → (Pers (↑ B) :: Γ) ⊢ U
+  → (Pers (↑ (A ∨ B)) :: Γ) ⊢ U
+u∨L pfΓ pf N₁ N₂ = 
+  focL (fst pf) Z 
+    (↑L (lsubst (conspers pfΓ) pf Nid (∨L (↓L (wkex N₁)) (↓L (wkex N₂)))))
  where
-  Nid = ∨L (expand⁺ (↑R (∨R₁ (↓R (↑R (hyp⁺ Z)))))) 
-          (expand⁺ (↑R (∨R₂ (↓R (↑R (hyp⁺ Z)))))) 
+  Nid = ∨L (expand⁺ (focR (∨R₁ (↓R (↑R (focR (id⁺ Z))))))) 
+          (expand⁺ (focR (∨R₂ (↓R (↑R (focR (id⁺ Z))))))) 
 
 -- Positive conjunction
 
-u⊤⁺R : ∀{Γ} → Γ ⊢ ↑ ⊤⁺
-u⊤⁺R = ↑R ⊤⁺R
+u⊤⁺R : ∀{Γ} 
+  → Γ ⊢ True ⊤⁺
+u⊤⁺R = focR ⊤⁺R
 
-u⊤⁺L : ∀{Γ C} → Γ ⊢ C → (↓↑ ⊤⁺ :: Γ) ⊢ C
-u⊤⁺L N₁ = un↑↓ (↓L <> Z (↑L (⊤⁺L (↑R (↓R (wk LIST.SET.sub-wken N₁)))))) 
+u⊤⁺L : ∀{Γ U} → stable U
+  → Γ ⊢ U
+  → (Pers (↑ ⊤⁺) :: Γ) ⊢ U
+u⊤⁺L pf N₁ = focL pf Z (↑L (⊤⁺L (wken N₁)))
 
-u∧⁺R : ∀{Γ A B} → Γ ⊢ ↑ A → Γ ⊢ ↑ B → Γ ⊢ ↑ (A ∧⁺ B)
-u∧⁺R N₁ N₂ = 
-  rsubstN [] N₂
-    (subst⁻ <> (wk LIST.SET.sub-wken N₁) 
-      (↑L (expand⁺ (↓L <> Z (↑L (expand⁺ (↑R (∧⁺R (hyp⁺ (S Z)) (hyp⁺ Z)))))))))
+u∧⁺R : ∀{Γ A B} → suspnormalΓ Γ 
+  → Γ ⊢ True A 
+  → Γ ⊢ True B 
+  → Γ ⊢ True (A ∧⁺ B)
+u∧⁺R pfΓ N₁ N₂ = 
+  rsubst [] pfΓ <> (↑R N₁) (lsubst (conspers pfΓ) (, <>) (wken N₂) Nid)
+ where
+  Nid = expand⁺ (focL <> (S Z) (↑L (expand⁺ (focR (∧⁺R (id⁺ Z) (id⁺ (S Z)))))))
 
-u∧⁺L : ∀{Γ A B C} → (↓↑ B :: ↓↑ A :: Γ) ⊢ C → (↓↑ (A ∧⁺ B) :: Γ) ⊢ C
-u∧⁺L N₁ = 
-  un↑↓ (↓L <> Z 
-          (↑L (lsubstN (_ :: []) <> Nid 
-                 (∧⁺L (L <> (L <> (↑R (↓R (wk (θ LIST.SET.sub-wkex) N₁)))))))))
- where 
-  Nid = ∧⁺L (expand⁺
-              (expand⁺ (↑R (∧⁺R (↓R (↑R (hyp⁺ (S Z)))) (↓R (↑R (hyp⁺ Z)))))))
-  θ = LIST.SET.sub-cons-congr
+u∧⁺L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U 
+  → (Pers (↑ B) :: Pers (↑ A) :: Γ) ⊢ U
+  → (Pers (↑ (A ∧⁺ B)) :: Γ) ⊢ U
+u∧⁺L pfΓ pf N₁ = 
+  focL (fst pf) Z 
+    (↑L (lsubst (conspers pfΓ) pf Nid (∧⁺L (↓L (↓L (wkex2 N₁))))))
+ where
+  Nid = ∧⁺L (expand⁺ (expand⁺ (focR (∧⁺R (↓R (↑R (focR (id⁺ (S Z))))) 
+                                            (↓R (↑R (focR (id⁺ Z)))))))) 
 
 -- Implication
 
-u⊃R : ∀{Γ A B} → (↓↑ A :: Γ) ⊢ B → Γ ⊢ (A ⊃ B)
-u⊃R N₁ = rsubstN [] (⊃R (L <> N₁)) 
-           (⊃R (expand⁺ (expand⁻ (↓L <> Z (⊃L (↓R (↑R (hyp⁺ Z))) hyp⁻)))))
-
-u⊃L : ∀{Γ A B C} → Γ ⊢ ↑ A → (↓ B :: Γ) ⊢ C → (↓ (A ⊃ B) :: Γ) ⊢ C
-u⊃L N₁ N₂ = un↑↓ (subst⁻ <> (subst⁻ <> (wk LIST.SET.sub-wken N₁) (↑L Nid))
-                   (↑L (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₂))))))
+u⊃R : ∀{Γ A B} → suspnormalΓ Γ 
+  → (Pers (↑ A) :: Γ) ⊢ True (↓ B)
+  → Γ ⊢ True (↓ (A ⊃ B))
+u⊃R pfΓ N₁ = focR (↓R (rsubst [] pfΓ <> (⊃R (↓L (↑R N₁))) Nid)) 
  where
-  Nid = expand⁺ (↑R (↓R (expand⁻ (↓L <> Z (⊃L (hyp⁺ Z) hyp⁻)))))
+  Nid = ⊃R (expand⁺ 
+              (expand⁻ 
+                 (focL <> (S Z)  
+                    (⊃L (↓R (↑R (focR (id⁺ Z))))
+                       (↑L (↓L (focL <> Z id⁻)))))))
+
+u⊃L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U 
+  → Γ ⊢ True A 
+  → (Pers B :: Γ) ⊢ U
+  → (Pers (A ⊃ B) :: Γ) ⊢ U
+u⊃L pfΓ pf N₁ N₂ = 
+  lsubst (conspers pfΓ) pf 
+    (lsubst (conspers pfΓ) (, <>) (wken N₁) Nid)
+    (↓L (wkex N₂))
+ where
+  Nid = expand⁺ (focR (↓R (expand⁻ (focL <> (S Z) (⊃L (id⁺ Z) id⁻)))))
 
 -- Negative conjunction
 
-u⊤⁻R : ∀{Γ} → Γ ⊢ ⊤⁻
-u⊤⁻R = ⊤⁻R
+u⊤⁻R : ∀{Γ} 
+  → Γ ⊢ True (↓ ⊤⁻)
+u⊤⁻R = focR (↓R ⊤⁻R)
 
-u∧⁻R : ∀{Γ A B} → Γ ⊢ A → Γ ⊢ B → Γ ⊢ (A ∧⁻ B)
-u∧⁻R N₁ N₂ = ∧⁻R N₁ N₂
+u∧⁻R : ∀{Γ A B} → suspnormalΓ Γ
+  → Γ ⊢ True (↓ A)
+  → Γ ⊢ True (↓ B)
+  → Γ ⊢ True (↓ (A ∧⁻ B))
+u∧⁻R pfΓ N₁ N₂ = 
+  focR (↓R (rsubst [] pfΓ <> (∧⁻R (↑R N₁) (↑R N₂)) Nid))
+ where
+  Nid = ∧⁻R (expand⁻ (focL <> Z (∧⁻L₁ (↑L (↓L (focL <> Z id⁻))))))
+          (expand⁻ (focL <> Z (∧⁻L₂ (↑L (↓L (focL <> Z id⁻))))))
 
-u∧⁻L₁ : ∀{Γ A B C} → (↓ A :: Γ) ⊢ C → (↓ (A ∧⁻ B) :: Γ) ⊢ C
-u∧⁻L₁ N₁ = rsubstN [] (expand⁻ (↓L <> Z (∧⁻L₁ hyp⁻))) (wk LIST.SET.sub-wkex N₁)
+u∧⁻L₁ : ∀{Γ A B U} → suspnormalΓ Γ → suspnormal U
+  → (Pers A :: Γ) ⊢ U
+  → (Pers (A ∧⁻ B) :: Γ) ⊢ U
+u∧⁻L₁ pfΓ pf N₁ = 
+  rsubst [] (conspers pfΓ) pf (expand⁻ (focL <> Z (∧⁻L₁ id⁻))) (wkex N₁)
 
-u∧⁻L₂ : ∀{Γ A B C} → (↓ B :: Γ) ⊢ C → (↓ (A ∧⁻ B) :: Γ) ⊢ C
-u∧⁻L₂ N₂ = rsubstN [] (expand⁻ (↓L <> Z (∧⁻L₂ hyp⁻))) (wk LIST.SET.sub-wkex N₂)
+u∧⁻L₂ : ∀{Γ A B U} → suspnormalΓ Γ → suspnormal U
+  → (Pers B :: Γ) ⊢ U
+  → (Pers (A ∧⁻ B) :: Γ) ⊢ U
+u∧⁻L₂ pfΓ pf N₁ = 
+  rsubst [] (conspers pfΓ) pf (expand⁻ (focL <> Z (∧⁻L₂ id⁻))) (wkex N₁)
 
 -- Shift removal
 
-u↑↓L : ∀{Γ A C} → ((↓ A) :: Γ) ⊢ C → (↓ (↑ (↓ A)) :: Γ) ⊢ C
-u↑↓L N₁ = un↑↓ (↓L <> Z (↑L (L <> (↑R (↓R (wk LIST.SET.sub-wkex N₁))))))
+u↓↑R : ∀{Γ A} 
+  → Γ ⊢ True A
+  → Γ ⊢ True (↓ (↑ A))
+u↓↑R N₁ = focR (↓R (↑R N₁))
 
-u↑↓R : ∀{Γ A} → Γ ⊢ A → Γ ⊢ ↑ (↓ A)
-u↑↓R N₁ = ↑R (↓R N₁)
+u↑↓L : ∀{Γ A U} → stable U
+  → (Pers A :: Γ) ⊢ U
+  → (Pers (↑ (↓ A)) :: Γ) ⊢ U
+u↑↓L pf N₁ = focL pf Z (↑L (↓L (wkex N₁)))
 
--}

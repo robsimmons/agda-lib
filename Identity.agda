@@ -11,23 +11,21 @@ expand⁻ : ∀{A Γ} → Term Γ [] (Susp A) → Term Γ [] (Inv A)
 
 expand⁺ {a Q .⁺} N = η⁺ N
 expand⁺ {↓ A} N = 
-  ↓L (subst⁺ [] (↓R (expand⁻ (focusL <> Z id⁻))) (wk LIST.SET.sub-wkex N))
-expand⁺ {⊥} N = ⊥L 
-expand⁺ {A ∨ B} N = 
-  ∨L (expand⁺ (subst⁺ [] (∨R₁ (id⁺ Z)) (wk LIST.SET.sub-wkex N)))
-    (expand⁺ (subst⁺ [] (∨R₂ (id⁺ Z)) (wk LIST.SET.sub-wkex N)))
+  ↓L (subst⁺ [] (↓R (expand⁻ (focL <> Z id⁻))) (wkex N))
+expand⁺ {⊥} N = ⊥L
+expand⁺ {A ∨ A₁} N = 
+  ∨L (expand⁺ (subst⁺ [] (∨R₁ (id⁺ Z)) (wkex N))) 
+    (expand⁺ (subst⁺ [] (∨R₂ (id⁺ Z)) (wkex N)))
 expand⁺ {⊤⁺} N = ⊤⁺L (subst⁺ [] ⊤⁺R N)
-expand⁺ {A ∧⁺ B} N = 
-  ∧⁺L (expand⁺
-        (expand⁺
-          (subst⁺ [] (∧⁺R (id⁺ (S Z)) (id⁺ Z))
-            (wk LIST.SET.sub-wkex (wk LIST.SET.sub-wkex N)))))
+expand⁺ {A ∧⁺ A₁} N = 
+  ∧⁺L (expand⁺ 
+        (expand⁺ 
+          (subst⁺ [] (∧⁺R (id⁺ (S Z)) (id⁺ Z)) (wkex (wkex N)))))
 
 expand⁻ {a Q .⁻} N = η⁻ N
-expand⁻ {↑ A} N = ↑R (subst⁻ <> N (↑L (expand⁺ (focusR (id⁺ Z)))))
-expand⁻ {A ⊃ B} N = 
+expand⁻ {↑ A} N = ↑R (subst⁻ <> N (↑L (expand⁺ (focR (id⁺ Z)))))
+expand⁻ {A ⊃ A₁} N = 
   ⊃R (expand⁺ (expand⁻ (subst⁻ <> (wken N) (⊃L (id⁺ Z) id⁻))))
 expand⁻ {⊤⁻} N = ⊤⁻R
-expand⁻ {A ∧⁻ B} N = 
+expand⁻ {A ∧⁻ A₁} N = 
   ∧⁻R (expand⁻ (subst⁻ <> N (∧⁻L₁ id⁻))) (expand⁻ (subst⁻ <> N (∧⁻L₂ id⁻)))
-

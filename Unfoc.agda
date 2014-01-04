@@ -1,6 +1,6 @@
 
 open import Prelude hiding (⊥; ⊤)
-open import Foc hiding (Ctx; wk') renaming (wk to wk')
+open import Foc hiding (Ctx)
 open import Admissible hiding (_⊢_)
 import Identity
 import Cut
@@ -16,7 +16,6 @@ data Propo : Set where
   _⊃_ : (A B : Propo) → Propo
 
 Ctx = List Propo
-
 
 -- Sequent Calculus
 
@@ -60,37 +59,68 @@ data _⊢_ (Γ : Ctx) : Propo → Set where
     (D₂ : (B :: Γ) ⊢ C)
     → Γ ⊢ C
 
-data SInv (Γ : Ctx) : Ctx → Propo → Set where
-  Nil : ∀{C}
+data SInv (Γ : Ctx) : Ctx × Propo → Set where
+  Z : ∀{C}
     (D : Γ ⊢ C)
-    → SInv Γ [] C
-  Cons : ∀{A Ψ C}
-    (D : SInv (A :: Γ) Ψ C)
-    → SInv Γ (A :: Ψ) C
+    → SInv Γ ([] , C)
+  S : ∀{A Ψ C}
+    (D : SInv (A :: Γ) (Ψ , C))
+    → SInv Γ ((A :: Ψ) , C)
 
-denil : ∀{Γ A} → SInv Γ [] A → Γ ⊢ A
-denil (Nil D) = D
+dZ : ∀{Γ A} → SInv Γ ([] , A) → Γ ⊢ A
+dZ (Z D) = D
 
-decons : ∀{Γ Ψ A B} → SInv Γ (B :: Ψ) A → SInv (B :: Γ) Ψ A
-decons (Cons D) = D
+dS : ∀{Γ Ψ A B} → SInv Γ ((B :: Ψ) , A) → SInv (B :: Γ) (Ψ , A)
+dS (S D) = D
 
 
 -- Weakening
 
-wk : ∀{Γ Γ' A} → Γ ⊆ Γ' → Γ ⊢ A → Γ' ⊢ A
-wk θ (init x) = init (θ x)
-wk θ (⊥L x) = ⊥L (θ x)
-wk θ (∨R₁ D) = ∨R₁ (wk θ D)
-wk θ (∨R₂ D) = ∨R₂ (wk θ D)
-wk θ (∨L x D₁ D₂) = 
-  ∨L (θ x) (wk (LIST.SET.sub-cons-congr θ) D₁)
-    (wk (LIST.SET.sub-cons-congr θ) D₂)
-wk θ ⊤R = ⊤R
-wk θ (∧R D₁ D₂) = ∧R (wk θ D₁) (wk θ D₂)
-wk θ (∧L₁ x D) = ∧L₁ (θ x) (wk (LIST.SET.sub-cons-congr θ) D)
-wk θ (∧L₂ x D) = ∧L₂ (θ x) (wk (LIST.SET.sub-cons-congr θ) D)
-wk θ (⊃R D) = ⊃R (wk (LIST.SET.sub-cons-congr θ) D)
-wk θ (⊃L x D₁ D₂) = ⊃L (θ x) (wk θ D₁) (wk (LIST.SET.sub-cons-congr θ) D₂)
+wk' : ∀{Γ Γ' A} → Γ ⊆ Γ' → Γ ⊢ A → Γ' ⊢ A
+wk' θ (init x) = init (θ x)
+wk' θ (⊥L x) = ⊥L (θ x)
+wk' θ (∨R₁ D) = ∨R₁ (wk' θ D)
+wk' θ (∨R₂ D) = ∨R₂ (wk' θ D)
+wk' θ (∨L x D₁ D₂) = 
+  ∨L (θ x) (wk' (LIST.SET.sub-cons-congr θ) D₁)
+    (wk' (LIST.SET.sub-cons-congr θ) D₂)
+wk' θ ⊤R = ⊤R
+wk' θ (∧R D₁ D₂) = ∧R (wk' θ D₁) (wk' θ D₂)
+wk' θ (∧L₁ x D) = ∧L₁ (θ x) (wk' (LIST.SET.sub-cons-congr θ) D)
+wk' θ (∧L₂ x D) = ∧L₂ (θ x) (wk' (LIST.SET.sub-cons-congr θ) D)
+wk' θ (⊃R D) = ⊃R (wk' (LIST.SET.sub-cons-congr θ) D)
+wk' θ (⊃L x D₁ D₂) = ⊃L (θ x) (wk' θ D₁) (wk' (LIST.SET.sub-cons-congr θ) D₂)
+
+wk'' : ∀{Γ Γ' C} → Γ ⊆ Γ' → SInv Γ C → SInv Γ' C
+wk'' θ (Z D) = Z (wk' θ D)
+wk'' θ (S D) = S (wk'' (LIST.SET.sub-cons-congr θ) D)
+
+wken' : ∀{Γ A C} → Γ ⊢ C → (A :: Γ) ⊢ C
+wken' = wk' LIST.SET.sub-wken
+
+wkex' : ∀{Γ A B C} → (A :: Γ) ⊢ C → (A :: B :: Γ) ⊢ C
+wkex' = wk' LIST.SET.sub-wkex
+
+wkex2' : ∀{Γ A B C D} → (A :: B :: Γ) ⊢ D → (A :: B :: C :: Γ) ⊢ D
+wkex2' = wk' (LIST.SET.sub-cons-congr LIST.SET.sub-wkex)
+
+cntr' : ∀{Γ A C} → A ∈ Γ → (A :: Γ) ⊢ C → Γ ⊢ C
+cntr' x = wk' (LIST.SET.sub-cntr x)
+
+wken'' : ∀{Γ A C} → SInv Γ C → SInv (A :: Γ) C
+wken'' = wk'' LIST.SET.sub-wken
+
+wkex'' : ∀{Γ A B C} → SInv (A :: Γ) C → SInv (A :: B :: Γ) C
+wkex'' = wk'' LIST.SET.sub-wkex
+
+exch'' : ∀{Γ A B C} → SInv (B :: A :: Γ) C → SInv (A :: B :: Γ) C
+exch'' = wk'' LIST.SET.sub-exch
+
+exch2'' : ∀{Γ A B C D} → SInv (C :: A :: B :: Γ) D → SInv (A :: B :: C :: Γ) D
+exch2'' = wk'' {!!}
+
+{-
+
 
 wk-prop1 : ∀{A B Γ} (Γ' : Ctx) → (Γ' ++ A :: Γ) ⊆ (A :: Γ' ++ B :: Γ) 
 wk-prop1 [] Z = Z
@@ -114,20 +144,102 @@ wk-prop3 (A' :: Γ') (S n) with wk-prop3 Γ' n
 ... | (S Z) = S Z
 ... | (S (S n')) = S (S (S n'))
 
+-}
 
 -- Erasure
 
-eraseA : ∀{⁼} → Type ⁼ → Propo
-eraseA (a Q ⁼) = a Q ⁼
-eraseA (↓ A) = eraseA A
-eraseA ⊥ = ⊥
-eraseA (A ∨ B) = eraseA A ∨ eraseA B
-eraseA ⊤⁺ = ⊤
-eraseA (A ∧⁺ B) = eraseA A ∧ eraseA B
-eraseA (↑ A) = eraseA A
-eraseA (A ⊃ B) = eraseA A ⊃ eraseA B
-eraseA ⊤⁻ = ⊤
-eraseA (A ∧⁻ B) = eraseA A ∧ eraseA B
+-- There is a small deviation from the Twelf proof and the article here,
+-- because we define erasure over all sequents, not just suspension-normal
+-- ones.
+
+erase : ∀{⁼} → Type ⁼ → Propo
+erase (a Q ⁼) = a Q ⁼
+erase (↓ A) = erase A
+erase ⊥ = ⊥
+erase (A ∨ B) = erase A ∨ erase B
+erase ⊤⁺ = ⊤
+erase (A ∧⁺ B) = erase A ∧ erase B
+erase (↑ A) = erase A
+erase (A ⊃ B) = erase A ⊃ erase B
+erase ⊤⁻ = ⊤
+erase (A ∧⁻ B) = erase A ∧ erase B
+
+erasehyp : (H : Hyp) → Propo
+erasehyp (Susp A) = erase A
+erasehyp (Pers A) = erase A
+
+eraseΓ : List Hyp → Ctx
+eraseΓ = LIST.map erasehyp
+
+eraseU : (U : Conc) → Propo
+eraseU (Inv A) = erase A
+eraseU (True A) = erase A
+eraseU (Susp A) = erase A
+
+eraseseq : (F : SeqForm) → (Ctx × Propo)
+eraseseq (Rfoc A) = [] , erase A
+eraseseq (Left (Inl Ω) U) = LIST.map erase Ω , eraseU U
+eraseseq (Left (Inr A) U) = [ erase A ] , eraseU U
+
+-- Shift removal (not terribly elegant, but works for now)
+
+not-doubleshifted : ∀{⁼} → Type ⁼ → Set
+not-doubleshifted (a Q ⁼) = Unit
+not-doubleshifted (↓ (a Q .⁻)) = Unit
+not-doubleshifted (↓ (↑ A)) = Void
+not-doubleshifted (↓ (A ⊃ A₁)) = Unit
+not-doubleshifted (↓ ⊤⁻) = Unit
+not-doubleshifted (↓ (A ∧⁻ A₁)) = Unit
+not-doubleshifted ⊥ = Unit
+not-doubleshifted (A ∨ A₁) = Unit
+not-doubleshifted ⊤⁺ = Unit
+not-doubleshifted (A ∧⁺ A₁) = Unit
+not-doubleshifted (↑ (a Q .⁺)) = Unit
+not-doubleshifted (↑ (↓ A)) = Void
+not-doubleshifted (↑ ⊥) = Unit
+not-doubleshifted (↑ (A ∨ A₁)) = Unit
+not-doubleshifted (↑ ⊤⁺) = Unit
+not-doubleshifted (↑ (A ∧⁺ A₁)) = Unit
+not-doubleshifted (A ⊃ A₁) = Unit
+not-doubleshifted ⊤⁻ = Unit
+not-doubleshifted (A ∧⁻ A₁) = Unit 
+
+rshifty : (A : Type ⁺)
+  → ∃ λ B → ((erase A ≡ erase B) ×
+             (not-doubleshifted B) × 
+             (∀{Γ} → Term Γ [] (True B) → Term Γ [] (True A)))
+rshifty (↓ (↑ A)) with rshifty A
+... | B , refl , nds , fn = B , refl , nds , u↓↑R o fn
+rshifty (a Q .⁺) = a Q ⁺ , Refl , <> , (λ x → x)
+rshifty (↓ (a Q .⁻)) = ↓ (a Q ⁻) , Refl , <> , (λ x → x)
+rshifty (↓ (A ⊃ B)) = ↓ (A ⊃ B) , Refl , <> , (λ x → x)
+rshifty (↓ ⊤⁻) = ↓ ⊤⁻ , Refl , <> , (λ x → x)
+rshifty (↓ (A ∧⁻ B)) = ↓ (A ∧⁻ B) , Refl , <> , (λ x → x)
+rshifty ⊥ = ⊥ , Refl , <> , (λ x → x)
+rshifty (A ∨ B) = (A ∨ B) , Refl , <> , (λ x → x)
+rshifty ⊤⁺ = ⊤⁺ , Refl , <> , (λ x → x)
+rshifty (A ∧⁺ B) = (A ∧⁺ B) , Refl , <> , (λ x → x)
+
+lshifty : (A : Type ⁻)
+  → ∃ λ B → ((erase A ≡ erase B) ×
+             (not-doubleshifted B) ×
+             (∀{Γ U} → stable U 
+                → Term (Pers B :: Γ) [] U
+                → Term (Pers A :: Γ) [] U))
+lshifty (↑ (↓ A)) with lshifty A
+... | B , refl , nds , fn = B , refl , nds , (λ pf D → u↑↓L pf (fn pf D))
+lshifty (a Q .⁻) = (a Q ⁻) , Refl , <> , (λ _ x → x)
+lshifty (↑ (a Q .⁺)) = ↑ (a Q ⁺) , Refl , <> , (λ _ x → x)
+lshifty (↑ ⊥) = ↑ ⊥ , Refl , <> , (λ _ x → x)
+lshifty (↑ (A ∨ B)) = ↑ (A ∨ B) , Refl , <> , (λ _ x → x)
+lshifty (↑ ⊤⁺) = ↑ ⊤⁺ , Refl , <> , (λ _ x → x)
+lshifty (↑ (A ∧⁺ B)) = ↑ (A ∧⁺ B) , Refl , <> , (λ _ x → x)
+lshifty (A ⊃ B) = (A ⊃ B) , Refl , <> , (λ _ x → x)
+lshifty ⊤⁻ = ⊤⁻ , Refl , <> , (λ _ x → x)
+lshifty (A ∧⁻ B) = (A ∧⁻ B) , Refl , <> , (λ _ x → x)
+
+{-
+-- Erasure
 
 eraseΓ : List (Type ⁺) → Ctx
 eraseΓ [] = []
@@ -137,8 +249,8 @@ erasex : ∀{A Γ} → A ∈ Γ → eraseA A ∈ eraseΓ Γ
 erasex Z = Z
 erasex (S x) = S (erasex x)
 
-_stableΓ : List (Type ⁺) → Set
-_stableΓ = LIST.All _stable⁺ 
+stableΓ : List (Type ⁺) → Set
+stableΓ = LIST.All stable
 
 unerasex : ∀{Γ A} 
   → Γ stableΓ
@@ -156,47 +268,66 @@ unerasex {A ∧⁺ B :: xs} pf Z | ()
 unerasex {_ :: _} pf (S x) with unerasex (λ x' → pf (S x')) x
 ... | Inl (_ , x' , refl) = Inl (_ , S x' , refl)
 ... | Inr (_ , x' , refl) = Inr (_ , S x' , refl)
-
+-}
 
 -- De-focalization
 
-defocV : ∀{Γ A} → Value [] Γ A → eraseΓ Γ ⊢ eraseA A
-defocN : ∀{Γ Ω A} → Term [] Γ Ω (Reg A) → SInv (eraseΓ Γ) (eraseΓ Ω) (eraseA A)
-defocSp : ∀{Γ A B} → Spine [] Γ A (Reg B) → (eraseA A :: eraseΓ Γ) ⊢ eraseA B
+sound : ∀{F Γ} → suspnormalΓ Γ → suspnormalF F
+  → Exp Γ F
+  → SInv (eraseΓ Γ) (eraseseq F)
+sound pfΓ pf (id⁺ z) with pfΓ z
+... | (Q , Refl) = Z (init (LIST.in-map erasehyp z))
+sound pfΓ pf (↓R N) = sound pfΓ pf N
+sound pfΓ pf (∨R₁ V) = Z (∨R₁ (dZ (sound pfΓ pf V)))
+sound pfΓ pf (∨R₂ V) = Z (∨R₂ (dZ (sound pfΓ pf V)))
+sound pfΓ pf ⊤⁺R = Z ⊤R
+sound pfΓ pf (∧⁺R V₁ V₂) =
+  Z (∧R (dZ (sound pfΓ pf V₁)) (dZ (sound pfΓ pf V₂)))
+sound pfΓ pf (focR V) = sound pfΓ pf V
+sound pfΓ pf (focL pf₁ x Sp) = 
+  Z (cntr' (LIST.in-map erasehyp x) (dZ (dS (sound pfΓ pf Sp))))
+sound pfΓ pf (η⁺ N) = S (sound (conssusp pfΓ) pf N)
+sound pfΓ pf (↓L N) = S (sound (conspers pfΓ) pf N)
+sound pfΓ pf ⊥L = S ⊥L'
+ where
+  ⊥L' : ∀{Ω Γ C}
+    → SInv (⊥ :: Γ) (Ω , C)
+  ⊥L' {[]} = Z (⊥L Z)
+  ⊥L' {_ :: Ω} = S (exch'' ⊥L')
+sound pfΓ pf (∨L N₁ N₂) = S (∨L' (dS (sound pfΓ pf N₁)) (dS (sound pfΓ pf N₂)))
+ where 
+  ∨L' : ∀{Ω Γ A B C}
+    → SInv (A :: Γ) (Ω , C)
+    → SInv (B :: Γ) (Ω , C)
+    → SInv ((A ∨ B) :: Γ) (Ω , C)
+  ∨L' {[]} (Z D₁) (Z D₂) = Z (∨L Z (wkex' D₁) (wkex' D₂))
+  ∨L' {_ :: _} (S D₁) (S D₂) = S (exch'' (∨L' (exch'' D₁) (exch'' D₂)))
+sound pfΓ pf (⊤⁺L N) = S (wken'' (sound pfΓ pf N))
+sound pfΓ pf (∧⁺L N) = S (∧⁺L' (dS (dS (sound pfΓ pf N))))
+ where
+  ∧⁺L' : ∀{Ω Γ A B C}
+    → SInv (B :: A :: Γ) (Ω , C)
+    → SInv ((A ∧ B) :: Γ) (Ω , C)
+  ∧⁺L' {[]} (Z D) = Z (∧L₁ Z (∧L₂ (S Z) (wkex2' D)))
+  ∧⁺L' {x :: Ω} (S D) = S (exch'' (∧⁺L' (exch2'' D)))
+sound pfΓ pf (η⁻ N) = sound pfΓ pf N
+sound pfΓ pf (↑R N) = sound pfΓ pf N
+sound pfΓ pf (⊃R N) = Z (⊃R (dZ (dS (sound pfΓ pf N))))
+sound pfΓ pf ⊤⁻R = Z ⊤R
+sound pfΓ pf (∧⁻R N₁ N₂) = Z (∧R (dZ (sound pfΓ pf N₁)) (dZ (sound pfΓ pf N₂)))
+sound {Left ._ (Susp (a Q .⁻))} pfΓ <> id⁻ = S (Z (init Z))
+sound {Left ._ (Susp (↑ _))} pfΓ () id⁻
+sound {Left ._ (Susp (_ ⊃ _))} pfΓ () id⁻
+sound {Left ._ (Susp ⊤⁻)} pfΓ () id⁻
+sound {Left ._ (Susp (_ ∧⁻ _))} pfΓ () id⁻
+sound pfΓ pf (↑L N) = sound pfΓ pf N
+sound pfΓ pf (⊃L V Sp) =  S (Z (⊃L Z (wken' (dZ (sound pfΓ <> V)))
+                                  (wkex' (dZ (dS (sound pfΓ pf Sp))))))
+sound pfΓ pf (∧⁻L₁ Sp) = S (Z (∧L₁ Z (wkex' (dZ (dS (sound pfΓ pf Sp))))))
+sound pfΓ pf (∧⁻L₂ Sp) = S (Z (∧L₂ Z (wkex' (dZ (dS (sound pfΓ pf Sp))))))
 
-defocV (hyp⁺ ())
-defocV (pR x) = init (erasex x)
-defocV (↓R N) = denil (defocN N)
-defocV (∨R₁ V) = ∨R₁ (defocV V)
-defocV (∨R₂ V) = ∨R₂ (defocV V)
-defocV ⊤⁺R = ⊤R
-defocV (∧⁺R V₁ V₂) = ∧R (defocV V₁) (defocV V₂)
 
-defocN (L pf⁺ N) = Cons (defocN N)
-defocN (↓L pf⁻ x Sp) = Nil (wk (LIST.SET.sub-cntr (erasex x)) (defocSp Sp))
-defocN ⊥L = Cons (⊥L' _ [])
- where
-  ⊥L' : ∀{Γ A} (Ω Γ' : Ctx) → SInv (Γ' ++ ⊥ :: Γ) Ω A 
-  ⊥L' [] Γ' = Nil (⊥L (LIST.SET.sub-appendl _ Γ' Z))
-  ⊥L' (A :: Ω) Γ' = Cons (⊥L' Ω (A :: Γ'))
-defocN (∨L N₁ N₂) = Cons (∨L' _ [] (decons (defocN N₁)) (decons (defocN N₂)))
- where
-  ∨L' : ∀{Γ A B C} (Ω Γ' : Ctx) 
-    → SInv (Γ' ++ A :: Γ) Ω C 
-    → SInv (Γ' ++ B :: Γ) Ω C 
-    → SInv (Γ' ++ (A ∨ B) :: Γ) Ω C 
-  ∨L' [] Γ' (Nil D) (Nil E) = 
-    Nil (∨L (LIST.SET.sub-appendl _ Γ' Z) 
-          (wk (wk-prop1 Γ') D) 
-          (wk (wk-prop1 Γ') E))
-  ∨L' (A :: Ω) Γ' (Cons D) (Cons E) = Cons (∨L' Ω (_ :: Γ') D E)
-defocN (⊤⁺L N) = Cons (⊤⁺L' _ [] (defocN N))
- where
-  ⊤⁺L' : ∀{Γ C} (Ω Γ' : Ctx)
-    → SInv (Γ' ++ Γ) Ω C
-    → SInv (Γ' ++ ⊤ :: Γ) Ω C
-  ⊤⁺L' [] Γ' (Nil D) = Nil (wk (wk-prop2 Γ') D)
-  ⊤⁺L' (A :: Ω) Γ' (Cons D) = Cons (⊤⁺L' Ω (_ :: Γ') D)
+{-
 defocN (∧⁺L N) = Cons (∧⁺L' _ [] (decons (decons (defocN N))))
  where
   ∧⁺L' : ∀{Γ A B C} (Ω Γ' : Ctx)
@@ -445,3 +576,5 @@ identity {A} {Γ} = convert (symm (eqΓ (A :: Γ))) (symm (eqA A)) D
 
   D : eraseΓ (placeΓ (A :: Γ)) ⊢ eraseA (placeA A)
   D = denil (defocN N)
+
+-}

@@ -61,22 +61,12 @@ Ctx = List Hyp
 suspnormalΓ : Ctx → Set
 suspnormalΓ Γ = ∀{A} → Susp A ∈ Γ → ∃ λ Q → Id A (a Q ⁺)
 
-{-
+conssusp : ∀{Γ Q} → suspnormalΓ Γ → suspnormalΓ ((Susp (a Q ⁺)) :: Γ)
+conssusp pfΓ Z = , refl
+conssusp pfΓ (S n) = pfΓ n
 
-_suspnormalL : Hyp → Set
-Susp (a Q .⁺) suspnormalL = Unit
-Susp (↓ A) suspnormalL = Void
-Susp ⊥ suspnormalL = Void
-Susp (A ∨ B) suspnormalL = Void
-Susp ⊤⁺ suspnormalL = Void
-Susp (A ∧⁺ B) suspnormalL = Void
-Pers A suspnormalL = Unit
-
-
-cons : ∀{Γ H} → H suspnormalL → Γ suspnormalΓ → (H :: Γ) suspnormalΓ
-cons pf pfΓ Z = pf
-cons pf pfΓ (S n) = pfΓ n
--}
+conspers : ∀{Γ A} → suspnormalΓ Γ → suspnormalΓ ((Pers A) :: Γ)
+conspers pfΓ (S n) = pfΓ n
 
 fromctx : ∀{A B Γ} (Γ' : Ctx) → B ∈ (Γ' ++ A :: Γ) → (A ≡ B) + (B ∈ (Γ' ++ Γ))
 fromctx [] Z = Inl Refl
@@ -222,7 +212,11 @@ wk θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk θ Sp)
 wken : ∀{Γ A Form} → Exp Γ Form → Exp (A :: Γ) Form
 wken = wk LIST.SET.sub-wken
 
+wkex : ∀{Γ A B Form} → Exp (A :: Γ) Form → Exp (A :: B :: Γ) Form
+wkex = wk LIST.SET.sub-wkex
 
+wkex2 : ∀{Γ A B C Form} → Exp (A :: B :: Γ) Form → Exp (A :: B :: C :: Γ) Form
+wkex2 = wk (LIST.SET.sub-cons-congr LIST.SET.sub-wkex)
 
 -- Focal substitution
 

@@ -218,6 +218,10 @@ wkex = wk LIST.SET.sub-wkex
 wkex2 : ∀{Γ A B C Form} → Exp (A :: B :: Γ) Form → Exp (A :: B :: C :: Γ) Form
 wkex2 = wk (LIST.SET.sub-cons-congr LIST.SET.sub-wkex)
 
+cntr : ∀{Γ A Form} → A ∈ Γ → Exp (A :: Γ) Form → Exp Γ Form
+cntr x = wk (LIST.SET.sub-cntr x)
+
+
 -- Focal substitution
 
 -- Values substituted in for suspended positive propositions

@@ -4,6 +4,6 @@ clean:
 	rm -f */*/*~
 	rm -f */*.agdai
 	rm -f */*~
-	rm -f .agdai
+	rm -f *.agdai
 	rm -f *~
 	rmdir */* *

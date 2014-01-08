@@ -309,7 +309,8 @@ complete {True A} {Γ} pfΓ pf (R D) = shifty A D
   shifty (A₁ ∨ A₂) (∨R₁ D₁) = u∨R₁ pfΓ (complete pfΓ pf D₁)
   shifty (A₁ ∨ A₂) (∨R₂ D₁) = u∨R₂ pfΓ (complete pfΓ pf D₁)
   shifty ⊤⁺ ⊤R = u⊤⁺R
-  shifty (A₁ ∧⁺ A₂) (∧R D₁ D₂) = u∧⁺R pfΓ (complete pfΓ pf D₁) (complete pfΓ pf D₂)
+  shifty (A₁ ∧⁺ A₂) (∧R D₁ D₂) = 
+    u∧⁺R pfΓ (complete pfΓ pf D₁) (complete pfΓ pf D₂)
 
 complete {Inv A} pfΓ (() , snd) (R D)
 complete {Susp (a _ ._)} _ (_ , _) (R ())
@@ -323,7 +324,8 @@ complete {Susp (_ ∧⁻ _)} _ (_ , ()) _
 -- unsatisfiable patterns
 
 complete {True A} pfΓ pf (init x refl) with pull x 
-complete {True A} {Γ} pfΓ pf (init x refl) | Pers B , y , refl' = cntr y {!!}
+complete {True A} {Γ} pfΓ pf (init x refl) | Pers B , y , refl' = 
+  cntr y (shifty B A refl refl')
  where
   shifty : ∀{Q ⁼} (B : Type ⁻) (A : Type ⁺)
     → erase A ≡ a Q ⁼
@@ -367,6 +369,7 @@ complete {True A} {Γ} pfΓ pf (init x refl) | Susp (a Q .⁺) , y , Refl | nz =
   shifty (B ∨ B₁) ()
   shifty ⊤⁺ ()
   shifty (B ∧⁺ B₁) ()
+
 complete {True A} pfΓ pf (init x refl) | Susp (↓ B) , y , refl' | _ , ()
 complete {True A} pfΓ pf (init x refl) | Susp ⊥ , y , refl' | _ , ()
 complete {True A} pfΓ pf (init x refl) | Susp (B ∨ B₁) , y , refl' | _ , ()

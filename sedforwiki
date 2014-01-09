@@ -10,9 +10,12 @@ s/λ/\&lambda;/g
 s/•/\&bull;/g
 
 # For targeting text distribution
-#s/π/pi/g
-#s/λ/\\/g
-#s/•/*/g
+# s/⟨/</g
+# s/⟩/>/g
+# s/π/pi/g
+# s/λ/\\/g
+# s/•/*/g
+# s/×/x/g
 
 s/Unicode/Non-unicode/g
 s/·/#/g
@@ -21,6 +24,7 @@ s/∨/\\\//g
 s/-:/\/:/g
 s/∧⁺/*/g
 s/∧⁻/\/\\/g
+s/∧/\/\\/g
 s/⊃/=>/g
 s/⊤⁻/top-/g
 s/⊤⁺/top+/g
@@ -38,3 +42,4 @@ s/⁼/e/g
 s/γ/jmt/g
 s/₁/1/g
 s/₂/2/g
+s/₃/3/g

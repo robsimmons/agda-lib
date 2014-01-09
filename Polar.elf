@@ -1,4 +1,16 @@
-%{ Focusing for polarized logic. (Unicode variant) }%
+%{ Focusing for polarized logic. (Unicode variant) 
+
+This version follows the on-paper version very directly; the cost is
+that the ``id⁻'' rule and the admissibile ``subst⁻'' focal
+substitution principle have to be written out instead of given for
+free by LF substitution as the ``id⁺'' rule and ``subst⁻''
+substitution principles are. 
+
+The file ``PolarNoNil.elf'' works through the paper's development up
+to the unfocused admissibility lemmas in a variant encoding that uses
+the LF uniform function space for both focal substitution principles;
+the result is somewhat counterintutive and has the flavor of working
+with a (parametric) double-negation. }%
 
 small: type. 
 big: type.
@@ -103,7 +115,7 @@ from LF.
 %{ ==== Terms ==== }%
 
 %{ 
-``M ::= ret V | x • Sp | ⟨z⟩.N | x.N | abort | [N₁, N₂] | ⟨⟩.N | ×N | ⟨N⟩ | {N} ∣ λN | ⟨⟩⁻ | ⟨N₁,N₂⟩⁻'' 
+``M ::= ret V | x • Sp | ⟨z⟩.N | x.N | abort | [N₁, N₂] | ⟨⟩.N | ×N | ⟨N⟩ | {N} | λN | ⟨⟩⁻ | ⟨N₁,N₂⟩⁻'' 
 }%
 
 focR: value A⁺ -> term · (A⁺ true).
@@ -141,7 +153,8 @@ adequate and gives us the ``id⁺'' rule for free. By chosing a more
 traditional way of describing negative suspended propositions (instead
 of the complicated encoding that gives us ``id⁻'' for free), we have
 forced ourselves to prove a theorem, negative focal substitution, that
-we could have avoided. }%
+we could have avoided. The partial "NoNil" development avoids proving
+subst⁻. }%
 
 subst⁻: stable U 
   -> exp (hasleft L (A⁻ susp)) 
@@ -296,12 +309,12 @@ lsubst: {A⁺} big
 %{ ``[[M/x]]N = N' '' }%
 
 % Entering principal substitution (cut⁻)
+-: rsubst A⁻ (b s) (snl Pf) M ([x] focR (V x)) (focR V')
+  <- rsubst A⁻ (b s) snr M ([x] V x) V'.
+
 -: rsubst A⁻ (b s) (snl Pf) M ([x] focL Pf' x (Sp x)) N'
   <- rsubst A⁻ (b s) (snl Pf) M ([x] Sp x) (Sp': spine A⁻ U)
   <- cut⁻ A⁻ s (ss Pf' Pf) M Sp' (N': term · U).
-
--: rsubst A⁻ (b s) (snl Pf) M ([x] focR (V x)) (focR V')
-  <- rsubst A⁻ (b s) snr M ([x] V x) V'.
 
 -: rsubst A⁻ S (snl Pf) M ([x] focL Pf' X' (Sp x)) (focL Pf' X' Sp')
   <- rsubst A⁻ S (snl Pf) M ([x] Sp x) (Sp': spine B⁻ U).
@@ -526,6 +539,14 @@ a certain high-level structure. }%
 
 %{ ==== Initial rules ==== }%
 
+adm-initsusp⁻: (hyp (c Q) -> term · (c Q susp)) -> type.
+%mode +{Q} -{N: hyp (c Q) -> term · (c Q susp)} adm-initsusp⁻ N.
+
+-: adm-initsusp⁻ ([x: hyp (c Q)] focL sn x id⁻).
+
+%worlds (gamma_suspnormal) (adm-initsusp⁻ _).
+%total [] (adm-initsusp⁻ _).
+
 adm-init⁻: (hyp (c Q) -> term · (↓ (c Q) true)) -> type.
 %mode +{Q} -{N: hyp (c Q) -> term · (↓ (c Q) true)} adm-init⁻ N. 
 
@@ -534,6 +555,14 @@ adm-init⁻: (hyp (c Q) -> term · (↓ (c Q) true)) -> type.
 %worlds (gamma_suspnormal) (adm-init⁻ _).
 %total [] (adm-init⁻ _).
 
+adm-initsusp⁺: (value (c Q) -> term · (c Q true)) -> type.
+%mode +{Q} -{N: value (c Q) -> term · (c Q true)} adm-initsusp⁺ N.
+
+-: adm-initsusp⁺ ([z: value (c Q)] focR z).
+
+%worlds (gamma_suspnormal) (adm-initsusp⁺ _).
+%total [] (adm-initsusp⁺ _).
+
 adm-init⁺: (hyp (↑ (c Q)) -> term · (c Q true)) -> type.
 %mode +{Q} -{N: hyp (↑ (c Q)) -> term · (c Q true)} adm-init⁺ N. 
 
@@ -541,22 +570,6 @@ adm-init⁺: (hyp (↑ (c Q)) -> term · (c Q true)) -> type.
 
 %worlds (gamma_suspnormal) (adm-init⁺ _).
 %total [] (adm-init⁺ _).
-
-adm-init-susp⁻: (hyp (c Q) -> term · (c Q susp)) -> type.
-%mode +{Q} -{N: hyp (c Q) -> term · (c Q susp)} adm-init-susp⁻ N.
-
--: adm-init-susp⁻ ([x: hyp (c Q)] focL sn x id⁻).
-
-%worlds (gamma_suspnormal) (adm-init-susp⁻ _).
-%total [] (adm-init-susp⁻ _).
-
-adm-init-susp⁺: (value (c Q) -> term · (c Q true)) -> type.
-%mode +{Q} -{N: value (c Q) -> term · (c Q true)} adm-init-susp⁺ N.
-
--: adm-init-susp⁺ ([z: value (c Q)] focR z).
-
-%worlds (gamma_suspnormal) (adm-init-susp⁺ _).
-%total [] (adm-init-susp⁺ _).
 
 %{ ==== Disjunction ==== }%
 
@@ -647,13 +660,13 @@ adm-∧⁺R: term · (A⁺ true)
   <- ({v₂: value B⁺}
        expand⁺ A⁺ ([v₁: value A⁺] (focR (∧⁺R v₁ v₂))) 
          (NIdB v₂: term (A⁺ , ·) (A⁺ ∧⁺ B⁺ true)))
-  <- ({x₁: hyp (↑ A⁺)}
-       expand⁺ B⁺ ([z₂: value B⁺] focL sp x₁ (↑L (NIdB z₂))) 
-         (NId x₁: term (B⁺ , ·) (A⁺ ∧⁺ B⁺ true)))
-  <- ({x₁: hyp (↑ A⁺)}
-       lsubst B⁺ (b s) (ss sp snp) N₂ (NId x₁)
-         (NA x₁: term · (A⁺ ∧⁺ B⁺ true)))
-  <- rsubst (↑ A⁺) (b s) (snl snp) (↑R N₁) ([x₁: hyp (↑ A⁺)] NA x₁) N'.
+  <- ({x: hyp (↑ A⁺)}
+       expand⁺ B⁺ ([z₂: value B⁺] focL sp x (↑L (NIdB z₂))) 
+         (NId x: term (B⁺ , ·) (A⁺ ∧⁺ B⁺ true)))
+  <- ({x: hyp (↑ A⁺)}
+       lsubst B⁺ (b s) (ss sp snp) N₂ (NId x)
+         (NA x: term · (A⁺ ∧⁺ B⁺ true)))
+  <- rsubst (↑ A⁺) (b s) (snl snp) (↑R N₁) ([x: hyp (↑ A⁺)] NA x) N'.
 
 %worlds (gamma_suspnormal) (adm-∧⁺R _ _ _).
 %total [] (adm-∧⁺R _ _ _).
@@ -718,12 +731,12 @@ adm-⊃L: suspstable U
          (NIdB x z: term · (B⁻ inv)))
   <- ({x: hyp (A⁺ ⊃ B⁻)}
        expand⁺ A⁺ ([z: value A⁺] focR (↓R (NIdB x z)))
-         (NIdA x: term (A⁺ , ·) (↓ B⁻ true)))
+         (NId x: term (A⁺ , ·) (↓ B⁻ true)))
   <- ({x: hyp (A⁺ ⊃ B⁻)}
-       lsubst A⁺ (b s) (ss sp snp) N₁ (NIdA x)
-         (NId x: term · (↓ B⁻ true)))
+       lsubst A⁺ (b s) (ss sp snp) N₁ (NId x)
+         (NB x: term · (↓ B⁻ true)))
   <- ({x: hyp (A⁺ ⊃ B⁻)}
-       lsubst (↓ B⁻) (b s) (ss Pf Pf') (NId x) (↓L [x₂: hyp B⁻] N₂ x₂) 
+       lsubst (↓ B⁻) (b s) (ss Pf Pf') (NB x) (↓L [x₂: hyp B⁻] N₂ x₂) 
          (N' x: term · U)).
 
 %worlds (gamma_suspnormal) (adm-⊃L _ _ _ _).
@@ -760,37 +773,37 @@ adm-∧⁻R: term · (↓ A⁻ true)
 %worlds (gamma_suspnormal) (adm-∧⁻R _ _ _).
 %total [] (adm-∧⁻R _ _ _).
 
-adm-∧⁻L₁: suspstable U
+adm-∧⁻L₁: suspnormal U
          -> (hyp A⁻ -> term · U)
          -> (hyp (A⁻ ∧⁻ B⁻) -> term · U)
          -> type.
 %mode +{A⁻} +{B⁻} +{U} +{Pf} +{N₁} -{N': hyp (A⁻ ∧⁻ B⁻) -> term · U} 
   adm-∧⁻L₁ Pf N₁ N'.
 
--: adm-∧⁻L₁ (ss Pf Pf') (N₁: hyp A⁻ -> term · U) N'
+-: adm-∧⁻L₁ Pf (N₁: hyp A⁻ -> term · U) N'
   <- ({x: hyp (A⁻ ∧⁻ B⁻)}
        expand⁻ A⁻ (focL sn x (∧⁻L₁ id⁻))
          (NId x: term · (A⁻ inv)))
   <- ({x: hyp (A⁻ ∧⁻ B⁻)}
-       rsubst A⁻ (b s) (snl Pf') (NId x) N₁ 
+       rsubst A⁻ (b s) (snl Pf) (NId x) N₁ 
        (N' x: term · U)).
 
 %worlds (gamma_suspnormal) (adm-∧⁻L₁ _ _ _).
 %total [] (adm-∧⁻L₁ _ _ _).
 
-adm-∧⁻L₂: suspstable U
+adm-∧⁻L₂: suspnormal U
          -> (hyp B⁻ -> term · U)
          -> (hyp (A⁻ ∧⁻ B⁻) -> term · U)
          -> type.
 %mode +{A⁻} +{B⁻} +{U} +{Pf} +{N₂} -{N': hyp (A⁻ ∧⁻ B⁻) -> term · U} 
   adm-∧⁻L₂ Pf N₂ N'.
 
--: adm-∧⁻L₂ (ss Pf Pf') (N₂: hyp B⁻ -> term · U) N'
+-: adm-∧⁻L₂ Pf (N₂: hyp B⁻ -> term · U) N'
   <- ({x: hyp (A⁻ ∧⁻ B⁻)}
        expand⁻ B⁻ (focL sn x (∧⁻L₂ id⁻))
          (NId x: term · (B⁻ inv)))
   <- ({x: hyp (A⁻ ∧⁻ B⁻)}
-       rsubst B⁻ (b s) (snl Pf') (NId x) N₂ 
+       rsubst B⁻ (b s) (snl Pf) (NId x) N₂ 
        (N' x: term · U)).
 
 %worlds (gamma_suspnormal) (adm-∧⁻L₂ _ _ _).
@@ -1169,7 +1182,7 @@ comp-init-susp:
   -> type.
  
 -: comp-init-susp _ tQ M
-  <- adm-init-susp⁻ M.
+  <- adm-initsusp⁻ M.
 
 %mode comp-init-susp +ND +TH' -E.
 %worlds (completectx) (comp-init-susp _ _ _). 
@@ -1207,7 +1220,7 @@ comp-init:
   -> type.
 
 -: comp-init tQ (ca Z) ndQ tQ (M Z)
-  <- adm-init-susp⁺ M.
+  <- adm-initsusp⁺ M.
 
 -: comp-init TH (cn X) ND T' (NS _ sp M X)
   <- lshifty TH (TH': t Aleft' (a Q))
@@ -1362,7 +1375,7 @@ comp-andL₁: stable U
        completehyp h T₁ (cn x) ->
          complete Pf (D₁ h) T (N₁ x: term · U))
   <- transnormal T Pf'
-  <- adm-∧⁻L₁ (ss Pf Pf') N₁ M.
+  <- adm-∧⁻L₁ Pf' N₁ M.
 
 -: complete Pf (andL₁ D₁ H) (T: tU U Q) (NS _ Pf M X)
   <- completehyp H (TH: t A (and P₁ P₂)) (cn (X: hyp A))
@@ -1389,7 +1402,7 @@ comp-andL₂: stable U
        completehyp h T₂ (cn x) ->
          complete Pf (D₂ h) T (N₂ x: term · U))
   <- transnormal T Pf'
-  <- adm-∧⁻L₂ (ss Pf Pf') N₂ M.
+  <- adm-∧⁻L₂ Pf' N₂ M.
 
 -: complete Pf (andL₂ D₂ H) (T: tU U Q) (NS _ Pf M X)
   <- completehyp H (TH: t A (and P₁ P₂)) (cn (X: hyp A))

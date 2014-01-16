@@ -31,38 +31,45 @@ module ID where
    coe : ∀{a} {A : Set a} {B : Set a} -> A ≡ B -> A -> B
    coe Refl x = x
 
-   coe1 : ∀{a} {A : Set a} (P : A → Set a) {a1 a2 : A} 
+   coe1 : ∀{a} {A : Set a} (P : A → Set a) {a1 a2 : A}
       → a1 ≡ a2
       → P a1
       → P a2
    coe1 _ Refl x = x
 
-   resp : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
-      → a1 ≡ a2 
+   coe2 : ∀{a b} {A : Set a} {B : Set b} (P : A → B → Set (LEVEL.max a b)) {a1 a2 : A} {b1 b2 : B}
+      → a1 ≡ a2
+      → b1 ≡ b2
+      → P a1 b1
+      → P a2 b2
+   coe2 _ Refl Refl x = x
+
+   resp : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A}
+      → a1 ≡ a2
       → p a1 ≡ p a2
    resp _ Refl = refl
 
-   resp1 : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A} 
-      → a1 ≡ a2 
+   resp1 : ∀{a b} {A : Set a} {B : Set b} (p : A → B) → {a1 a2 : A}
+      → a1 ≡ a2
       → p a1 ≡ p a2
    resp1 _ Refl = refl
 
-   resp2 : ∀{a b c} {A : Set a} {B : Set b} {C : Set c} 
-      → (p : A → B → C) → {a1 a2 : A} {b1 b2 : B} 
-      → a1 ≡ a2 
-      → b1 ≡ b2 
+   resp2 : ∀{a b c} {A : Set a} {B : Set b} {C : Set c}
+      → (p : A → B → C) → {a1 a2 : A} {b1 b2 : B}
+      → a1 ≡ a2
+      → b1 ≡ b2
       → p a1 b1 ≡ p a2 b2
    resp2 _ Refl Refl = refl
 
    resp3 : ∀{a b c d} {A : Set a} {B : Set b} {C : Set c} {D : Set d}
-      → (p : A → B → C → D) → {a1 a2 : A} {b1 b2 : B} {c1 c2 : C} 
-      → a1 ≡ a2 
-      → b1 ≡ b2 
-      → c1 ≡ c2 
+      → (p : A → B → C → D) → {a1 a2 : A} {b1 b2 : B} {c1 c2 : C}
+      → a1 ≡ a2
+      → b1 ≡ b2
+      → c1 ≡ c2
       → p a1 b1 c1 ≡ p a2 b2 c2
    resp3 _ Refl Refl Refl = refl
 
-open ID public 
-   using 
-     (Id ; Refl ; _≡_ ; refl ; symm ; trans ; _≡≡_ ; 
+open ID public
+   using
+     (Id ; Refl ; _≡_ ; refl ; symm ; trans ; _≡≡_ ;
       coe ; resp ; resp1 ; resp2 ; resp3)

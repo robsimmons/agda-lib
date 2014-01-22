@@ -48,7 +48,7 @@ cut⁻ pfΓ (_ , ()) N (id⁻ {↑ A})
 cut⁻ pfΓ (_ , ()) N (id⁻ {A ⊃ B})
 cut⁻ pfΓ (_ , ()) N (id⁻ {⊤⁻})
 cut⁻ pfΓ (_ , ()) N (id⁻ {A ∧⁻ B})
-cut⁻ pfΓ pf (↑R N) (↑L M) = lsubst pfΓ pf N M
+cut⁻ pfΓ pf (↑R N) (↑L _ M) = lsubst pfΓ pf N M
 cut⁻ pfΓ pf (⊃R N) (⊃L V Sp) = cut⁻ pfΓ pf (cut⁺ pfΓ <> V N) Sp
 cut⁻ pfΓ pf (∧⁻R N₁ N₂) (∧⁻L₁ Sp) = cut⁻ pfΓ pf N₁ Sp
 cut⁻ pfΓ pf (∧⁻R N₁ N₂) (∧⁻L₂ Sp) = cut⁻ pfΓ pf N₂ Sp
@@ -85,7 +85,7 @@ rsubst Γ' pfΓ pf M (∧⁻R N₁ N₂) =
 
 -- Substitution into spines
 rsubst Γ' pfΓ pf M id⁻ = id⁻
-rsubst Γ' pfΓ pf M (↑L N) = ↑L (rsubst Γ' pfΓ pf M N)
+rsubst Γ' pfΓ pf M (↑L pf' N) = ↑L pf' (rsubst Γ' pfΓ pf M N)
 rsubst Γ' pfΓ pf M (⊃L V Sp) =
   ⊃L (rsubst Γ' pfΓ <> M V) (rsubst Γ' pfΓ pf M Sp)
 rsubst Γ' pfΓ pf M (∧⁻L₁ Sp) = ∧⁻L₁ (rsubst Γ' pfΓ pf M Sp)
@@ -102,7 +102,7 @@ lsubst pfΓ pf (⊤⁺L M) N = ⊤⁺L (lsubst pfΓ pf M N)
 lsubst pfΓ pf (∧⁺L M) N = ∧⁺L (lsubst pfΓ pf M N)
 
 -- Substitution of of spines
-lsubst pfΓ pf (↑L M) N = ↑L (lsubst pfΓ pf M N)
+lsubst pfΓ pf (↑L _ M) N = ↑L (fst pf) (lsubst pfΓ pf M N)
 lsubst pfΓ pf (⊃L V Sp) N = ⊃L V (lsubst pfΓ pf Sp N)
 lsubst pfΓ pf (∧⁻L₁ Sp) N = ∧⁻L₁ (lsubst pfΓ pf Sp N)
 lsubst pfΓ pf (∧⁻L₂ Sp) N = ∧⁻L₂ (lsubst pfΓ pf Sp N)

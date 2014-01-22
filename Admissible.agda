@@ -25,13 +25,13 @@ uinitsusp⁺ = focR (id⁺ Z)
 
 uinit⁺ : ∀{Γ Q}
   → (Pers (↑ (a Q ⁺)) :: Γ) ⊢ True (a Q ⁺)
-uinit⁺ = focL <> Z (↑L (η⁺ (focR (id⁺ Z))))
+uinit⁺ = focL <> Z (↑L <> (η⁺ (focR (id⁺ Z))))
 
 -- Disjunction
 
 u⊥L : ∀{Γ U} → stable U
   → (Pers (↑ ⊥) :: Γ) ⊢ U
-u⊥L pf = focL pf Z (↑L ⊥L)
+u⊥L pf = focL pf Z (↑L pf ⊥L)
 
 
 u∨R₁ : ∀{Γ A B} → suspnormalΓ Γ
@@ -50,7 +50,8 @@ u∨L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U
   → (Pers (↑ (A ∨ B)) :: Γ) ⊢ U
 u∨L pfΓ pf N₁ N₂ = 
   focL (fst pf) Z 
-    (↑L (lsubst (conspers pfΓ) pf Nid (∨L (↓L (wkex N₁)) (↓L (wkex N₂)))))
+    (↑L (fst pf)
+       (lsubst (conspers pfΓ) pf Nid (∨L (↓L (wkex N₁)) (↓L (wkex N₂)))))
  where
   Nid = ∨L (expand⁺ (focR (∨R₁ (↓R (↑R (focR (id⁺ Z))))))) 
           (expand⁺ (focR (∨R₂ (↓R (↑R (focR (id⁺ Z))))))) 
@@ -64,7 +65,7 @@ u⊤⁺R = focR ⊤⁺R
 u⊤⁺L : ∀{Γ U} → stable U
   → Γ ⊢ U
   → (Pers (↑ ⊤⁺) :: Γ) ⊢ U
-u⊤⁺L pf N₁ = focL pf Z (↑L (⊤⁺L (wken N₁)))
+u⊤⁺L pf N₁ = focL pf Z (↑L pf (⊤⁺L (wken N₁)))
 
 u∧⁺R : ∀{Γ A B} → suspnormalΓ Γ 
   → Γ ⊢ True A 
@@ -73,14 +74,15 @@ u∧⁺R : ∀{Γ A B} → suspnormalΓ Γ
 u∧⁺R pfΓ N₁ N₂ = 
   rsubst [] pfΓ <> (↑R N₁) (lsubst (conspers pfΓ) (, <>) (wken N₂) Nid)
  where
-  Nid = expand⁺ (focL <> (S Z) (↑L (expand⁺ (focR (∧⁺R (id⁺ Z) (id⁺ (S Z)))))))
+  Nid = expand⁺ (focL <> (S Z) 
+                   (↑L <> (expand⁺ (focR (∧⁺R (id⁺ Z) (id⁺ (S Z)))))))
 
 u∧⁺L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U 
   → (Pers (↑ B) :: Pers (↑ A) :: Γ) ⊢ U
   → (Pers (↑ (A ∧⁺ B)) :: Γ) ⊢ U
 u∧⁺L pfΓ pf N₁ = 
   focL (fst pf) Z 
-    (↑L (lsubst (conspers pfΓ) pf Nid (∧⁺L (↓L (↓L (wkex2 N₁))))))
+    (↑L (fst pf) (lsubst (conspers pfΓ) pf Nid (∧⁺L (↓L (↓L (wkex2 N₁))))))
  where
   Nid = ∧⁺L (expand⁺ (expand⁺ (focR (∧⁺R (↓R (↑R (focR (id⁺ (S Z))))) 
                                             (↓R (↑R (focR (id⁺ Z)))))))) 
@@ -96,7 +98,7 @@ u⊃R pfΓ N₁ = focR (↓R (rsubst [] pfΓ <> (⊃R (↓L (↑R N₁))) Nid))
               (expand⁻ 
                  (focL <> (S Z)  
                     (⊃L (↓R (↑R (focR (id⁺ Z))))
-                       (↑L (↓L (focL <> Z id⁻)))))))
+                       (↑L <> (↓L (focL <> Z id⁻)))))))
 
 u⊃L : ∀{Γ A B U} → suspnormalΓ Γ → suspstable U 
   → Γ ⊢ True A 
@@ -122,8 +124,8 @@ u∧⁻R : ∀{Γ A B} → suspnormalΓ Γ
 u∧⁻R pfΓ N₁ N₂ = 
   focR (↓R (rsubst [] pfΓ <> (∧⁻R (↑R N₁) (↑R N₂)) Nid))
  where
-  Nid = ∧⁻R (expand⁻ (focL <> Z (∧⁻L₁ (↑L (↓L (focL <> Z id⁻))))))
-          (expand⁻ (focL <> Z (∧⁻L₂ (↑L (↓L (focL <> Z id⁻))))))
+  Nid = ∧⁻R (expand⁻ (focL <> Z (∧⁻L₁ (↑L <> (↓L (focL <> Z id⁻))))))
+          (expand⁻ (focL <> Z (∧⁻L₂ (↑L <> (↓L (focL <> Z id⁻))))))
 
 u∧⁻L₁ : ∀{Γ A B U} → suspnormalΓ Γ → suspnormal U
   → (Pers A :: Γ) ⊢ U
@@ -147,5 +149,5 @@ u↓↑R N₁ = focR (↓R (↑R N₁))
 u↑↓L : ∀{Γ A U} → stable U
   → (Pers A :: Γ) ⊢ U
   → (Pers (↑ (↓ A)) :: Γ) ⊢ U
-u↑↓L pf N₁ = focL pf Z (↑L (↓L (wkex N₁)))
+u↑↓L pf N₁ = focL pf Z (↑L pf (↓L (wkex N₁)))
 

@@ -23,7 +23,7 @@ expand⁺ {A ∧⁺ A₁} N =
           (subst⁺ [] (∧⁺R (id⁺ (S Z)) (id⁺ Z)) (wkex (wkex N)))))
 
 expand⁻ {a Q .⁻} N = η⁻ N
-expand⁻ {↑ A} N = ↑R (subst⁻ <> N (↑L (expand⁺ (focR (id⁺ Z)))))
+expand⁻ {↑ A} N = ↑R (subst⁻ <> N (↑L <> (expand⁺ (focR (id⁺ Z)))))
 expand⁻ {A ⊃ A₁} N = 
   ⊃R (expand⁺ (expand⁻ (subst⁻ <> (wken N) (⊃L (id⁺ Z) id⁻))))
 expand⁻ {⊤⁻} N = ⊤⁻R

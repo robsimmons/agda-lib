@@ -164,6 +164,7 @@ data Exp Γ where
   id⁻ : ∀{A}
     → Spine Γ A (Susp A)
   ↑L : ∀{A U}
+    (pf : stable U)
     (N : Term Γ [ A ] U)
     → Spine Γ (↑ A) U
   ⊃L : ∀{A B U}
@@ -204,7 +205,7 @@ wk θ ⊤⁻R = ⊤⁻R
 wk θ (∧⁻R N₁ N₂) = ∧⁻R (wk θ N₁) (wk θ N₂)
 
 wk θ id⁻ = id⁻
-wk θ (↑L N) = ↑L (wk θ N)
+wk θ (↑L pf N) = ↑L pf (wk θ N)
 wk θ (⊃L V Sp) = ⊃L (wk θ V) (wk θ Sp)
 wk θ (∧⁻L₁ Sp) = ∧⁻L₁ (wk θ Sp)
 wk θ (∧⁻L₂ Sp) = ∧⁻L₂ (wk θ Sp)
@@ -257,7 +258,7 @@ subst⁺ Γ' V ⊤⁻R = ⊤⁻R
 subst⁺ Γ' V (∧⁻R N₁ N₂) = ∧⁻R (subst⁺ Γ' V N₁) (subst⁺ Γ' V N₂)
 
 subst⁺ Γ' V id⁻ = id⁻
-subst⁺ Γ' V (↑L N) = ↑L (subst⁺ Γ' V N)
+subst⁺ Γ' V (↑L pf N) = ↑L pf (subst⁺ Γ' V N)
 subst⁺ Γ' V (⊃L V' Sp) = ⊃L (subst⁺ Γ' V V') (subst⁺ Γ' V Sp)
 subst⁺ Γ' V (∧⁻L₁ Sp) = ∧⁻L₁ (subst⁺ Γ' V Sp)
 subst⁺ Γ' V (∧⁻L₂ Sp) = ∧⁻L₂ (subst⁺ Γ' V Sp)
@@ -279,7 +280,7 @@ subst⁻ pf (⊤⁺L N) Sp = ⊤⁺L (subst⁻ pf N Sp)
 subst⁻ pf (∧⁺L N) Sp = ∧⁺L (subst⁻ pf N Sp)
 
 subst⁻ pf id⁻ Sp = Sp
-subst⁻ pf (↑L N) Sp = ↑L (subst⁻ pf N Sp)
+subst⁻ pf (↑L _ N) Sp = ↑L pf (subst⁻ pf N Sp)
 subst⁻ pf (⊃L V Sp) Sp' = ⊃L V (subst⁻ pf Sp Sp')
 subst⁻ pf (∧⁻L₁ Sp) Sp' = ∧⁻L₁ (subst⁻ pf Sp Sp')
 subst⁻ pf (∧⁻L₂ Sp) Sp' = ∧⁻L₂ (subst⁻ pf Sp Sp')

@@ -231,7 +231,7 @@ sound {Left ._ (Susp (↑ _))} pfΓ () id⁻
 sound {Left ._ (Susp (_ ⊃ _))} pfΓ () id⁻
 sound {Left ._ (Susp ⊤⁻)} pfΓ () id⁻
 sound {Left ._ (Susp (_ ∧⁻ _))} pfΓ () id⁻
-sound pfΓ pf (↑L N) = sound pfΓ pf N
+sound pfΓ pf (↑L _ N) = sound pfΓ pf N
 sound pfΓ pf (⊃L V Sp) =  S (Z (L Z (⊃L (wken' (dZ (sound pfΓ <> V)))
                                        (wkex' (dZ (dS (sound pfΓ pf Sp)))))))
 sound pfΓ pf (∧⁻L₁ Sp) = S (Z (L Z (∧L₁ (wkex' (dZ (dS (sound pfΓ pf Sp)))))))

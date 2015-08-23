@@ -4,16 +4,17 @@ module Lib.Level where
 
 module LEVEL where
 
-  postulate
-    Level : Set
-    LZ : Level
-    LS : Level -> Level
-    max : Level -> Level -> Level
+  open import Agda.Primitive using (Level) public
+  open import Agda.Primitive using (lzero; lsuc; _⊔_)
 
-  {-# BUILTIN LEVEL     Level #-}
-  {-# BUILTIN LEVELZERO LZ  #-}
-  {-# BUILTIN LEVELSUC  LS   #-}
-  {-# BUILTIN LEVELMAX max #-}
+  LZ : Level
+  LZ = lzero
+
+  LS : Level -> Level
+  LS = lsuc
+
+  max : Level -> Level -> Level
+  max = _⊔_
 
   record Lift {a b} (A : Set a) : Set (max a b) where
     constructor lift

@@ -16,8 +16,6 @@ module NAT where
       S : (n : Nat) → Nat
 
    {-# BUILTIN NATURAL Nat #-}
-   {-# BUILTIN SUC S #-}
-   {-# BUILTIN ZERO Z #-}
 
    fold : {P : Nat → Set} 
       → P Z 

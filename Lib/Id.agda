@@ -6,8 +6,8 @@ open import Lib.Level
 
 module ID where
 
-   infix 5 _≡_
-   infixr 5 _≡≡_
+   infix 4 _≡_
+   infixr 4 _≡≡_
    data _≡_ {l : Level} {A : Set l} : A → A → Set l where
       Refl : {a : A} → a ≡ a
    Id : ∀ {l} {A : Set l} → A → A → Set l

@@ -13,7 +13,6 @@ module BOOL where
    data Bool : Set where
       True : Bool
       False : Bool
-   {-# COMPILED_DATA Bool Bool True False #-}
    {-# BUILTIN BOOL  Bool  #-}
    {-# BUILTIN TRUE  True  #-}
    {-# BUILTIN FALSE False #-}

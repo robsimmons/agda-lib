@@ -7,45 +7,45 @@ use Agda to reason about things using pattern-matching and reflexive equality.
 
 * HASKELL-ISH SYNTAX
   - Constructors and types are capitalized (Nat, S, Z).
-  - Type families are capitialized as well (even if they are functions that
+  - Type families are capitalized as well (even if they are functions that
     compute Sets, such as "Leq", "Lt", or "Maybe").
   - Functions are entirely lowercase; the minus sign "-" is used as a separator
-    ("s-cong"). 
-  - Modules are UPPERCASE ("NAT", "LIST", "MAYBE"). 
+    ("s-cong").
+  - Modules are UPPERCASE ("NAT", "LIST", "MAYBE").
 
 * SINGLE IMPORT; MANAGEMENT OF NAMESPACE
   - The whole library is accessible with "open import Prelude".
   - Every file Lib/Something.agda exports a module SOMETHING. Some of the
-    stuff from the SOMETHING module will be exported to the toplevel; for 
-    instance the constructor for reflexivity, defined in Lib/Id.agda, can be 
+    stuff from the SOMETHING module will be exported to the toplevel; for
+    instance the constructor for reflexivity, defined in Lib/Id.agda, can be
     referenced as either "Refl" or "ID.Refl", and the natural numbers can
     be accessed with "Nat" "Z" and "S" or with "NAT.Nat", "NAT.Z", "NAT.S".
-  - Overloaded functions should be present but not exported. Both natural 
-    numbers and levels have a notion of maximum, we have "NAT.max" and 
-    "LEVEL.max". Note that Agda disambiguates constructors pretty agressively,
+  - Overloaded functions should be present but not exported. Both natural
+    numbers and levels have a notion of maximum, we have "NAT.max" and
+    "LEVEL.max". Note that Agda disambiguates constructors pretty aggressively,
     so it's not a problem to have "NAT.Z" and "LEVEL.Z" both exported into the
-    top level. 
+    top level.
 
 * LIMITED USE OF LONG DEPENDENCY CHAINS
-One of the beautiful but aggrivating parts of the Agda Standard Library, from 
+One of the beautiful but aggravating parts of the Agda Standard Library, from
 one outsider's perspective at least, is that it's very difficult to get a handle
 on where definitions "bottom out" - definitions are very rich and very deep and
 basically all over the place. While it may be helpful to do things this way for
-the goal of writing the most general code, it makes it very difficult to 
+the goal of writing the most general code, it makes it very difficult to
 understand how any one thing works, and sometimes generality interferes with
-nice, neat pattern matching. This libarary tries to have things bottom out very
+nice, neat pattern matching. This library tries to have things bottom out very
 quickly, and there are only a few simple patterns (such as MEMBERSHIP) that are
 designed to be instantiated in multiple ways.
 
-* LIMITED AND UNIFORM USE OF UNICODE 
-Unicode runs rampant in the standard library, and it means that its sometimes 
+* LIMITED AND UNIFORM USE OF UNICODE
+Unicode runs rampant in the standard library, and it means that its sometimes
 hard to even know how to write code without using "CTRL-u CTRL-x =," which is
-a keybinding I personally can never remember. This standard libary uses unicode
+a keybinding I personally can never remember. This standard library uses unicode
 only sparingly, and *always* defines both a unicode and a non-unicode way of
 writing things.
 
 In general, a non-unicode name should be used for the "fundamental" definition
-of a type or term, and the unicode version (if any) should be an abbreviation, 
+of a type or term, and the unicode version (if any) should be an abbreviation,
 since the fundamental name will be one type reconstruction reports back to the
 user. There are some exceptions; here is how to write them Agda-mode:
 
